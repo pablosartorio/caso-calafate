@@ -1,0 +1,649 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   pantallas.css — todo lo que no es el escritorio:
+
+   · el ARCHIVO de expedientes (las partidas guardadas)
+   · la ORDEN DE ACUSACIÓN (overlay)
+   · el TABLERO de evidencias (corcho + hilo rojo)
+   · el DIARIO del día siguiente (el veredicto)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── El archivo: un cuarto de expedientes ────────────────────────────────── */
+
+#pantalla-archivo {
+  height: 100dvh;
+  overflow-y: auto;
+  padding: clamp(1.5rem, 5vh, 4rem) 1.5rem 4rem;
+  background:
+    radial-gradient(760px 380px at 50% -8%, rgba(255, 196, 124, 0.13), transparent 70%),
+    var(--veta),
+    linear-gradient(180deg, #241a10, #171009 60%, #0f0a05);
+  background-blend-mode: normal, overlay, normal;
+}
+
+.archivo-cabecera {
+  max-width: 1100px;
+  margin: 0 auto 2.6rem;
+  text-align: center;
+}
+
+.archivo-membrete {
+  font-size: 0.68rem;
+  letter-spacing: 0.34em;
+  color: var(--tinta-tenue);
+}
+
+.archivo-titulo {
+  margin-top: 0.8rem;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  font-weight: normal;
+  letter-spacing: 0.18em;
+  color: var(--papel-claro);
+  text-shadow: 0 3px 14px rgba(0, 0, 0, 0.6);
+}
+
+.archivo-titulo::before { content: "🛰 "; }
+
+.archivo-sub {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.14em;
+  color: var(--tinta-tenue);
+}
+
+.aviso-fake {
+  display: inline-block;
+  margin-top: 1.1rem;
+  padding: 0.4em 0.9em;
+  border: 1px dashed var(--ambar);
+  border-radius: 3px;
+  color: var(--ambar);
+  font-size: 0.78rem;
+}
+
+#estantes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.6rem 1.4rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* cada partida es una carpeta de cartulina */
+.expediente {
+  position: relative;
+  margin-top: 14px; /* lugar para la pestaña */
+}
+
+.expediente-carpeta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 132px;
+  padding: 1rem 1.1rem 0.9rem;
+  border: none;
+  border-radius: 3px 8px 3px 3px;
+  text-align: left;
+  color: #3d2f1c;
+  background:
+    linear-gradient(170deg, rgba(255, 244, 210, 0.5), transparent 45%),
+    linear-gradient(180deg, #d9b871, #c4a057 70%, #ab8946);
+  box-shadow: var(--sombra-papel);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.expediente-carpeta::before { /* la pestaña de la carpeta */
+  content: "";
+  position: absolute;
+  top: -13px;
+  left: 14px;
+  width: 42%;
+  height: 16px;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, #dcbe7c, #c9a55d);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.expediente-carpeta::after { /* grano de cartulina */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--ruido);
+  opacity: 0.06;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.expediente-carpeta:hover {
+  transform: translateY(-4px) rotate(-0.6deg);
+  box-shadow: var(--sombra-papel-alta);
+}
+
+.expediente-nombre {
+  font-size: 1.02rem;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding-right: 4.6rem; /* aire para el sello */
+}
+
+.expediente-fecha { font-size: 0.68rem; color: #6b5636; letter-spacing: 0.08em; }
+
+.expediente-stats {
+  margin-top: auto;
+  font-size: 0.78rem;
+  color: #55432a;
+}
+
+.expediente-sello {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  font-size: 0.72rem;
+  pointer-events: none;
+}
+
+.expediente-borrar {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: #3a2c1a;
+  color: var(--papel);
+  font-size: 0.8rem;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.expediente:hover .expediente-borrar,
+.expediente-borrar:focus-visible { opacity: 1; }
+
+.expediente-borrar.confirmando {
+  width: auto;
+  padding: 0 0.6em;
+  border-radius: 13px;
+  background: var(--rojo-vivo);
+  opacity: 1;
+}
+
+/* la carpeta nueva: contorno punteado, lista para estrenar */
+.expediente-nueva {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: 132px;
+  border: 2px dashed rgba(217, 184, 113, 0.55);
+  border-radius: 6px;
+  background: rgba(217, 184, 113, 0.06);
+  color: #d9b871;
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+
+.expediente-nueva:hover { background: rgba(217, 184, 113, 0.13); transform: translateY(-3px); }
+
+.expediente-nueva .mas { font-size: 2rem; line-height: 1; }
+.expediente-nueva .texto { font-size: 0.8rem; letter-spacing: 0.14em; }
+
+.expediente-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  width: 100%;
+  min-height: 132px;
+  padding: 1rem;
+  border: 2px dashed rgba(217, 184, 113, 0.55);
+  border-radius: 6px;
+  background: rgba(217, 184, 113, 0.1);
+}
+
+.expediente-formulario label {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  color: #d9b871;
+}
+
+.expediente-formulario input {
+  padding: 0.45em 0.6em;
+  border: none;
+  border-radius: 2px;
+  background: var(--papel-claro);
+  color: var(--tinta);
+  font-family: var(--maquina);
+  font-size: 0.9rem;
+}
+
+.expediente-formulario .botones { display: flex; gap: 0.5rem; justify-content: flex-end; }
+
+/* ── La orden de acusación ───────────────────────────────────────────────── */
+
+#acusacion-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin: 1.4rem 0;
+}
+
+.acusado-fila {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 0.55rem 0.8rem;
+  border: 2px solid rgba(43, 33, 25, 0.25);
+  border-radius: 4px;
+  background: rgba(255, 252, 240, 0.35);
+  color: var(--tinta);
+  text-align: left;
+  transition: border-color 0.1s ease, background 0.1s ease;
+}
+
+.acusado-fila:hover { border-color: rgba(43, 33, 25, 0.55); }
+
+.acusado-fila.seleccionada {
+  border-color: var(--rojo-vivo);
+  background: rgba(194, 59, 46, 0.08);
+  box-shadow: 0 0 0 1px var(--rojo-vivo);
+}
+
+.acusado-fila .acusado-marca {
+  margin-left: auto;
+  font-size: 1.3rem;
+  color: var(--rojo-vivo);
+  opacity: 0;
+  transform: scale(0.4) rotate(-20deg);
+  transition: 0.12s ease;
+}
+
+.acusado-fila.seleccionada .acusado-marca { opacity: 1; transform: scale(1) rotate(-6deg); }
+
+.acusado-foto {
+  flex: 0 0 46px;
+  padding: 2px;
+  background: #f6f0e0;
+  box-shadow: 0 1px 2px rgba(20, 12, 5, 0.4);
+}
+
+.acusado-foto svg { width: 100%; height: auto; filter: sepia(0.5) contrast(0.92); background: #cabd9d; }
+
+.acusado-nombre { font-weight: bold; text-transform: uppercase; font-size: 0.92rem; }
+.acusado-cargo  { font-size: 0.72rem; color: var(--tinta-suave); }
+
+.boton-sello {
+  padding: 0.55em 1.1em;
+  border: 3px solid var(--rojo-vivo);
+  border-radius: 5px;
+  background: rgba(194, 59, 46, 0.1);
+  color: var(--rojo-vivo);
+  font-family: var(--maquina);
+  font-weight: bold;
+  font-size: 1rem;
+  letter-spacing: 0.16em;
+  line-height: 1.15;
+  transform: rotate(-2deg);
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+
+.boton-sello small { display: block; font-size: 0.62rem; letter-spacing: 0.22em; font-weight: normal; }
+
+.boton-sello:hover:not(:disabled) { background: rgba(194, 59, 46, 0.2); transform: rotate(-2deg) scale(1.04); }
+
+/* el sellazo final sobre la orden */
+#sello-golpe {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  z-index: 3;
+  font-size: 3.2rem;
+  padding: 0.1em 0.4em;
+  border-width: 6px;
+  pointer-events: none;
+}
+
+#sello-golpe.golpeando {
+  animation: sellazo 0.42s cubic-bezier(0.36, 0, 0.66, -0.3) forwards;
+}
+
+@keyframes sellazo {
+  0%   { transform: translate(-50%, -60%) rotate(-30deg) scale(2.8); opacity: 0; }
+  60%  { transform: translate(-50%, -50%) rotate(-13deg) scale(1);   opacity: 0.92; }
+  72%  { transform: translate(-50%, -50%) rotate(-13deg) scale(1.06); }
+  100% { transform: translate(-50%, -50%) rotate(-13deg) scale(1);   opacity: 0.88; }
+}
+
+/* ── El tablero de evidencias ────────────────────────────────────────────── */
+
+#velo-tablero {
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+}
+
+#corcho {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: default;
+  /* corcho: dos capas de ruido sobre marrón cálido, con marco de madera */
+  background-image: var(--ruido), var(--ruido);
+  background-size: 240px, 90px;
+  background-color: #a57b4d;
+  background-blend-mode: multiply, soft-light;
+  box-shadow:
+    inset 0 0 0 14px #55381d,
+    inset 0 0 0 16px rgba(255, 220, 170, 0.25),
+    inset 0 0 140px rgba(30, 12, 2, 0.55);
+}
+
+#hilos {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* el svg no roba clicks; cada hilo sí (ver .hilo) */
+}
+
+.hilo {
+  fill: none;
+  stroke: #b3271e;
+  stroke-width: 3;
+  stroke-linecap: round;
+  pointer-events: stroke;
+  cursor: pointer;
+  filter: drop-shadow(0 2px 1px rgba(20, 5, 0, 0.45));
+}
+
+.hilo:hover { stroke: #e04431; stroke-width: 4.5; }
+
+.hilo-pendiente {
+  fill: none;
+  stroke: #b3271e;
+  stroke-width: 2.5;
+  stroke-dasharray: 7 6;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.nota, .polaroid {
+  position: absolute;
+  z-index: 2;
+  cursor: grab;
+  user-select: none;
+  touch-action: none; /* el drag lo maneja JS con pointer events */
+}
+
+.nota:active, .polaroid:active { cursor: grabbing; }
+
+.nota.arrastrando, .polaroid.arrastrando {
+  z-index: 4;
+  filter: drop-shadow(0 14px 18px rgba(15, 5, 0, 0.5));
+}
+
+.nota {
+  width: 190px;
+  padding: 1.1rem 0.9rem 0.8rem;
+  background:
+    repeating-linear-gradient(180deg,
+      transparent 0 22px, rgba(90, 120, 170, 0.3) 22px 23px),
+    #f4eeda;
+  color: var(--tinta);
+  font-family: var(--manuscrita);
+  font-size: 1.05rem;
+  line-height: 23px;
+  box-shadow: var(--sombra-papel);
+  transform: rotate(var(--rot, 0deg));
+}
+
+.polaroid {
+  width: 128px;
+  padding: 7px 7px 0.5rem;
+  background: #f7f3e8;
+  box-shadow: var(--sombra-papel);
+  transform: rotate(var(--rot, 0deg));
+  text-align: center;
+}
+
+.polaroid svg { width: 100%; height: auto; filter: sepia(0.5) contrast(0.9); background: #cabd9d; }
+
+.polaroid figcaption {
+  margin-top: 0.3rem;
+  font-family: var(--manuscrita);
+  font-size: 1rem;
+  color: var(--tinta);
+}
+
+/* la chincheta de cada pieza: también es el conector de hilos */
+.chincheta {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  z-index: 5;
+  width: 17px;
+  height: 17px;
+  margin-left: -8.5px;
+  border: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e46a5c, var(--rojo) 65%, #6e150e);
+  box-shadow: 0 3px 4px rgba(10, 5, 2, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  cursor: crosshair;
+  transition: transform 0.1s ease;
+}
+
+.polaroid .chincheta { background: radial-gradient(circle at 35% 30%, #7db8e0, #2a6b9e 65%, #143d5e); }
+
+.chincheta:hover { transform: scale(1.3); }
+
+.chincheta.conectando {
+  animation: chincheta-pulso 0.9s ease infinite;
+  box-shadow: 0 0 0 5px rgba(194, 59, 46, 0.35), 0 3px 4px rgba(10, 5, 2, 0.55);
+}
+
+@keyframes chincheta-pulso { 50% { transform: scale(1.35); } }
+
+.tablero-barra {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 1.4rem;
+  background: linear-gradient(180deg, rgba(20, 10, 3, 0.82), rgba(20, 10, 3, 0.92));
+  backdrop-filter: blur(2px);
+}
+
+.tablero-ayuda { font-size: 0.78rem; color: var(--tinta-tenue); letter-spacing: 0.04em; }
+
+.tablero-vacio {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-2deg);
+  z-index: 1;
+  font-family: var(--manuscrita);
+  font-size: 1.5rem;
+  color: rgba(59, 38, 16, 0.75);
+  text-align: center;
+  width: min(420px, 80vw);
+}
+
+/* ── El diario del día siguiente ─────────────────────────────────────────── */
+
+#velo-diario { max-width: min(94vw, 960px); }
+
+#diario {
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: clamp(1.4rem, 4vw, 2.8rem);
+  background:
+    radial-gradient(120% 100% at 50% 0%, rgba(255, 250, 235, 0.6), transparent 60%),
+    #efe7d2;
+  color: #1d1812;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.diario-cabecera {
+  text-align: center;
+  border-bottom: 4px double #1d1812;
+  padding-bottom: 0.7rem;
+  margin-bottom: 1.1rem;
+}
+
+.diario-fecha {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(29, 24, 18, 0.5);
+  font-family: var(--maquina);
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+}
+
+.diario-masthead {
+  font-size: clamp(2.4rem, 8vw, 4.2rem);
+  font-weight: bold;
+  letter-spacing: 0.01em;
+  transform: scaleY(1.12);
+  line-height: 1.05;
+}
+
+.diario-lema {
+  margin-top: 0.35rem;
+  font-style: italic;
+  font-size: 0.8rem;
+  color: #4a4136;
+}
+
+#diario-titular {
+  font-size: clamp(1.7rem, 5.2vw, 2.8rem);
+  line-height: 1.08;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  margin: 0.4rem 0 0.5rem;
+}
+
+.diario-bajada {
+  font-style: italic;
+  font-size: 1.05rem;
+  color: #37302a;
+  border-bottom: 1px solid rgba(29, 24, 18, 0.4);
+  padding-bottom: 0.8rem;
+  margin-bottom: 1.1rem;
+}
+
+.diario-columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 250px;
+  gap: 1.6rem;
+}
+
+#diario-cuerpo {
+  font-size: 0.98rem;
+  line-height: 1.65;
+  text-align: justify;
+  hyphens: auto;
+  column-count: 2;
+  column-gap: 1.5rem;
+  column-rule: 1px solid rgba(29, 24, 18, 0.25);
+  white-space: pre-line;
+}
+
+#diario-cuerpo::first-letter {
+  float: left;
+  font-size: 3.4em;
+  line-height: 0.85;
+  padding: 0.04em 0.08em 0 0;
+  font-weight: bold;
+}
+
+.diario-recuadro {
+  border: 2px solid #1d1812;
+  padding: 0.8rem;
+  align-self: start;
+}
+
+#diario-foto {
+  position: relative;
+  border: 1px solid #1d1812;
+  background: #ddd2b8;
+  overflow: hidden;
+}
+
+#diario-foto svg { width: 100%; height: auto; }
+
+#diario-foto::after { /* trama de imprenta sobre la foto */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(rgba(29, 24, 18, 0.5) 12%, transparent 13%);
+  background-size: 3.5px 3.5px;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.diario-epigrafe {
+  font-size: 0.72rem;
+  font-style: italic;
+  margin-top: 0.4rem;
+  color: #37302a;
+}
+
+.diario-desempeno { margin-top: 1rem; }
+
+.diario-desempeno h4 {
+  font-family: var(--maquina);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  border-top: 3px double #1d1812;
+  border-bottom: 1px solid #1d1812;
+  padding: 0.35rem 0;
+  margin-bottom: 0.6rem;
+  text-align: center;
+}
+
+#diario-stats {
+  font-family: var(--maquina);
+  font-size: 0.8rem;
+  line-height: 1.9;
+}
+
+#diario-calificacion {
+  margin-top: 0.7rem;
+  font-style: italic;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+#diario .documento-pie { border-top: 1px solid rgba(29, 24, 18, 0.4); padding-top: 1.1rem; }
+
+@media (max-width: 760px) {
+  .diario-columnas { grid-template-columns: 1fr; }
+  #diario-cuerpo { column-count: 1; }
+}
+
+/* ── Entrada de los velos ────────────────────────────────────────────────── */
+
+dialog[open] > * {
+  animation: velo-entra 0.32s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+
+@keyframes velo-entra {
+  from { transform: translateY(26px) rotate(0.6deg); opacity: 0; }
+}

@@ -1,0 +1,380 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   base.css — el sistema visual del juego.
+
+   Acá viven las decisiones transversales: paleta, tipografías, texturas y
+   piezas reutilizables (papel, sellos, botones, diálogos, avisos). Las
+   pantallas concretas están en escritorio.css y pantallas.css.
+
+   Truco central: NO hay ni una imagen externa. Toda la materialidad — madera,
+   papel, corcho, grano de película — se fabrica con gradientes CSS y con un
+   SVG de ruido (feTurbulence) incrustado como data-URI. Buscá --ruido abajo.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Paleta ── */
+  --madera-1: #3b2817;
+  --madera-2: #2b1c0f;
+  --madera-sombra: #180f07;
+
+  --papel: #ece0c4;
+  --papel-claro: #f4ebd6;
+  --papel-oscuro: #d9c9a4;
+  --papel-borde: #b9a67c;
+
+  --tinta: #2b2119;
+  --tinta-suave: #5c4c3a;
+  --tinta-tenue: #8a765c;
+
+  --rojo: #a52a22;
+  --rojo-vivo: #c23b2e;
+  --verde-sello: #2e6b40;
+  --ambar: #d99a3d;
+
+  --fosforo: #86efac;
+  --fosforo-brillo: #baffd4;
+  --fosforo-tenue: #4a8f66;
+  --pantalla-fondo: #04120a;
+
+  /* ── Tipografías (vendoreadas en fuentes/fuentes.css) ── */
+  --maquina: "Special Elite", "Courier New", monospace;
+  --terminal: "VT323", "Courier New", monospace;
+  --manuscrita: "Caveat", "Segoe Script", cursive;
+
+  /* ── Texturas procedurales ── */
+  /* Ruido fractal: un SVG de 240px con feTurbulence, repetido. Sirve de
+     grano para CUALQUIER material cambiando opacidad y blend mode. */
+  --ruido: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* Veta de madera: turbulencia estirada a lo ancho. */
+  --veta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='180'%3E%3Cfilter id='v'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.09' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23v)'/%3E%3C/svg%3E");
+
+  --sombra-papel: 0 1px 2px rgba(12, 7, 3, 0.45), 0 6px 18px rgba(12, 7, 3, 0.35);
+  --sombra-papel-alta: 0 2px 4px rgba(12, 7, 3, 0.5), 0 14px 34px rgba(12, 7, 3, 0.45);
+}
+
+/* ── Reset mínimo ─────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; height: 100%; }
+
+body {
+  font-family: var(--maquina);
+  background: var(--madera-2);
+  color: var(--papel);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden; /* cada pantalla decide qué scrollea adentro */
+}
+
+/* El atributo hidden tiene que ganarle a cualquier display: flex/grid que
+   este CSS le ponga al mismo elemento — sin esto, "ocultar" no oculta. */
+[hidden] { display: none !important; }
+
+h1, h2, h3, h4, p, ul, ol, figure { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+button { font: inherit; cursor: pointer; }
+input { font: inherit; }
+a { color: inherit; }
+
+img, svg { display: block; max-width: 100%; }
+
+/* ── El grano de película sobre todo ─────────────────────────────────────── */
+
+#grano {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  background-image: var(--ruido);
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+}
+
+/* la viñeta: el borde del encuadre siempre un poco más oscuro */
+#grano::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 120% 90% at 50% 42%,
+              transparent 55%, rgba(10, 5, 2, 0.55) 100%);
+}
+
+/* ── Papel: la materia prima del juego ───────────────────────────────────── */
+
+.papel {
+  position: relative;
+  background:
+    linear-gradient(160deg, rgba(255, 252, 240, 0.5), transparent 40%),
+    var(--papel);
+  color: var(--tinta);
+  box-shadow: var(--sombra-papel);
+}
+
+/* el grano del papel, sin sumar nodos al DOM */
+.papel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--ruido);
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+/* ── Sellos de goma ──────────────────────────────────────────────────────── */
+
+.sello {
+  display: inline-block;
+  padding: 0.15em 0.5em;
+  border: 3px solid currentColor;
+  border-radius: 0.25em;
+  font-family: var(--maquina);
+  font-weight: bold;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
+  opacity: 0.85;
+  /* tinta despareja: el sello nunca apoya parejo */
+  mask-image: var(--ruido);
+  mask-size: 130px;
+  -webkit-mask-image: var(--ruido);
+  -webkit-mask-size: 130px;
+}
+
+.sello-rojo  { color: var(--rojo-vivo); }
+.sello-verde { color: var(--verde-sello); }
+.sello-ambar { color: #a8752c; }
+
+/* ── Botones ─────────────────────────────────────────────────────────────── */
+
+.boton-papel {
+  display: inline-block;
+  padding: 0.4em 0.9em;
+  border: 1px solid var(--papel-borde);
+  border-radius: 3px;
+  background: linear-gradient(175deg, var(--papel-claro), var(--papel-oscuro));
+  color: var(--tinta);
+  font-family: var(--maquina);
+  font-size: 0.85rem;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: 0 2px 0 rgba(20, 12, 5, 0.55), 0 4px 10px rgba(20, 12, 5, 0.35);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.boton-papel:hover { transform: translateY(-1px); }
+
+.boton-papel:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(20, 12, 5, 0.55);
+}
+
+.boton-papel[aria-pressed="true"] {
+  background: linear-gradient(175deg, #f7edcf, #e6d3a4);
+  outline: 2px solid var(--ambar);
+  outline-offset: -3px;
+}
+
+.boton-principal { font-weight: bold; letter-spacing: 0.04em; }
+
+.boton-papel:disabled,
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+:focus-visible {
+  outline: 2px dashed var(--ambar);
+  outline-offset: 3px;
+}
+
+/* ── Diálogos (los overlays del juego) ───────────────────────────────────── */
+
+dialog.velo,
+dialog#velo-tablero {
+  border: none;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  overflow: visible;
+}
+
+dialog.velo {
+  margin: auto;
+  max-width: min(92vw, 880px);
+  max-height: 92dvh;
+}
+
+dialog::backdrop {
+  background: rgba(9, 5, 2, 0.78);
+  backdrop-filter: blur(2px) sepia(0.2);
+}
+
+/* los documentos que viajan dentro de los velos */
+.documento {
+  padding: clamp(1.4rem, 4vw, 3rem);
+  max-height: 88dvh;
+  overflow-y: auto;
+  border-radius: 2px;
+  /* borde superior irregular, como arrancado de un block */
+  clip-path: polygon(0 6px, 3% 1px, 8% 5px, 15% 0, 24% 5px, 33% 1px, 44% 6px,
+                     55% 1px, 66% 5px, 76% 0, 86% 5px, 94% 1px, 100% 6px,
+                     100% 100%, 0 100%);
+}
+
+.documento-angosto { max-width: 560px; }
+
+.documento-cabecera { text-align: center; margin-bottom: 1.6rem; }
+
+.documento-membrete {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  color: var(--tinta-suave);
+  line-height: 1.7;
+}
+
+.documento-cabecera h2 {
+  margin-top: 0.7rem;
+  font-size: clamp(1.4rem, 3.5vw, 2rem);
+  letter-spacing: 0.16em;
+}
+
+.documento-confidencial {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  font-size: 0.8rem;
+}
+
+.documento-cuerpo {
+  font-size: 0.98rem;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  color: var(--tinta);
+}
+
+.documento-advertencia {
+  margin-top: 0.8rem;
+  color: var(--rojo);
+  font-size: 0.85rem;
+}
+
+.documento-pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+/* ── Avisos volantes (toasts de papel) ───────────────────────────────────── */
+
+#avisos {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: min(340px, calc(100vw - 2rem));
+}
+
+.aviso {
+  position: relative;
+  padding: 0.7rem 0.9rem 0.7rem 1.6rem;
+  background: var(--papel-claro);
+  color: var(--tinta);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  box-shadow: var(--sombra-papel-alta);
+  transform: rotate(-1deg);
+  animation: aviso-entra 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.aviso::before { /* la chincheta que lo sostiene */
+  content: "";
+  position: absolute;
+  top: 0.65rem;
+  left: 0.6rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e46a5c, var(--rojo) 65%);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
+}
+
+.aviso-pista { font-family: var(--manuscrita); font-size: 1.1rem; }
+.aviso-error { color: var(--rojo); }
+
+.aviso-titulo {
+  display: block;
+  font-family: var(--maquina);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  color: var(--tinta-suave);
+  margin-bottom: 0.15rem;
+}
+
+.aviso-saliendo { animation: aviso-sale 0.3s ease forwards; }
+
+@keyframes aviso-entra {
+  from { transform: translateX(120%) rotate(4deg); opacity: 0; }
+  to   { transform: translateX(0) rotate(-1deg); opacity: 1; }
+}
+
+@keyframes aviso-sale {
+  to { transform: translateX(120%) rotate(4deg); opacity: 0; }
+}
+
+/* ── Scrollbars acordes al clima ─────────────────────────────────────────── */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(190, 160, 110, 0.45) transparent;
+}
+
+/* ── Utilidades ──────────────────────────────────────────────────────────── */
+
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Los retratos: parpadeo y habla ──────────────────────────────────────── */
+/* Los SVG de retratos.js traen grupos .parpado y .boca-*; acá se los anima.
+   El delay del parpadeo lo fija cada retrato (--delay-parpadeo) para que los
+   tres sospechosos no pestañeen sincronizados como robots. */
+
+.retrato .parpado {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  transform: scaleY(0);
+  animation: parpadeo 5.4s infinite var(--delay-parpadeo, 0s);
+}
+
+@keyframes parpadeo {
+  0%, 93%, 100% { transform: scaleY(0); }
+  94.5%, 97.5%  { transform: scaleY(1); }
+}
+
+.retrato .boca-abierta { opacity: 0; }
+
+.retrato.hablando .boca-abierta { animation: boca-charla 0.34s steps(1) infinite; }
+.retrato.hablando .boca-cerrada { animation: boca-charla-inversa 0.34s steps(1) infinite; }
+
+@keyframes boca-charla         { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes boca-charla-inversa { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+
+/* ── Accesibilidad: menos movimiento, mismo juego ────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

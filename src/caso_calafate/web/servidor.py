@@ -1,0 +1,404 @@
+"""El servidor web del juego: el mismo grafo que el CLI, servido por HTTP.
+
+Este módulo es el gemelo de ``cli.py``: otra "piel" sobre el mismo motor.
+La división de responsabilidades calca la de la terminal:
+
+- Los comandos informativos del CLI (``/caso``, ``/pistas``, ``/sospechosos``)
+  acá son endpoints **REST**: leen estado con ``aget_state()``, no invocan
+  el grafo.
+- Las jugadas (``interrogar`` / ``acusar``) van por **WebSocket**: son las
+  únicas que invocan el grafo, y el socket permite streamear cada token de la
+  respuesta del sospechoso al browser, como hace la terminal con
+  ``stream_mode="messages"``.
+
+Dos decisiones de diseño para mirar de cerca:
+
+1. **DTOs anti-spoiler.** El browser es territorio del jugador: cualquier
+   respuesta HTTP se puede inspeccionar con F12. Por eso los modelos de salida
+   (``SospechosoDTO``, ``CasoDTO``) declaran EXPLÍCITAMENTE qué campos viajan
+   — y ``es_culpable``, los secretos y el epílogo no están. El epílogo recién
+   sale del servidor cuando la partida termina.
+
+2. **Inyección de dependencias, otra vez.** ``crear_app()`` recibe caso,
+   actor y analista igual que ``construir_grafo()``. Los tests le enchufan
+   modelos falsos y una base en memoria, y prueban TODO el protocolo web sin
+   API key (ver ``tests/test_web.py``).
+"""
+
+import os
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+import aiosqlite
+import uvicorn
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi.staticfiles import StaticFiles
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import HumanMessage
+from langchain_core.runnables import Runnable
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from pydantic import BaseModel, Field
+
+from caso_calafate.caso import CASO_CALAFATE, Caso
+from caso_calafate.grafo import construir_grafo
+from caso_calafate.llm import crear_motores, texto_de
+from caso_calafate.web.partidas import RegistroPartidas
+
+ESTATICO = Path(__file__).parent / "estatico"
+
+
+# ── DTOs: el contrato con el browser ─────────────────────────────────────────
+# FastAPI usa estos modelos para FILTRAR la respuesta: aunque el handler
+# devuelva un objeto con más campos, al browser solo llega lo declarado acá.
+
+
+class SospechosoDTO(BaseModel):
+    """Lo que el jugador puede saber de un sospechoso. Ni un campo más."""
+
+    id: str
+    nombre: str
+    cargo: str
+    coartada: str
+    color: str
+
+
+class CasoDTO(BaseModel):
+    titulo: str
+    briefing: str
+    max_preguntas: int
+    total_secretos: int
+    motor: str  # para que el frontend avise si se juega en modo fake
+    sospechosos: list[SospechosoDTO]
+
+
+class NuevaPartida(BaseModel):
+    nombre: str = Field(min_length=1, max_length=60)
+
+
+class Posicion(BaseModel):
+    x: float
+    y: float
+
+
+class TableroDTO(BaseModel):
+    """El estado visual del corcho: dónde quedó cada nota y qué une cada hilo.
+
+    Es cosmética pura del frontend — el servidor lo guarda y lo devuelve sin
+    interpretarlo — pero tiparlo evita que un PUT malformado ensucie la base.
+    """
+
+    notas: dict[str, Posicion] = {}
+    fotos: dict[str, Posicion] = {}
+    conexiones: list[tuple[str, str]] = []
+
+
+# ── La app ───────────────────────────────────────────────────────────────────
+
+
+def crear_app(
+    caso: Caso,
+    actor: BaseChatModel,
+    analista: Runnable,
+    ruta_db: str = ":memory:",
+    motor: str = "",
+) -> FastAPI:
+    """Arma la aplicación FastAPI con el grafo, el registro y las rutas.
+
+    ``ruta_db`` apunta al archivo SQLite que comparte el checkpointer del
+    grafo y el registro de partidas; ``:memory:`` (el default, pensado para
+    tests) dura lo que dura el proceso.
+    """
+
+    @asynccontextmanager
+    async def vida(app: FastAPI):
+        # La conexión se abre acá (contexto async) y no en import-time: el
+        # lifespan de FastAPI es el lugar para recursos con apertura y cierre.
+        conexion = await aiosqlite.connect(ruta_db)
+        app.state.registro = RegistroPartidas(conexion)
+        await app.state.registro.preparar()
+        app.state.grafo = construir_grafo(
+            caso, actor, analista, checkpointer=AsyncSqliteSaver(conexion)
+        )
+        yield
+        await conexion.close()
+
+    app = FastAPI(title=caso.titulo, lifespan=vida)
+
+    def _config(partida_id: str) -> dict:
+        """El thread_id del checkpointer ES el id de la partida: mismo truco
+        que el CLI, pero ahora con una partida por expediente en vez de una
+        por proceso."""
+        return {"configurable": {"thread_id": partida_id}}
+
+    async def _estado_de(partida_id: str) -> dict:
+        return (await app.state.grafo.aget_state(_config(partida_id))).values
+
+    # ── REST: lo informativo (nada de esto invoca el grafo) ─────────────────
+
+    @app.get("/api/caso")
+    def api_caso() -> CasoDTO:
+        """El briefing y los sospechosos — la pantalla inicial del juego.
+
+        Devolvemos el objeto ``Caso`` entero y dejamos que ``CasoDTO`` filtre:
+        probá agregar ``es_culpable`` al DTO y mirá cómo el test anti-spoiler
+        de ``test_web.py`` se pone rojo.
+        """
+        return CasoDTO(
+            titulo=caso.titulo,
+            briefing=caso.briefing,
+            max_preguntas=caso.max_preguntas,
+            total_secretos=caso.total_secretos(),
+            motor=motor,
+            sospechosos=[SospechosoDTO(**s.model_dump()) for s in caso.sospechosos],
+        )
+
+    @app.get("/api/partidas")
+    async def api_partidas(request: Request) -> list[dict]:
+        """El archivo de casos: cada partida con un resumen de su estado."""
+        partidas = await request.app.state.registro.listar()
+        return [{**p, **_resumen(await _estado_de(p["id"]))} for p in partidas]
+
+    @app.post("/api/partidas", status_code=201)
+    async def api_crear_partida(datos: NuevaPartida, request: Request) -> dict:
+        nombre = datos.nombre.strip()
+        if not nombre:
+            raise HTTPException(422, "la partida necesita un nombre")
+        return await request.app.state.registro.crear(nombre)
+
+    @app.delete("/api/partidas/{partida_id}", status_code=204)
+    async def api_borrar_partida(partida_id: str, request: Request) -> None:
+        if not await request.app.state.registro.borrar(partida_id):
+            raise HTTPException(404, "no existe esa partida")
+        # El registro borró los metadatos; los checkpoints los borra el grafo.
+        await app.state.grafo.checkpointer.adelete_thread(partida_id)
+
+    @app.get("/api/partidas/{partida_id}")
+    async def api_detalle_partida(partida_id: str, request: Request) -> dict:
+        """Todo lo que el frontend necesita para retomar una partida:
+        el resumen, la libreta, las conversaciones y el tablero."""
+        partida = await request.app.state.registro.obtener(partida_id)
+        if partida is None:
+            raise HTTPException(404, "no existe esa partida")
+
+        estado = await _estado_de(partida_id)
+        detalle = {
+            **partida,
+            **_resumen(estado),
+            "pistas": _pistas_descubiertas(estado),
+            "conversaciones": _serializar_conversaciones(estado.get("conversaciones", {})),
+            "ultimo_sospechoso": estado.get("sospechoso_actual"),
+        }
+        if estado.get("resultado"):
+            # Recién acá — con la partida cerrada — el epílogo cruza el cable.
+            detalle["veredicto"] = _veredicto(estado)
+        return detalle
+
+    @app.put("/api/partidas/{partida_id}/tablero", status_code=204)
+    async def api_guardar_tablero(
+        partida_id: str, tablero: TableroDTO, request: Request
+    ) -> None:
+        guardado = await request.app.state.registro.guardar_tablero(
+            partida_id, tablero.model_dump()
+        )
+        if not guardado:
+            raise HTTPException(404, "no existe esa partida")
+
+    # ── WebSocket: las jugadas (lo único que invoca el grafo) ───────────────
+
+    @app.websocket("/ws/partidas/{partida_id}")
+    async def ws_partida(websocket: WebSocket, partida_id: str) -> None:
+        """Un socket por partida abierta en el browser.
+
+        Protocolo (JSON por mensaje):
+
+          cliente → ``{"tipo": "interrogar", "sospechoso": id, "pregunta": str}``
+                    ``{"tipo": "acusar", "sospechoso": id}``
+          servidor → ``comienzo`` · ``fragmento``* · ``turno``   (interrogar)
+                     ``veredicto``                               (acusar)
+                     ``error``                                   (jugada inválida)
+
+        El turno completo viaja al final en ``turno.respuesta`` aunque ya haya
+        salido por fragmentos: el streaming es mejora progresiva, no la fuente
+        de verdad — si un modelo no streamea, el juego funciona igual.
+        """
+        if await websocket.app.state.registro.obtener(partida_id) is None:
+            # 4404: código de aplicación (la franja 4000-4999 es libre en WS).
+            await websocket.close(code=4404)
+            return
+        await websocket.accept()
+
+        try:
+            while True:
+                jugada = await websocket.receive_json()
+                match jugada.get("tipo"):
+                    case "interrogar":
+                        await _jugada_interrogar(websocket, partida_id, jugada)
+                    case "acusar":
+                        await _jugada_acusar(websocket, partida_id, jugada)
+                    case desconocido:
+                        await _error(websocket, f"no conozco la jugada {desconocido!r}")
+        except WebSocketDisconnect:
+            pass  # el jugador cerró la pestaña; la partida queda en la base
+
+    async def _jugada_interrogar(websocket: WebSocket, partida_id: str, jugada: dict) -> None:
+        estado = await _estado_de(partida_id)
+        sospechoso = caso.buscar_sospechoso(jugada.get("sospechoso", ""))
+        pregunta = (jugada.get("pregunta") or "").strip()
+
+        if estado.get("resultado"):
+            return await _error(websocket, "el caso ya está cerrado")
+        if caso.max_preguntas - estado.get("preguntas_usadas", 0) <= 0:
+            return await _error(websocket, "no quedan preguntas: es hora de acusar")
+        if sospechoso is None:
+            return await _error(websocket, "no conozco a ese sospechoso")
+        if not pregunta:
+            return await _error(websocket, "la pregunta está vacía")
+
+        await websocket.send_json({"tipo": "comienzo", "sospechoso": sospechoso.id})
+
+        entrada = {
+            "accion": "interrogar",
+            "sospechoso_actual": sospechoso.id,
+            "pregunta": pregunta,
+        }
+        try:
+            # El mismo stream_mode="messages" del CLI: cada token que genera
+            # cualquier LLM interno llega con metadata de QUÉ nodo lo produjo.
+            # Filtramos "interrogar" para transmitir solo la voz del sospechoso
+            # (el analista trabaja en silencio).
+            async for pedazo, metadata in app.state.grafo.astream(
+                entrada, _config(partida_id), stream_mode="messages"
+            ):
+                if metadata.get("langgraph_node") == "interrogar":
+                    texto = texto_de(pedazo)
+                    if texto:
+                        await websocket.send_json({"tipo": "fragmento", "texto": texto})
+        except WebSocketDisconnect:
+            raise
+        except Exception as error:  # LLM caído, timeout, etc.: el juego avisa y sigue
+            return await _error(websocket, f"el interrogatorio se cortó: {error}")
+
+        estado = await _estado_de(partida_id)
+        await websocket.send_json(
+            {
+                "tipo": "turno",
+                "sospechoso": sospechoso.id,
+                "respuesta": estado.get("respuesta", ""),
+                "pistas_nuevas": [
+                    {"id": s.id, "pista": s.pista}
+                    for id_ in estado.get("pistas_nuevas", [])
+                    if (s := caso.secreto(id_)) is not None
+                ],
+                **_resumen(estado),
+            }
+        )
+
+    async def _jugada_acusar(websocket: WebSocket, partida_id: str, jugada: dict) -> None:
+        estado = await _estado_de(partida_id)
+        sospechoso = caso.buscar_sospechoso(jugada.get("sospechoso", ""))
+
+        if estado.get("resultado"):
+            return await _error(websocket, "el caso ya está cerrado")
+        if sospechoso is None:
+            return await _error(websocket, "no conozco a ese sospechoso")
+
+        # La acusación no streamea (es la rama corta y determinista del
+        # grafo), así que alcanza con un ainvoke.
+        estado = await app.state.grafo.ainvoke(
+            {"accion": "acusar", "sospechoso_actual": sospechoso.id},
+            _config(partida_id),
+        )
+        await websocket.send_json({"tipo": "veredicto", **_veredicto(estado)})
+
+    async def _error(websocket: WebSocket, mensaje: str) -> None:
+        await websocket.send_json({"tipo": "error", "mensaje": mensaje})
+
+    # ── Traducciones estado → JSON (compartidas por REST y WebSocket) ────────
+
+    def _resumen(estado: dict) -> dict:
+        usadas = estado.get("preguntas_usadas", 0)
+        return {
+            "preguntas_usadas": usadas,
+            "preguntas_restantes": caso.max_preguntas - usadas,
+            "pistas_descubiertas": len(estado.get("pistas_descubiertas", [])),
+            "total_secretos": caso.total_secretos(),
+            "resultado": estado.get("resultado"),
+        }
+
+    def _pistas_descubiertas(estado: dict) -> list[dict]:
+        return [
+            {"id": s.id, "pista": s.pista}
+            for id_ in estado.get("pistas_descubiertas", [])
+            if (s := caso.secreto(id_)) is not None
+        ]
+
+    def _serializar_conversaciones(conversaciones: dict) -> dict:
+        """De mensajes de LangChain a JSON neutro: el browser no tiene por qué
+        saber qué es un HumanMessage."""
+        return {
+            sospechoso_id: [
+                {
+                    "quien": "detective" if isinstance(m, HumanMessage) else "sospechoso",
+                    "texto": texto_de(m),
+                }
+                for m in mensajes
+            ]
+            for sospechoso_id, mensajes in conversaciones.items()
+        }
+
+    def _veredicto(estado: dict) -> dict:
+        encontradas = len(estado.get("pistas_descubiertas", []))
+        return {
+            "resultado": estado["resultado"],
+            "texto": estado.get("respuesta", ""),
+            "acusado": estado.get("sospechoso_actual"),
+            "epilogo": caso.epilogo,
+            "calificacion": _calificacion(estado["resultado"], encontradas, caso.total_secretos()),
+            "pistas_descubiertas": encontradas,
+            "total_secretos": caso.total_secretos(),
+            "preguntas_usadas": estado.get("preguntas_usadas", 0),
+        }
+
+    # El frontend: archivos estáticos servidos por el mismo proceso. Montado
+    # al final para que /api y /ws (declarados antes) tengan prioridad.
+    app.mount("/", StaticFiles(directory=ESTATICO, html=True), name="estatico")
+
+    return app
+
+
+def _calificacion(resultado: str, encontradas: int, total: int) -> str:
+    """El remate según cómo se jugó — gemelo en texto plano del que muestra
+    el CLI con markup de rich (``cli._calificacion``)."""
+    if resultado != "victoria":
+        return "🪦 El culpable sigue suelto. El CALAFATE-2 va a necesitar otro detective."
+    if encontradas >= total * 0.8:
+        return "🏆 Detective de leyenda: resolviste el caso con la evidencia en la mano."
+    if encontradas >= total * 0.4:
+        return "🕵️ Buen ojo, detective. Un par de pistas más y era de manual."
+    return "🍀 Acertaste... con más instinto que evidencia. La suerte también cuenta."
+
+
+# ── Punto de entrada del comando ``detective-web`` ───────────────────────────
+
+
+def main() -> None:
+    """Levanta el servidor con el caso real y el motor del ``.env``."""
+    load_dotenv()
+
+    try:
+        actor, analista, nombre_motor = crear_motores()
+    except Exception as error:  # API key ausente, proveedor mal escrito, etc.
+        print(f"No pude inicializar el modelo de lenguaje: {error}")
+        print("Revisá tu .env — las opciones de DETECTIVE_MODEL están en el README.")
+        return
+
+    ruta_db = os.environ.get("DETECTIVE_DB", "partidas.sqlite")
+    puerto = int(os.environ.get("DETECTIVE_WEB_PORT", "8765"))
+    app = crear_app(CASO_CALAFATE, actor, analista, ruta_db=ruta_db, motor=nombre_motor)
+
+    print(f"🛰️  El Caso Calafate — http://127.0.0.1:{puerto}")
+    print(f"    motor: {nombre_motor} · partidas en {ruta_db}")
+    if nombre_motor == "fake":
+        print("    ⚠ modo fake: respuestas enlatadas, pistas que se revelan solas")
+    uvicorn.run(app, host="127.0.0.1", port=puerto, log_level="warning")

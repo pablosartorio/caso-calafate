@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<!--
+  El Caso Calafate — la piel web del juego.
+
+  Una sola página, cero frameworks: este HTML es el esqueleto estático y
+  js/main.js decide qué pantalla se ve según el hash de la URL (#/archivo,
+  #/partida/<id>). Los overlays (briefing, acusación, tablero, diario) son
+  elementos <dialog> nativos: el browser ya sabe atrapar el foco, oscurecer
+  el fondo y cerrar con Esc — no hace falta reinventar nada de eso.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>El Caso Calafate</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>">
+  <link rel="stylesheet" href="fuentes/fuentes.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/escritorio.css">
+  <link rel="stylesheet" href="css/pantallas.css">
+</head>
+<body data-pantalla="cargando">
+
+  <!-- Grano de película + viñeta sobre TODO: puro clima, cero interacción. -->
+  <div id="grano" aria-hidden="true"></div>
+
+  <!-- ═══ EL ARCHIVO: la pantalla de partidas guardadas ═══════════════════ -->
+  <section id="pantalla-archivo" hidden>
+    <header class="archivo-cabecera">
+      <p class="archivo-membrete">CENTRO ESPACIAL PATAGÓNICO · DIVISIÓN SEGURIDAD</p>
+      <h1 class="archivo-titulo">EL CASO CALAFATE</h1>
+      <p class="archivo-sub">ARCHIVO DE EXPEDIENTES — elegí uno o abrí el tuyo</p>
+      <p id="aviso-fake" class="aviso-fake" hidden>
+        ⚠ MODO FAKE: sin LLM real — respuestas enlatadas y pistas que se revelan solas.
+      </p>
+    </header>
+    <ul id="estantes" class="estantes"><!-- los expedientes los dibuja pantallas.js --></ul>
+  </section>
+
+  <!-- ═══ EL ESCRITORIO: la partida en curso ══════════════════════════════ -->
+  <section id="pantalla-escritorio" hidden>
+
+    <header id="cabecera">
+      <div class="membrete">
+        <span class="membrete-sello">EXPEDIENTE</span>
+        <h1 id="nombre-partida">—</h1>
+      </div>
+      <div id="tally" role="img" aria-label="preguntas usadas"></div>
+      <nav class="acciones" aria-label="acciones del caso">
+        <button id="boton-caso" class="boton-papel" type="button" title="releer el briefing">📄 el caso</button>
+        <button id="boton-tablero" class="boton-papel" type="button" title="tablero de evidencias">📌 tablero</button>
+        <button id="boton-radio" class="boton-papel" type="button" aria-pressed="false" title="sonido ambiente">📻 <span id="radio-estado">apagada</span></button>
+        <a class="boton-papel" href="#/archivo" title="volver al archivo">🗂 archivo</a>
+      </nav>
+    </header>
+
+    <!-- El monitor: la cámara de la sala de interrogatorios. -->
+    <div id="crt">
+      <div class="crt-marco">
+        <div class="crt-pantalla">
+          <div class="crt-contenido">
+            <div class="crt-barra crt-barra-arriba">
+              <span class="crt-rec">● REC</span>
+              <span class="crt-cam">CAM-02 · SALA DE INTERROGATORIOS</span>
+              <span id="crt-reloj">06:50</span>
+            </div>
+            <div class="crt-cuerpo">
+              <figure id="crt-feed" aria-hidden="true"></figure>
+              <div id="transcripcion" aria-live="polite" title="click para revelar todo"></div>
+            </div>
+            <div class="crt-barra crt-barra-abajo">
+              <span id="crt-sujeto">SUJETO: —</span>
+              <span class="crt-senal">SEÑAL ▮▮▮▯</span>
+            </div>
+          </div>
+          <div id="crt-sin-senal"><span>SIN SEÑAL</span><small>llamá a un sospechoso — tocá una ficha</small></div>
+          <div class="crt-cristal" aria-hidden="true"></div>
+        </div>
+        <div class="crt-zocalo">
+          <span class="crt-led" aria-hidden="true"></span>
+          <span class="crt-marca">PATAGONIA VISIÓN · PV-5000</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Las fichas de los sospechosos, en papel sobre la madera. -->
+    <div id="fichas" aria-label="sospechosos"><!-- las dibuja escritorio.js --></div>
+
+    <!-- La libreta del detective + el sello de acusación. -->
+    <aside id="libreta">
+      <div class="libreta-papel">
+        <h2 class="libreta-titulo">LIBRETA <span id="cuenta-pistas">0/0</span></h2>
+        <ol id="lista-pistas"></ol>
+        <p id="libreta-vacia">todavía no anoté nada…<br>las pistas caen cuando alguien suelta lo que no debía.</p>
+      </div>
+      <button id="boton-acusar" type="button" title="cerrar el caso — una sola oportunidad">
+        <span>ACUSAR</span>
+      </button>
+    </aside>
+
+    <!-- La máquina de escribir: una pregunta por turno. -->
+    <form id="maquina" autocomplete="off">
+      <label id="etiqueta-maquina" for="entrada-pregunta">
+        <span id="maquina-restantes">(15❓)</span> <span id="maquina-quien">elegí a quién interrogar</span> ›
+      </label>
+      <input id="entrada-pregunta" name="pregunta" maxlength="280"
+             placeholder="tocá la ficha de un sospechoso para empezar" disabled>
+      <button type="submit" id="tecla-enviar" disabled>PREGUNTAR</button>
+    </form>
+
+    <!-- Cuando el caso se cierra, la máquina se retira y queda esto. -->
+    <div id="banda-cerrada" hidden>
+      <span id="banda-cerrada-texto">CASO CERRADO</span>
+      <button id="boton-diario" class="boton-papel" type="button">📰 leer el diario</button>
+    </div>
+
+  </section>
+
+  <!-- ═══ OVERLAYS ════════════════════════════════════════════════════════ -->
+
+  <!-- El briefing: el documento que te entregan al aceptar el caso. -->
+  <dialog id="velo-briefing" class="velo" aria-labelledby="briefing-titulo">
+    <article class="papel documento">
+      <header class="documento-cabecera">
+        <span class="sello sello-rojo documento-confidencial">CONFIDENCIAL</span>
+        <p class="documento-membrete">CENTRO ESPACIAL PATAGÓNICO<br>DIVISIÓN SEGURIDAD — BARILOCHE</p>
+        <h2 id="briefing-titulo">EL CASO CALAFATE</h2>
+      </header>
+      <div id="texto-briefing" class="documento-cuerpo"></div>
+      <footer class="documento-pie">
+        <button id="boton-briefing-saltar" class="boton-papel" type="button">revelar todo</button>
+        <button id="boton-briefing-aceptar" class="boton-papel boton-principal" type="button">ACEPTAR EL CASO →</button>
+      </footer>
+    </article>
+  </dialog>
+
+  <!-- La orden de acusación: la única jugada irreversible. -->
+  <dialog id="velo-acusacion" class="velo" aria-labelledby="acusacion-titulo">
+    <article class="papel documento documento-angosto">
+      <header class="documento-cabecera">
+        <h2 id="acusacion-titulo">ORDEN DE ACUSACIÓN</h2>
+        <p class="documento-advertencia">⚠ tenés UNA sola oportunidad — si errás, el saboteador queda libre</p>
+      </header>
+      <ul id="acusacion-lista"><!-- filas de sospechosos, escritorio.js --></ul>
+      <footer class="documento-pie">
+        <button id="boton-acusacion-cancelar" class="boton-papel" type="button">mejor sigo investigando</button>
+        <button id="boton-acusacion-confirmar" class="boton-sello" type="button" disabled>
+          ESTAMPAR<small>la acusación</small>
+        </button>
+      </footer>
+      <div id="sello-golpe" class="sello sello-rojo" hidden>ACUSADO</div>
+    </article>
+  </dialog>
+
+  <!-- El tablero de evidencias: corcho, chinchetas e hilo rojo. -->
+  <dialog id="velo-tablero" aria-label="tablero de evidencias">
+    <div id="corcho">
+      <svg id="hilos" aria-hidden="true"></svg>
+      <!-- las notas y polaroids los dibuja tablero.js -->
+    </div>
+    <div class="tablero-barra">
+      <p class="tablero-ayuda">arrastrá las notas · tocá una chincheta y después otra para tender un hilo · tocá un hilo para cortarlo</p>
+      <button id="boton-tablero-cerrar" class="boton-papel" type="button">volver al escritorio</button>
+    </div>
+  </dialog>
+
+  <!-- El diario del día siguiente: el veredicto. -->
+  <dialog id="velo-diario" class="velo" aria-labelledby="diario-titular">
+    <article id="diario" class="papel">
+      <header class="diario-cabecera">
+        <p class="diario-fecha"><span>BARILOCHE</span><span>EDICIÓN EXTRA</span><span>$ 1.500</span></p>
+        <h2 class="diario-masthead">EL CORDILLERANO</h2>
+        <p class="diario-lema">el diario que el viento no se lleva</p>
+      </header>
+      <h3 id="diario-titular">—</h3>
+      <p id="diario-bajada" class="diario-bajada">—</p>
+      <div class="diario-columnas">
+        <div id="diario-cuerpo"></div>
+        <aside class="diario-recuadro">
+          <figure id="diario-foto" aria-hidden="true"></figure>
+          <figcaption class="diario-epigrafe">El CALAFATE-1 en la sala limpia, horas antes del traslado.</figcaption>
+          <div class="diario-desempeno">
+            <h4>EL DESEMPEÑO DEL DETECTIVE</h4>
+            <p id="diario-stats">—</p>
+            <p id="diario-calificacion">—</p>
+          </div>
+        </aside>
+      </div>
+      <footer class="documento-pie">
+        <button id="boton-diario-escritorio" class="boton-papel" type="button">revisar el escritorio</button>
+        <a class="boton-papel boton-principal" href="#/archivo">volver al archivo →</a>
+      </footer>
+    </article>
+  </dialog>
+
+  <!-- Avisos volantes (pistas nuevas, errores): papelitos arriba a la derecha. -->
+  <div id="avisos" aria-live="polite"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
