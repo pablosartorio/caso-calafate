@@ -265,3 +265,17 @@ def test_el_tablero_malformado_se_rechaza(cliente):
         json={"notas": {"x": "no soy una posición"}},
     )
     assert respuesta.status_code == 422
+
+
+# ── El arte pixel de la cámara ───────────────────────────────────────────────
+
+
+def test_los_retratos_pixel_viajan_por_rest(cliente):
+    """El arte es fijo del juego (los tres de Calafate): aunque esta app corra
+    el caso del asado, el endpoint sirve el mismo paquete — para sospechosos
+    sin retrato pixel el frontend cae al SVG, así que no rompe nada."""
+    respuesta = cliente.get("/api/retratos")
+    assert respuesta.status_code == 200
+    datos = respuesta.json()
+    assert set(datos) == {"paleta", "transparente", "ancho", "alto", "retratos"}
+    assert set(datos["retratos"]) == {"marta", "julian", "silvia"}

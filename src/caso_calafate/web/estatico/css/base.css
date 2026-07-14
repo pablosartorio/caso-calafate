@@ -345,9 +345,27 @@ dialog::backdrop {
 }
 
 /* ── Los retratos: parpadeo y habla ──────────────────────────────────────── */
-/* Los SVG de retratos.js traen grupos .parpado y .boca-*; acá se los anima.
-   El delay del parpadeo lo fija cada retrato (--delay-parpadeo) para que los
-   tres sospechosos no pestañeen sincronizados como robots. */
+/* Los retratos pixel (pixelart.js, la cámara del CRT): la base y cada capa
+   de animación viven en su propio <canvas> apilado. Las capas se posicionan
+   en porcentajes (estilos inline) para acompañar cualquier tamaño. */
+
+.retrato-pixel { position: relative; }
+
+.retrato-pixel canvas {
+  position: absolute;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.retrato-pixel .capa-base {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Los retratos traen grupos (SVG) o canvas (pixel) .parpado y .boca-*; estas
+   reglas animan a los dos por igual. El delay del parpadeo lo fija cada
+   retrato (--delay-parpadeo) para que no pestañeen sincronizados como robots. */
 
 .retrato .parpado {
   transform-box: fill-box;

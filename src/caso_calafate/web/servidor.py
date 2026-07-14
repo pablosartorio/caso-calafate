@@ -43,6 +43,7 @@ from pydantic import BaseModel, Field
 from caso_calafate.caso import CASO_CALAFATE, Caso
 from caso_calafate.grafo import construir_grafo
 from caso_calafate.llm import crear_motores, texto_de
+from caso_calafate.pixelart import exportar_retratos
 from caso_calafate.web.partidas import RegistroPartidas
 
 ESTATICO = Path(__file__).parent / "estatico"
@@ -152,6 +153,14 @@ def crear_app(
             motor=motor,
             sospechosos=[SospechosoDTO(**s.model_dump()) for s in caso.sospechosos],
         )
+
+    @app.get("/api/retratos")
+    def api_retratos() -> dict:
+        """El arte pixel de la cámara del CRT: paleta DB32 + capas, como texto.
+
+        Acá no hay nada que filtrar — el arte es cosmética pública — así que
+        viaja tal cual sale de ``pixelart.exportar_retratos()``."""
+        return exportar_retratos()
 
     @app.get("/api/partidas")
     async def api_partidas(request: Request) -> list[dict]:

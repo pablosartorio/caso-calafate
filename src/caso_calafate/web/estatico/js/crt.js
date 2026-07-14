@@ -14,7 +14,7 @@
  */
 
 import { $, estado } from "./estado.js";
-import { retrato } from "./retratos.js";
+import { retratoPixel } from "./pixelart.js";
 import { sonido } from "./sonido.js";
 
 const VELOCIDAD = 30;      // milisegundos entre tandas de caracteres
@@ -67,7 +67,7 @@ export function sintonizar(sospechoso) {
     return;
   }
 
-  $("#crt-feed").innerHTML = retrato(sospechoso.id);
+  $("#crt-feed").replaceChildren(retratoPixel(sospechoso.id));
 
   const [nombre, ...resto] = sospechoso.nombre.split(" ");
   const apellido = resto.length ? resto.join(" ") : nombre;
@@ -97,7 +97,7 @@ export function comienzoRespuesta() {
   cursor = document.createElement("span");
   cursor.className = "cursor-crt";
   linea.append(cursor);
-  $("#crt-feed svg")?.classList.add("hablando");
+  $("#crt-feed .retrato")?.classList.add("hablando");
 }
 
 /** Mensaje "fragmento": texto nuevo a la cola del teletipo. */
@@ -162,7 +162,7 @@ function terminarRevelado() {
   }
   nodoTexto = null;
   quitarCursor();
-  $("#crt-feed svg")?.classList.remove("hablando");
+  $("#crt-feed .retrato")?.classList.remove("hablando");
   desplazarSiHaceFalta();
   alTerminar?.();
 }

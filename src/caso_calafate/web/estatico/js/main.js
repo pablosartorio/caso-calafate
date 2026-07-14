@@ -17,6 +17,7 @@ import * as crt from "./crt.js";
 import * as escritorio from "./escritorio.js";
 import { $, escuchar, estado } from "./estado.js";
 import { mostrarArchivo, mostrarBriefing, mostrarDiario, prepararDiario } from "./pantallas.js";
+import { cargarRetratos } from "./pixelart.js";
 import { radioEncendida, sonido } from "./sonido.js";
 import { abrirTablero, prepararTablero } from "./tablero.js";
 
@@ -38,6 +39,9 @@ async function arrancar() {
 
   if (estado.caso.motor === "fake") $("#aviso-fake").hidden = false;
   document.title = `🛰️ ${estado.caso.titulo}`;
+
+  // El arte pixel de la cámara; si falla, el CRT cae a los retratos SVG.
+  await cargarRetratos();
 
   crt.iniciarCRT();
   escritorio.prepararEscritorio();

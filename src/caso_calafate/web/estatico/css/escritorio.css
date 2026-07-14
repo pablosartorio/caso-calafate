@@ -176,18 +176,6 @@
     0 0 0 4px #1a140b;
 }
 
-/* las scanlines, siempre encima del contenido */
-.crt-pantalla::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  pointer-events: none;
-  background:
-    repeating-linear-gradient(0deg,
-      rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
-}
-
 /* la banda de refresco que baja cada tanto */
 .crt-pantalla::before {
   content: "";
@@ -280,7 +268,8 @@
   justify-content: center;
 }
 
-#crt-feed svg {
+#crt-feed .retrato {
+  /* tanto el pixel art (div) como el SVG de repuesto llevan la clase .retrato */
   width: 100%;
   height: auto;
   /* el retrato pasa por la cámara: verde fósforo, oscuro, con contraste */
