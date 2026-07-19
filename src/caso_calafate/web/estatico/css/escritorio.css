@@ -465,7 +465,8 @@
   box-shadow: 0 1px 3px rgba(20, 12, 5, 0.4);
 }
 
-.ficha-foto svg {
+.ficha-foto svg,
+.ficha-foto .retrato-pixel {
   width: 100%;
   height: auto;
   filter: sepia(0.55) contrast(0.92) brightness(0.98);

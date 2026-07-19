@@ -22,11 +22,13 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.table import Table
+from rich.text import Text
 
 from caso_calafate.caso import Caso, Sospechoso
 from caso_calafate.casos import CASOS
 from caso_calafate.grafo import construir_grafo
 from caso_calafate.llm import crear_motores, texto_de
+from caso_calafate.pixelart import ALTO, ANCHO, PALETA, RETRATOS, TRANSPARENTE
 
 console = Console()
 
@@ -168,6 +170,9 @@ def _ejecutar_comando(
                     f"No encuentro a «{resto}». Probá con [bold]/sospechosos[/bold]."
                 )
             else:
+                arte = _retrato_terminal(sospechoso.id)
+                if arte is not None:
+                    console.print(arte)
                 console.print(
                     f"\nAhora interrogás a [bold {sospechoso.color}]{sospechoso.nombre}[/], "
                     f"{sospechoso.cargo}. Escribí tu pregunta y Enter.\n"
@@ -278,6 +283,27 @@ def _calificacion(resultado: str, encontradas: int, total: int) -> str:
 
 
 # ── Pantallas informativas (no invocan el grafo) ─────────────────────────────
+
+
+def _retrato_terminal(sospechoso_id: str) -> Text | None:
+    """El retrato pixel de ``pixelart.py`` como half-blocks: el mismo truco de
+    siempre para duplicar la resolución vertical en una terminal, donde cada
+    caracter es aproximadamente el doble de alto que ancho. Cada línea junta
+    DOS filas de pixels con ``▀``: el color de frente pinta la fila de arriba,
+    el de fondo la de abajo. Sin downscale — 80 columnas calzan justo en una
+    terminal de 80, que es el ancho de facto de toda terminal chica."""
+    base = RETRATOS.get(sospechoso_id, {}).get("base")
+    if base is None or console.width < ANCHO:
+        return None
+    arte = Text()
+    for y in range(0, ALTO, 2):
+        for x in range(ANCHO):
+            arriba, abajo = base[y][x], base[y + 1][x]
+            fg = "default" if arriba == TRANSPARENTE else PALETA[arriba]
+            bg = "default" if abajo == TRANSPARENTE else PALETA[abajo]
+            arte.append("▀", style=f"{fg} on {bg}")
+        arte.append("\n")
+    return arte
 
 
 def _mostrar_briefing(caso: Caso) -> None:

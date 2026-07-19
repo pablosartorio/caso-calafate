@@ -22,7 +22,7 @@
 import { api } from "./api.js";
 import { avisar } from "./avisos.js";
 import { $, estado } from "./estado.js";
-import { retrato } from "./retratos.js";
+import { retratoPixel } from "./pixelart.js";
 
 let conectando = null;   // data-clave de la chincheta de origen, si hay hilo pendiente
 let timerGuardado = null;
@@ -71,7 +71,7 @@ function armarPiezas() {
     tablero.fotos[sospechoso.id] ??= { x: 14 + indice * 27, y: 7 };
     const pieza = document.createElement("figure");
     pieza.className = "polaroid";
-    pieza.innerHTML = retrato(sospechoso.id);
+    pieza.append(retratoPixel(sospechoso.id));
     const nombre = document.createElement("figcaption");
     nombre.textContent = sospechoso.nombre.split(" ")[0];
     pieza.append(nombre);

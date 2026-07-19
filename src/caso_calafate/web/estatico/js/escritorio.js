@@ -13,13 +13,12 @@
 import { avisar } from "./avisos.js";
 import { reiniciarSintonia, sintonizar } from "./crt.js";
 import { $, emitir, estado } from "./estado.js";
-import { retrato } from "./retratos.js";
+import { retratoPixel } from "./pixelart.js";
 import { sonido } from "./sonido.js";
 
 /* ── Armado inicial (una sola vez, cuando ya se conoce el caso) ──────────── */
 
 export function prepararEscritorio() {
-  dibujarFichas();
   prepararMaquina();
   prepararAcusacion();
   $("#boton-caso").addEventListener("click", () => emitir("abrir:briefing"));
@@ -38,7 +37,7 @@ function dibujarFichas() {
 
     const foto = document.createElement("span");
     foto.className = "ficha-foto";
-    foto.innerHTML = retrato(sospechoso.id); // SVG propio, no contenido ajeno
+    foto.append(retratoPixel(sospechoso.id));
 
     const datos = document.createElement("span");
     datos.className = "ficha-datos";
@@ -78,9 +77,9 @@ export function elegirSospechoso(sospechoso) {
 export function cargarPartida(detalle) {
   $("#nombre-partida").textContent = `«${detalle.nombre}»`;
 
+  dibujarFichas(); // cada partida puede ser de un caso distinto: sospechosos propios
   reiniciarSintonia(); // cámara nueva, sin ráfaga de estática de entrada
   estado.seleccionado = null;
-  for (const ficha of document.querySelectorAll(".ficha")) ficha.classList.remove("elegida");
 
   dibujarLibreta(detalle.pistas);
   dibujarTally(detalle.preguntas_usadas);
@@ -290,7 +289,7 @@ function dibujarFilasDeAcusacion() {
 
     const foto = document.createElement("span");
     foto.className = "acusado-foto";
-    foto.innerHTML = retrato(sospechoso.id);
+    foto.append(retratoPixel(sospechoso.id));
 
     const datos = document.createElement("span");
     const nombre = document.createElement("span");
