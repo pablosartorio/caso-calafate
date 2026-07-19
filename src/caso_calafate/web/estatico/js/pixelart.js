@@ -16,7 +16,7 @@
  */
 
 import { api } from "./api.js";
-import { retrato as retratoSVG } from "./retratos.js";
+import { delayParpadeo, retrato as retratoSVG } from "./retratos.js";
 
 let DATOS = null; // {paleta, transparente, ancho, alto, retratos}
 
@@ -71,10 +71,7 @@ export function retratoPixel(id) {
   const marco = document.createElement("div");
   marco.className = `retrato retrato-pixel retrato-${id}`;
   marco.style.aspectRatio = `${DATOS.ancho} / ${DATOS.alto}`;
-  // El delay del parpadeo varía por sospechoso (como en retratos.js): que no
-  // pestañeen en coro.
-  const delay = { marta: "0s", julian: "1.4s", silvia: "2.6s" }[id] ?? "0s";
-  marco.style.setProperty("--delay-parpadeo", delay);
+  marco.style.setProperty("--delay-parpadeo", delayParpadeo(id));
 
   const base = document.createElement("canvas");
   base.className = "capa-base";
