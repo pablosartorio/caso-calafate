@@ -13,11 +13,18 @@
   height: 100dvh;
   overflow-y: auto;
   padding: clamp(1.5rem, 5vh, 4rem) 1.5rem 4rem;
+  /* el fondo pintado (fondo.js/fondo.py): la oficina del Centro Espacial
+     vista por una ventana, estilo escena de fondo de aventura gráfica.
+     Sin --fondo-escena (todavía no cargó, o falló) el "none" no rompe nada
+     y queda el gradiente oscuro de siempre. */
   background:
     radial-gradient(760px 380px at 50% -8%, rgba(255, 196, 124, 0.13), transparent 70%),
     var(--veta),
-    linear-gradient(180deg, #241a10, #171009 60%, #0f0a05);
-  background-blend-mode: normal, overlay, normal;
+    linear-gradient(180deg, rgba(36, 26, 16, 0.82), rgba(23, 16, 9, 0.88) 60%, rgba(15, 10, 5, 0.94)),
+    var(--fondo-escena, none) center / cover no-repeat,
+    #171009;
+  background-blend-mode: normal, overlay, normal, normal, normal;
+  image-rendering: pixelated;
 }
 
 .archivo-cabecera {

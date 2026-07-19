@@ -23,6 +23,7 @@ import {
   prepararDiario,
   prepararSelectorDeCasos,
 } from "./pantallas.js";
+import { cargarFondo } from "./fondo.js";
 import { cargarRetratos } from "./pixelart.js";
 import { radioEncendida, sonido } from "./sonido.js";
 import { abrirTablero, prepararTablero } from "./tablero.js";
@@ -47,8 +48,9 @@ async function arrancar() {
 
   if (estado.motor === "fake") $("#aviso-fake").hidden = false;
 
-  // El arte pixel de la cámara; si falla, el CRT cae a los retratos SVG.
-  await cargarRetratos();
+  // El arte pixel de la cámara y el fondo de escena; si fallan, el CRT cae
+  // a los retratos SVG y el archivo cae a su fondo de gradientes de siempre.
+  await Promise.all([cargarRetratos(), cargarFondo()]);
 
   crt.iniciarCRT();
   escritorio.prepararEscritorio();

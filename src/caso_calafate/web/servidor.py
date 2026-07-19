@@ -48,6 +48,7 @@ from caso_calafate.caso import Caso
 from caso_calafate.casos import CASOS
 from caso_calafate.grafo import construir_grafo
 from caso_calafate.llm import crear_motores, texto_de
+from caso_calafate.fondo import exportar_fondo
 from caso_calafate.pixelart import exportar_retratos
 from caso_calafate.web.partidas import RegistroPartidas
 
@@ -204,6 +205,13 @@ def crear_app(
         Acá no hay nada que filtrar — el arte es cosmética pública — así que
         viaja tal cual sale de ``pixelart.exportar_retratos()``."""
         return exportar_retratos()
+
+    @app.get("/api/fondo")
+    def api_fondo() -> dict:
+        """El fondo de escena del archivo de expedientes, como texto (ver
+        ``fondo.py``). Misma cosmética pública que ``/api/retratos``: nada
+        que filtrar."""
+        return exportar_fondo()
 
     @app.get("/api/partidas")
     async def api_partidas(request: Request) -> list[dict]:
