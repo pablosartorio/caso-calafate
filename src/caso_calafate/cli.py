@@ -23,7 +23,8 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.table import Table
 
-from caso_calafate.caso import CASO_CALAFATE, Caso, Sospechoso
+from caso_calafate.caso import Caso, Sospechoso
+from caso_calafate.casos import CASOS
 from caso_calafate.grafo import construir_grafo
 from caso_calafate.llm import crear_motores, texto_de
 
@@ -51,21 +52,55 @@ def main() -> None:
         _mostrar_error_de_motor(error)
         return
 
-    grafo = construir_grafo(CASO_CALAFATE, actor, analista)
+    caso = _elegir_caso()
+
+    grafo = construir_grafo(caso, actor, analista)
     # El thread_id identifica LA partida dentro del checkpointer. Acá usamos
     # uno fijo porque cada proceso es una partida nueva (MemorySaver vive en
     # RAM); con un checkpointer persistente, cambiarlo permitiría retomar
     # partidas guardadas.
     config = {"configurable": {"thread_id": "partida"}}
 
-    _mostrar_briefing(CASO_CALAFATE)
+    _mostrar_briefing(caso)
     console.print(f"[dim]Motor: {nombre_motor} · Escribí /ayuda para ver los comandos.[/dim]\n")
     if nombre_motor == "fake":
         console.print(
             "[yellow]⚠ Modo fake: sin LLM real. Las respuestas son enlatadas y las "
             "pistas se revelan solas — sirve para probar la mecánica.[/yellow]\n"
         )
-    _bucle(grafo, config, CASO_CALAFATE)
+    _bucle(grafo, config, caso)
+
+
+def _elegir_caso() -> Caso:
+    """El selector de casos: una tabla con todos los expedientes disponibles.
+
+    Acepta el número de fila o el id/nombre del caso (con la misma búsqueda
+    tolerante que ``Caso.buscar_sospechoso``, pero sobre el registro).
+    Reintenta hasta que el jugador elija algo válido.
+    """
+    catalogo = list(CASOS.values())
+    tabla = Table(title="Archivo de expedientes", show_lines=True)
+    tabla.add_column("#", justify="right")
+    tabla.add_column("Caso", style="bold")
+    tabla.add_column("Gancho")
+    for numero, caso in enumerate(catalogo, start=1):
+        tabla.add_row(str(numero), caso.titulo, caso.gancho)
+    console.print(tabla)
+
+    while True:
+        eleccion = Prompt.ask(
+            "[bold]Elegí un caso[/bold] (número o id)", default="1"
+        ).strip()
+
+        if eleccion.isdigit() and 1 <= int(eleccion) <= len(catalogo):
+            return catalogo[int(eleccion) - 1]
+
+        normalizado = eleccion.lower()
+        for caso in catalogo:
+            if caso.id == normalizado:
+                return caso
+
+        console.print(f"No encuentro el caso «{eleccion}». Probá con un número de la tabla.")
 
 
 def _bucle(grafo, config: dict, caso: Caso) -> None:

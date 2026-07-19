@@ -1,6 +1,7 @@
 /* pantallas.js — lo que rodea al escritorio:
  *
  * · el ARCHIVO: la estantería de expedientes (crear, retomar, incinerar)
+ * · el SELECTOR DE CASOS: qué misterio investigar, al abrir un expediente
  * · el BRIEFING: el documento del caso, tipeado a máquina
  * · el DIARIO: la tapa del día siguiente, con el veredicto
  */
@@ -43,6 +44,10 @@ function tarjetaDeExpediente(partida) {
   nombre.className = "expediente-nombre";
   nombre.textContent = partida.nombre;
 
+  const caso = document.createElement("span");
+  caso.className = "expediente-caso";
+  caso.textContent = partida.caso_titulo ?? "";
+
   const fecha = document.createElement("span");
   fecha.className = "expediente-fecha";
   fecha.textContent = `abierto el ${new Date(partida.creada).toLocaleDateString("es-AR", {
@@ -64,7 +69,7 @@ function tarjetaDeExpediente(partida) {
   }`;
   sello.textContent = estadoDelCaso ?? "ABIERTO";
 
-  carpeta.append(nombre, fecha, stats, sello);
+  carpeta.append(nombre, caso, fecha, stats, sello);
   item.append(carpeta, botonDeIncinerar(partida, item));
   return item;
 }
@@ -107,44 +112,86 @@ function tarjetaDeNuevoExpediente() {
   boton.type = "button";
   boton.className = "expediente-nueva";
   boton.innerHTML = `<span class="mas">+</span><span class="texto">NUEVO EXPEDIENTE</span>`;
-  boton.addEventListener("click", () => {
-    item.replaceChildren(formularioDeExpediente(item, boton));
-    item.querySelector("input").focus();
-  });
+  boton.addEventListener("click", abrirSelectorDeCasos);
 
   item.append(boton);
   return item;
 }
 
-function formularioDeExpediente(item, botonOriginal) {
-  const formulario = document.createElement("form");
-  formulario.className = "expediente-formulario";
-  formulario.innerHTML = `
-    <label for="nombre-nuevo">CARÁTULA DEL EXPEDIENTE</label>
-    <input id="nombre-nuevo" name="nombre" maxlength="60"
-           placeholder="ej: la corazonada del viernes" required>
-    <span class="botones">
-      <button type="button" class="boton-papel" data-rol="cancelar">cancelar</button>
-      <button type="submit" class="boton-papel boton-principal">abrir →</button>
-    </span>`;
+/* ── El selector de casos: overlay de alta de expediente ─────────────────── *
+ * Dos pasos en el mismo <dialog>: elegir el caso (tarjetas) y después
+ * nombrar el expediente — igual de espíritu que el resto de los velos
+ * (briefing, acusación, tablero), solo que este tiene un paso previo. */
 
-  formulario.querySelector("[data-rol=cancelar]").addEventListener("click", () => {
-    item.replaceChildren(botonOriginal);
-  });
+let casoElegido = null;
+
+export function prepararSelectorDeCasos() {
+  const velo = $("#velo-casos");
+  const formulario = $("#form-nombrar-expediente");
+
+  $("#boton-casos-cancelar").addEventListener("click", () => velo.close());
+  $("#boton-casos-volver").addEventListener("click", mostrarPasoElegirCaso);
 
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     const nombre = formulario.nombre.value.trim();
-    if (!nombre) return;
+    if (!nombre || !casoElegido) return;
     try {
-      const partida = await api.crearPartida(nombre);
+      const partida = await api.crearPartida(nombre, casoElegido.id);
+      velo.close();
       location.hash = `#/partida/${partida.id}`;
     } catch {
       avisar("no pude abrir el expediente", { tipo: "error" });
     }
   });
+}
 
-  return formulario;
+function abrirSelectorDeCasos() {
+  const lista = $("#casos-lista");
+  lista.innerHTML = "";
+  for (const caso of estado.casosDisponibles) lista.append(tarjetaDeCaso(caso));
+  mostrarPasoElegirCaso();
+  $("#velo-casos").showModal();
+}
+
+function mostrarPasoElegirCaso() {
+  $("#casos-paso-elegir").hidden = false;
+  $("#form-nombrar-expediente").hidden = true;
+  casoElegido = null;
+}
+
+function tarjetaDeCaso(caso) {
+  const li = document.createElement("li");
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "caso-tarjeta";
+
+  const titulo = document.createElement("span");
+  titulo.className = "caso-tarjeta-titulo";
+  titulo.textContent = caso.titulo;
+
+  const gancho = document.createElement("span");
+  gancho.className = "caso-tarjeta-gancho";
+  gancho.textContent = caso.gancho;
+
+  const stats = document.createElement("span");
+  stats.className = "caso-tarjeta-stats";
+  stats.textContent = `🕵️ ${caso.cantidad_sospechosos} sospechosos · ❓ ${caso.max_preguntas} preguntas`;
+
+  boton.append(titulo, gancho, stats);
+  boton.addEventListener("click", () => {
+    casoElegido = caso;
+    $("#casos-caso-elegido").textContent = caso.titulo;
+    $("#casos-paso-elegir").hidden = true;
+
+    const formulario = $("#form-nombrar-expediente");
+    formulario.hidden = false;
+    formulario.nombre.value = "";
+    formulario.nombre.focus();
+  });
+
+  li.append(boton);
+  return li;
 }
 
 /* ── El briefing tipeado ─────────────────────────────────────────────────── */
@@ -211,7 +258,14 @@ export function mostrarDiario(veredicto) {
     : `La acusación contra ${nombre}, ${cargo}, se desarmó en minutos. El Centro, en crisis.`;
 
   // El cuerpo de la nota: el veredicto y, recién acá, la verdad completa.
-  $("#diario-cuerpo").textContent = `${veredicto.texto}\n\n${veredicto.epilogo}`;
+  // Con victoria hubo confesión y el diario puede contarlo todo; con derrota
+  // el titular dice que el saboteador sigue libre, así que la verdad va
+  // detrás de una raya: es una confidencia al detective, no una primicia.
+  const cuerpo = gano
+    ? `${veredicto.texto}\n\n${veredicto.epilogo}`
+    : `${veredicto.texto}\n\n— Lo que EL CORDILLERANO nunca llegó a publicar —\n\n` +
+      veredicto.epilogo;
+  $("#diario-cuerpo").textContent = cuerpo;
 
   $("#diario-stats").textContent =
     `PISTAS: ${veredicto.pistas_descubiertas}/${veredicto.total_secretos}\n` +
@@ -232,8 +286,8 @@ export function prepararDiario() {
   });
 }
 
-/* La foto de archivo del diario: el CALAFATE-1 en la sala limpia (con el
-   mazo de cables colgando, cortado — el detalle que arrancó todo esto). */
+/* La foto del diario: el CALAFATE-1 en la sala limpia, la mañana del
+   hallazgo (el mazo de cables colgando, cortado — lo que arrancó todo esto). */
 const FOTO_SATELITE = `
 <svg viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg" role="img"
      aria-label="el satélite CALAFATE-1">

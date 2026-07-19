@@ -26,7 +26,7 @@ def crear_cliente(caso_asado, actor_loro, analista_fijo):
     with ExitStack() as pila:
 
         def _crear(ids: list[str] | None = None) -> TestClient:
-            app = crear_app(caso_asado, actor_loro, analista_fijo(ids or []))
+            app = crear_app({caso_asado.id: caso_asado}, actor_loro, analista_fijo(ids or []))
             return pila.enter_context(TestClient(app))
 
         yield _crear
@@ -38,8 +38,10 @@ def cliente(crear_cliente) -> TestClient:
     return crear_cliente(["vio_al_perro"])
 
 
-def _nueva_partida(cliente: TestClient, nombre: str = "expediente de prueba") -> str:
-    respuesta = cliente.post("/api/partidas", json={"nombre": nombre})
+def _nueva_partida(
+    cliente: TestClient, nombre: str = "expediente de prueba", caso_id: str = "asado"
+) -> str:
+    respuesta = cliente.post("/api/partidas", json={"nombre": nombre, "caso_id": caso_id})
     assert respuesta.status_code == 201
     return respuesta.json()["id"]
 
@@ -64,25 +66,53 @@ def _interrogar(ws, sospechoso: str, pregunta: str) -> tuple[str, dict]:
 # ── El contrato anti-spoiler ─────────────────────────────────────────────────
 
 
-def test_el_caso_viaja_sin_spoilers(cliente, caso_asado):
-    """Lo que devuelve /api/caso es exactamente lo que el jugador puede ver:
-    nada de culpables, secretos ni epílogo — el browser es territorio enemigo."""
-    respuesta = cliente.get("/api/caso")
+def test_el_selector_de_casos_no_spoilea(cliente, caso_asado):
+    """/api/casos es la tarjeta del selector: ni briefing, ni sospechosos, ni
+    nada que huela a spoiler — el browser es territorio enemigo."""
+    respuesta = cliente.get("/api/casos")
     crudo = respuesta.text  # el JSON tal cual lo vería el jugador con F12
 
     assert respuesta.status_code == 200
-    # Las claves van con comillas para buscar el CAMPO JSON exacto (el campo
-    # legítimo "total_secretos" contiene el substring "secretos", por ejemplo).
-    prohibidos = ('"es_culpable"', '"secretos"', '"instruccion_actor"', '"epilogo"', "Fue Moro")
+    prohibidos = (
+        '"es_culpable"',
+        '"secretos"',
+        '"instruccion_actor"',
+        '"epilogo"',
+        '"briefing"',
+        '"sospechosos"',
+        "Fue Moro",
+    )
     for prohibido in prohibidos:
         assert prohibido not in crudo
 
     datos = respuesta.json()
-    assert datos["titulo"] == caso_asado.titulo
-    assert datos["max_preguntas"] == 5
-    assert datos["total_secretos"] == 2
-    assert [s["id"] for s in datos["sospechosos"]] == ["moro", "michi"]
-    assert datos["sospechosos"][0]["coartada"] == "Dice que dormía en la cucha."
+    assert [c["id"] for c in datos["casos"]] == ["asado"]
+    assert datos["casos"][0]["titulo"] == caso_asado.titulo
+    assert datos["casos"][0]["gancho"] == caso_asado.gancho
+    assert datos["casos"][0]["cantidad_sospechosos"] == 2
+    assert datos["casos"][0]["max_preguntas"] == 5
+
+
+def test_el_caso_embebido_en_la_partida_no_spoilea(cliente, caso_asado):
+    """El detalle de una partida trae el caso COMPLETO (briefing, sospechosos)
+    para que el frontend no necesite un fetch aparte — pero sigue sin
+    culpables, secretos ni epílogo hasta que la partida cierra."""
+    id_ = _nueva_partida(cliente)
+    respuesta = cliente.get(f"/api/partidas/{id_}")
+    crudo = respuesta.text
+
+    assert respuesta.status_code == 200
+    prohibidos = ('"es_culpable"', '"secretos"', '"instruccion_actor"', '"epilogo"', "Fue Moro")
+    for prohibido in prohibidos:
+        assert prohibido not in crudo
+
+    caso = respuesta.json()["caso"]
+    assert caso["id"] == "asado"
+    assert caso["titulo"] == caso_asado.titulo
+    assert caso["max_preguntas"] == 5
+    assert caso["total_secretos"] == 2
+    assert [s["id"] for s in caso["sospechosos"]] == ["moro", "michi"]
+    assert caso["sospechosos"][0]["coartada"] == "Dice que dormía en la cucha."
 
 
 def test_el_detalle_de_una_partida_abierta_tampoco_spoilea(cliente):
@@ -103,6 +133,8 @@ def test_crear_listar_y_borrar_partidas(cliente):
     partidas = cliente.get("/api/partidas").json()
     assert len(partidas) == 1
     assert partidas[0]["nombre"] == "caso del asado frío"
+    assert partidas[0]["caso_id"] == "asado"
+    assert partidas[0]["caso_titulo"] == "¿QUIÉN SE COMIÓ EL ASADO?"
     assert partidas[0]["preguntas_usadas"] == 0
     assert partidas[0]["preguntas_restantes"] == 5
     assert partidas[0]["resultado"] is None
@@ -113,8 +145,14 @@ def test_crear_listar_y_borrar_partidas(cliente):
 
 
 def test_las_partidas_necesitan_nombre(cliente):
-    assert cliente.post("/api/partidas", json={"nombre": "   "}).status_code == 422
-    assert cliente.post("/api/partidas", json={}).status_code == 422
+    vacio = cliente.post("/api/partidas", json={"nombre": "   ", "caso_id": "asado"})
+    assert vacio.status_code == 422
+    assert cliente.post("/api/partidas", json={"caso_id": "asado"}).status_code == 422
+
+
+def test_las_partidas_necesitan_un_caso_que_exista(cliente):
+    respuesta = cliente.post("/api/partidas", json={"nombre": "x", "caso_id": "no-existe"})
+    assert respuesta.status_code == 422
 
 
 # ── Las jugadas (WebSocket) ──────────────────────────────────────────────────

@@ -12,8 +12,8 @@ estructurada y streaming, todo testeado sin gastar un token.
 ```
 (12❓) Marta › ¿Perdiste tu tarjeta de acceso, no?
 
-Marta Iriarte — Lo... sí. Perdí mi tarjeta el jueves. No pensé que era una
-falta grave reportarlo en ese momento. Pero no entré a la sala limpia anoche.
+Marta Iriarte — Lo... sí. Perdí mi tarjeta el jueves. No lo reporté: perderla
+es una falta grave, ¿entiende? Pero yo no entré a la sala limpia anoche.
 
 ╭─────────────────────────── 🔎 Nueva pista ───────────────────────────╮
 │ La tarjeta que abrió la sala limpia a las 03:02 no la tenía Marta:   │

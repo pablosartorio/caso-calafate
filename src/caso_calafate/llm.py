@@ -58,13 +58,15 @@ def _motores_fake() -> tuple[BaseChatModel, Runnable]:
 
     El actor recita respuestas enlatadas (en loop infinito, gracias a
     ``itertools.cycle``) y el analista "revela" todos los secretos que existan
-    en el caso. Puede devolver ids de sospechosos que no son el interrogado:
-    no importa, porque ``nodo_analizar`` filtra los que no corresponden — otra
-    ventaja de validar en el nodo en vez de confiar en el modelo.
+    en CUALQUIER caso del registro. Puede devolver ids que no son del
+    sospechoso interrogado (ni siquiera del caso que se está jugando): no
+    importa, porque ``nodo_analizar`` filtra los que no corresponden — otra
+    ventaja de validar en el nodo en vez de confiar en el modelo. Eso es lo
+    que permite que este fake sirva para CUALQUIER caso sin conocerlo.
     """
     # Import local para evitar un ciclo: caso.py no importa nada del paquete,
     # pero llm.py sí es importado por módulos que caso.py no debe conocer.
-    from caso_calafate.caso import CASO_CALAFATE
+    from caso_calafate.casos import CASOS
 
     respuestas = itertools.cycle(
         [
@@ -75,7 +77,12 @@ def _motores_fake() -> tuple[BaseChatModel, Runnable]:
     )
     actor = GenericFakeChatModel(messages=respuestas)
 
-    todos_los_ids = [s.id for sospechoso in CASO_CALAFATE.sospechosos for s in sospechoso.secretos]
+    todos_los_ids = [
+        secreto.id
+        for caso in CASOS.values()
+        for sospechoso in caso.sospechosos
+        for secreto in sospechoso.secretos
+    ]
     analista = RunnableLambda(lambda _prompt: SecretosRevelados(ids=todos_los_ids))
     return actor, analista
 

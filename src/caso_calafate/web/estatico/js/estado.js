@@ -12,14 +12,16 @@
  */
 
 export const estado = {
-  caso: null,           // lo que devuelve GET /api/caso (título, sospechosos…)
-  partidaId: null,      // la partida abierta en pantalla
-  detalle: null,        // lo que devolvió GET /api/partidas/<id> al entrar
-  conversaciones: {},   // historial por sospechoso, actualizado en vivo
-  pistas: [],           // las pistas descubiertas [{id, pista}], en orden
-  seleccionado: null,   // el sospechoso frente a la cámara (objeto del caso)
-  ocupado: false,       // hay una pregunta en vuelo: la máquina se traba
-  tablero: null,        // notas / fotos / conexiones del corcho
+  motor: "",             // el motor LLM (o "fake"), de GET /api/casos — global
+  casosDisponibles: [],  // el catálogo para el selector, de GET /api/casos
+  caso: null,            // el caso DE LA PARTIDA ABIERTA (viaja embebido en el detalle)
+  partidaId: null,       // la partida abierta en pantalla
+  detalle: null,         // lo que devolvió GET /api/partidas/<id> al entrar
+  conversaciones: {},    // historial por sospechoso, actualizado en vivo
+  pistas: [],            // las pistas descubiertas [{id, pista}], en orden
+  seleccionado: null,    // el sospechoso frente a la cámara (objeto del caso)
+  ocupado: false,        // hay una pregunta en vuelo: la máquina se traba
+  tablero: null,         // notas / fotos / conexiones del corcho
 };
 
 const escuchas = new Map();

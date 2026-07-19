@@ -119,6 +119,38 @@
 
   <!-- ═══ OVERLAYS ════════════════════════════════════════════════════════ -->
 
+  <!-- El selector de casos: qué expediente abrir, en dos pasos. -->
+  <dialog id="velo-casos" class="velo" aria-labelledby="casos-titulo">
+    <article class="papel documento">
+      <header class="documento-cabecera">
+        <span class="sello sello-rojo documento-confidencial">ARCHIVO GENERAL</span>
+        <p class="documento-membrete">CENTRO ESPACIAL PATAGÓNICO<br>DIVISIÓN SEGURIDAD</p>
+        <h2 id="casos-titulo">NUEVO EXPEDIENTE</h2>
+      </header>
+
+      <div id="casos-paso-elegir">
+        <p class="casos-ayuda">Elegí qué caso vas a investigar:</p>
+        <ul id="casos-lista" class="casos-lista"><!-- tarjetas, pantallas.js --></ul>
+      </div>
+
+      <form id="form-nombrar-expediente" class="expediente-formulario" hidden>
+        <label for="nombre-nuevo">
+          CARÁTULA DEL EXPEDIENTE — <span id="casos-caso-elegido"></span>
+        </label>
+        <input id="nombre-nuevo" name="nombre" maxlength="60"
+               placeholder="ej: la corazonada del viernes" required>
+        <span class="botones">
+          <button type="button" id="boton-casos-volver" class="boton-papel">‹ volver</button>
+          <button type="submit" class="boton-papel boton-principal">abrir →</button>
+        </span>
+      </form>
+
+      <footer class="documento-pie">
+        <button id="boton-casos-cancelar" class="boton-papel" type="button">cancelar</button>
+      </footer>
+    </article>
+  </dialog>
+
   <!-- El briefing: el documento que te entregan al aceptar el caso. -->
   <dialog id="velo-briefing" class="velo" aria-labelledby="briefing-titulo">
     <article class="papel documento">
@@ -179,7 +211,7 @@
         <div id="diario-cuerpo"></div>
         <aside class="diario-recuadro">
           <figure id="diario-foto" aria-hidden="true"></figure>
-          <figcaption class="diario-epigrafe">El CALAFATE-1 en la sala limpia, horas antes del traslado.</figcaption>
+          <figcaption class="diario-epigrafe">El CALAFATE-1 en la sala limpia, la mañana del hallazgo.</figcaption>
           <div class="diario-desempeno">
             <h4>EL DESEMPEÑO DEL DETECTIVE</h4>
             <p id="diario-stats">—</p>

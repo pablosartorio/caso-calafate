@@ -16,7 +16,13 @@ import { avisar } from "./avisos.js";
 import * as crt from "./crt.js";
 import * as escritorio from "./escritorio.js";
 import { $, escuchar, estado } from "./estado.js";
-import { mostrarArchivo, mostrarBriefing, mostrarDiario, prepararDiario } from "./pantallas.js";
+import {
+  mostrarArchivo,
+  mostrarBriefing,
+  mostrarDiario,
+  prepararDiario,
+  prepararSelectorDeCasos,
+} from "./pantallas.js";
 import { cargarRetratos } from "./pixelart.js";
 import { radioEncendida, sonido } from "./sonido.js";
 import { abrirTablero, prepararTablero } from "./tablero.js";
@@ -28,7 +34,9 @@ let veredictoActual = null; // el veredicto recibido, para releer el diario
 
 async function arrancar() {
   try {
-    estado.caso = await api.caso();
+    const { motor, casos } = await api.casos();
+    estado.motor = motor;
+    estado.casosDisponibles = casos;
   } catch {
     avisar("no pude hablar con el servidor — ¿está corriendo detective-web?", {
       tipo: "error",
@@ -37,8 +45,7 @@ async function arrancar() {
     return;
   }
 
-  if (estado.caso.motor === "fake") $("#aviso-fake").hidden = false;
-  document.title = `🛰️ ${estado.caso.titulo}`;
+  if (estado.motor === "fake") $("#aviso-fake").hidden = false;
 
   // El arte pixel de la cámara; si falla, el CRT cae a los retratos SVG.
   await cargarRetratos();
@@ -47,6 +54,7 @@ async function arrancar() {
   escritorio.prepararEscritorio();
   prepararTablero();
   prepararDiario();
+  prepararSelectorDeCasos();
   prepararRadio();
 
   // El audio recién puede nacer con un gesto del usuario (política de
@@ -200,12 +208,14 @@ async function abrirPartida(partidaId) {
 
   estado.partidaId = partidaId;
   estado.detalle = detalle;
+  estado.caso = detalle.caso;
   estado.conversaciones = detalle.conversaciones ?? {};
   estado.pistas = detalle.pistas ?? [];
   estado.tablero = normalizarTablero(detalle.tablero);
   estado.ocupado = false;
   veredictoActual = detalle.veredicto ?? null;
 
+  document.title = `🛰️ ${estado.caso.titulo}`;
   mostrarSeccion("escritorio");
   escritorio.cargarPartida(detalle);
   crt.ponerEnHora(detalle.preguntas_usadas);
@@ -229,7 +239,9 @@ function cerrarPartida() {
   conexion = null;
   estado.partidaId = null;
   estado.detalle = null;
+  estado.caso = null;
   veredictoActual = null;
+  document.title = "🛰️ El Caso Calafate";
 }
 
 /** El tablero guardado puede venir vacío o de una versión vieja: se sanea. */

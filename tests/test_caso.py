@@ -10,7 +10,9 @@ Dos grupos:
 
 import pytest
 
-from caso_calafate.caso import CASO_CALAFATE, Caso, Secreto, Sospechoso
+from caso_calafate.caso import Caso, Secreto, Sospechoso
+from caso_calafate.casos import CASOS
+from caso_calafate.casos.calafate import CASO_CALAFATE
 
 
 def _sospechoso_minimo(id_: str, es_culpable: bool = False, secretos=None) -> Sospechoso:
@@ -29,7 +31,9 @@ def _sospechoso_minimo(id_: str, es_culpable: bool = False, secretos=None) -> So
 
 def _caso_con(sospechosos: list[Sospechoso]) -> Caso:
     return Caso(
+        id="t",
         titulo="T",
+        gancho="G",
         briefing="B",
         contexto_actores="C",
         epilogo="E",
@@ -85,27 +89,43 @@ def test_buscar_sospechoso_devuelve_none_si_no_hay_match(caso_asado):
     assert caso_asado.buscar_sospechoso("") is None
 
 
-# ── Invariantes del caso real ────────────────────────────────────────────────
+# ── El registro de casos ─────────────────────────────────────────────────────
 
 
-def test_el_caso_real_tiene_tres_sospechosos_y_un_culpable():
-    assert len(CASO_CALAFATE.sospechosos) == 3
+def test_hay_al_menos_once_casos_y_ninguno_repite_id():
+    assert len(CASOS) >= 11
+    assert list(CASOS) == [c.id for c in CASOS.values()]  # la clave ES Caso.id
+
+
+# ── Invariantes de CADA caso jugable ─────────────────────────────────────────
+# Parametrizado sobre todo el registro: un caso nuevo queda auto-verificado
+# (pistas suficientes, preguntas alcanzan, textos no vacíos, un solo culpable)
+# sin escribir un test por caso.
+
+
+@pytest.mark.parametrize("caso", CASOS.values(), ids=CASOS.keys())
+def test_cada_caso_tiene_tres_sospechosos_y_un_culpable(caso: Caso):
+    assert len(caso.sospechosos) == 3
     # culpable() explota si no hay ninguno; el validador ya garantizó que hay uno solo.
-    assert CASO_CALAFATE.culpable().es_culpable
+    assert caso.culpable().es_culpable
 
 
-def test_el_caso_real_es_justo():
+@pytest.mark.parametrize("caso", CASOS.values(), ids=CASOS.keys())
+def test_cada_caso_es_justo(caso: Caso):
     """Reglas de jugabilidad: pistas suficientes y preguntas para encontrarlas."""
-    assert CASO_CALAFATE.total_secretos() >= 5, "muy pocas pistas para deducir algo"
-    assert CASO_CALAFATE.max_preguntas >= CASO_CALAFATE.total_secretos(), (
+    assert caso.total_secretos() >= 5, "muy pocas pistas para deducir algo"
+    assert caso.max_preguntas >= caso.total_secretos(), (
         "tiene que haber al menos tantas preguntas como pistas, "
         "o el caso es imposible de resolver completo"
     )
-    for sospechoso in CASO_CALAFATE.sospechosos:
+    for sospechoso in caso.sospechosos:
         assert sospechoso.secretos, f"{sospechoso.nombre} no tiene ningún secreto que revelar"
 
 
-def test_los_textos_del_caso_real_no_estan_vacios():
-    assert CASO_CALAFATE.briefing.strip()
-    assert CASO_CALAFATE.contexto_actores.strip()
-    assert CASO_CALAFATE.epilogo.strip()
+@pytest.mark.parametrize("caso", CASOS.values(), ids=CASOS.keys())
+def test_los_textos_de_cada_caso_no_estan_vacios(caso: Caso):
+    assert caso.titulo.strip()
+    assert caso.gancho.strip()
+    assert caso.briefing.strip()
+    assert caso.contexto_actores.strip()
+    assert caso.epilogo.strip()

@@ -23,7 +23,9 @@ from caso_calafate.prompts import SecretosRevelados
 def caso_asado() -> Caso:
     """Un caso mínimo de dos sospechosos para testear el motor."""
     return Caso(
+        id="asado",
         titulo="¿QUIÉN SE COMIÓ EL ASADO?",
+        gancho="Un asado desaparece de la mesa del patio.",
         briefing="El asado que se enfriaba en la mesa del patio desapareció.",
         contexto_actores="Desapareció un asado de la mesa del patio de la casa.",
         epilogo="Fue Moro, el perro. Las huellas en la mesa lo delataron.",

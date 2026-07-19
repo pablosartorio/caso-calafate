@@ -8,7 +8,7 @@ en plena partida. El validador ya corre al importar; estos tests lo dejan
 por escrito.
 """
 
-from caso_calafate.caso import CASO_CALAFATE
+from caso_calafate.casos.calafate import CASO_CALAFATE
 from caso_calafate.pixelart import (
     ALTO,
     ANCHO,
