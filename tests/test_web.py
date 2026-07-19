@@ -317,13 +317,3 @@ def test_los_retratos_pixel_viajan_por_rest(cliente):
     datos = respuesta.json()
     assert set(datos) == {"paleta", "transparente", "ancho", "alto", "retratos"}
     assert set(datos["retratos"]) == {"marta", "julian", "silvia"}
-
-
-def test_el_fondo_de_escena_viaja_por_rest(cliente):
-    """El fondo del archivo de expedientes: mismo trato que los retratos,
-    cosmética pública sin nada que filtrar."""
-    respuesta = cliente.get("/api/fondo")
-    assert respuesta.status_code == 200
-    datos = respuesta.json()
-    assert set(datos) == {"paleta", "ancho", "alto", "filas"}
-    assert len(datos["filas"]) == datos["alto"]

@@ -13,18 +13,15 @@
   height: 100dvh;
   overflow-y: auto;
   padding: clamp(1.5rem, 5vh, 4rem) 1.5rem 4rem;
-  /* el fondo pintado (fondo.js/fondo.py): la oficina del Centro Espacial
-     vista por una ventana, estilo escena de fondo de aventura gráfica.
-     Sin --fondo-escena (todavía no cargó, o falló) el "none" no rompe nada
-     y queda el gradiente oscuro de siempre. */
+  /* Fondo sobrio, a propósito: un archivo en penumbra. Lo único que importa
+     acá es que las carpetas tostadas resalten, así que el fondo es oscuro y
+     de tono neutro (figura/fondo) y se retira. Un halo cálido arriba enmarca
+     el título; el grano + la viñeta globales (#grano) ponen el clima. Nada de
+     escena pintada detrás del contenido: competía con las carpetas y las
+     camuflaba. El contenido es el protagonista. */
   background:
-    radial-gradient(760px 380px at 50% -8%, rgba(255, 196, 124, 0.13), transparent 70%),
-    var(--veta),
-    linear-gradient(180deg, rgba(36, 26, 16, 0.82), rgba(23, 16, 9, 0.88) 60%, rgba(15, 10, 5, 0.94)),
-    var(--fondo-escena, none) center / cover no-repeat,
-    #171009;
-  background-blend-mode: normal, overlay, normal, normal, normal;
-  image-rendering: pixelated;
+    radial-gradient(900px 520px at 50% -14%, rgba(255, 188, 120, 0.16), transparent 66%),
+    linear-gradient(180deg, #241a11 0%, #17110b 46%, #0d0906 100%);
 }
 
 .archivo-cabecera {

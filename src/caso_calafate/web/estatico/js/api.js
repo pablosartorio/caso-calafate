@@ -33,7 +33,6 @@ async function traerJSON(url, opciones = {}) {
 export const api = {
   casos: () => traerJSON("/api/casos"),
   retratos: () => traerJSON("/api/retratos"),
-  fondo: () => traerJSON("/api/fondo"),
   partidas: () => traerJSON("/api/partidas"),
   crearPartida: (nombre, casoId) =>
     traerJSON("/api/partidas", {
