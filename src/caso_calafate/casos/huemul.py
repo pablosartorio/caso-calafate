@@ -15,8 +15,8 @@ CASO_HUEMUL = Caso(
     delito="la adulteración de los registros del ensayo del reactor Huemul",
     culpable_alias="falsificador",
     gancho=(
-        "A la 01:47 de la madrugada el reactor Huemul se frenó solo, como "
-        "tenía que hacer. Lo raro es lo que alguien escribió después."
+        "A la 01:47 de la madrugada el reactor Huemul se frenó solo, como tenía que "
+        "hacer. Lo raro es lo que pasó en la hora siguiente."
     ),
     briefing=(
         "Bariloche, 06:45 de la mañana. Te suena el teléfono.\n\n"

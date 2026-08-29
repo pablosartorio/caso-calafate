@@ -15,9 +15,8 @@ CASO_PILTRIQUITRON = Caso(
     delito="el cambio del módulo de disparo del sistema de parada rápida",
     culpable_alias="responsable",
     gancho=(
-        "En la puesta en marcha de un reactor, alguien tocó el sistema de "
-        "parada de emergencia — y después movió papeles para que pareciera "
-        "el error de otro."
+        "En la puesta en marcha de un reactor, alguien tocó el sistema de parada de "
+        "emergencia — y se ocupó de que pareciera el error de otro."
     ),
     briefing=(
         "El Bolsón, 07:15 de la mañana. Te levanta una llamada de la propia central.\n\n"

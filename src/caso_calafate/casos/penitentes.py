@@ -14,8 +14,8 @@ CASO_PENITENTES = Caso(
     delito="la filtración de las especificaciones del radar Centinela-3D",
     culpable_alias="espía",
     gancho=(
-        "A 72 horas de la demo para las Fuerzas Armadas, alguien vendió "
-        "los planos del radar por afuera."
+        "A 72 horas de la demo para las Fuerzas Armadas, los planos del radar "
+        "aparecieron en manos que no debían tenerlos."
     ),
     briefing=(
         "San Carlos de Bariloche, lunes 07:15. Te suena el teléfono en pleno desayuno.\n\n"

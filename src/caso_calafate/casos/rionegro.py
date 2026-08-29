@@ -14,8 +14,8 @@ CASO_RIO_NEGRO_I = Caso(
     delito="la manipulación del ensayo térmico del RÍO NEGRO I y de sus registros",
     culpable_alias="saboteador",
     gancho=(
-        "Un ensayo crítico casi se arruina en el banco de pruebas — y alguien "
-        "reescribió los registros para que pareciera mala suerte."
+        "Un ensayo crítico casi se arruina de madrugada — y después alguien acomodó "
+        "los registros para que pareciera mala suerte."
     ),
     # Los párrafos van en una sola línea lógica (concatenación implícita de
     # strings): rich los envuelve al ancho de la terminal. Los saltos duros

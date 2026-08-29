@@ -14,8 +14,8 @@ CASO_ESQUEL = Caso(
     delito="el encubrimiento del patrón de dosimetría fuera de tolerancia",
     culpable_alias="encubridor",
     gancho=(
-        "Un control de rutina destapó que el patrón que calibra la radioterapia "
-        "de media Patagonia estaba mal — y alguien lo tapó."
+        "Un control de rutina destapó que media Patagonia se venía irradiando con un "
+        "número equivocado — y alguien ya lo sabía."
     ),
     briefing=(
         "Esquel, Chubut. 07:15 de la mañana. Te despierta el teléfono.\n\n"

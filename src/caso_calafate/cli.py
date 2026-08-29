@@ -17,6 +17,7 @@ cualquiera con el ``thread_id`` puede consultarla.
 """
 
 import asyncio
+import uuid
 
 from dotenv import load_dotenv
 from rich.console import Console
@@ -69,6 +70,10 @@ def main() -> None:
     # RAM); con un checkpointer persistente, cambiarlo permitiría retomar
     # partidas guardadas.
     config = {"configurable": {"thread_id": "partida"}}
+    # El orden de las fichas se baraja por partida (ver Caso.sospechosos_para):
+    # en la terminal cada proceso ES una partida, así que alcanza con una
+    # semilla al azar al arrancar.
+    orden = caso.sospechosos_para(uuid.uuid4().hex)
 
     _mostrar_briefing(caso)
     console.print(f"[dim]Motor: {nombre_motor} · Escribí /ayuda para ver los comandos.[/dim]\n")
@@ -77,7 +82,7 @@ def main() -> None:
             "[yellow]⚠ Modo fake: sin LLM real. Las respuestas son enlatadas y las "
             "pistas se revelan solas — sirve para probar la mecánica.[/yellow]\n"
         )
-    _bucle(grafo, config, caso)
+    _bucle(grafo, config, caso, orden)
 
 
 def _elegir_motor() -> str | None:
@@ -173,7 +178,7 @@ def _elegir_caso() -> Caso | None:
         console.print(f"No encuentro el caso «{eleccion}». Probá con un número de la tabla.")
 
 
-def _bucle(grafo, config: dict, caso: Caso) -> None:
+def _bucle(grafo, config: dict, caso: Caso, orden: list[Sospechoso]) -> None:
     """El loop principal: leer → parsear → jugar/mostrar, hasta que la partida cierre."""
     seleccionado: Sospechoso | None = None
 
@@ -193,7 +198,7 @@ def _bucle(grafo, config: dict, caso: Caso) -> None:
         if entrada.startswith("/"):
             comando, _, resto = entrada.partition(" ")
             terminado = _ejecutar_comando(
-                comando.lower(), resto.strip(), grafo, config, caso, estado
+                comando.lower(), resto.strip(), grafo, config, caso, estado, orden
             )
             if terminado:
                 return
@@ -219,7 +224,13 @@ def _bucle(grafo, config: dict, caso: Caso) -> None:
 
 
 def _ejecutar_comando(
-    comando: str, resto: str, grafo, config: dict, caso: Caso, estado: dict
+    comando: str,
+    resto: str,
+    grafo,
+    config: dict,
+    caso: Caso,
+    estado: dict,
+    orden: list[Sospechoso],
 ) -> bool:
     """Ejecuta un comando con barra. Devuelve True si la partida terminó."""
     match comando:
@@ -228,7 +239,7 @@ def _ejecutar_comando(
         case "/caso":
             _mostrar_briefing(caso)
         case "/sospechosos":
-            _mostrar_sospechosos(caso)
+            _mostrar_sospechosos(caso, orden)
         case "/pistas":
             _mostrar_pistas(caso, estado)
         case "/hablar":
@@ -382,12 +393,12 @@ def _mostrar_briefing(caso: Caso) -> None:
     console.print(Panel(caso.briefing, title=f"🛰️  {caso.titulo}", border_style="cyan"))
 
 
-def _mostrar_sospechosos(caso: Caso) -> None:
+def _mostrar_sospechosos(caso: Caso, orden: list[Sospechoso]) -> None:
     tabla = Table(title="Sospechosos", show_lines=True)
     tabla.add_column("Nombre", style="bold")
     tabla.add_column("Cargo")
     tabla.add_column("Qué dice que hizo esa noche")
-    for s in caso.sospechosos:
+    for s in orden:
         tabla.add_row(f"[{s.color}]{s.nombre}[/]", s.cargo, s.coartada)
     console.print(tabla)
 

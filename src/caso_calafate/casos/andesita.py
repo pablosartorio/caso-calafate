@@ -14,8 +14,8 @@ CASO_ANDESITA = Caso(
     delito="la aprobación del Lote EC-114 sin los ensayos que correspondían",
     culpable_alias="falsificador",
     gancho=(
-        "Un lote de elementos combustibles salió aprobado del laboratorio — "
-        "pero los datos crudos cuentan otra historia."
+        "Un lote de elementos combustibles salió aprobado — pero los datos crudos "
+        "cuentan otra historia."
     ),
     # Los párrafos van en una sola línea lógica (concatenación implícita de
     # strings): rich los envuelve al ancho de la terminal. Los saltos duros

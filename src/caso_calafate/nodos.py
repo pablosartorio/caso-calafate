@@ -72,8 +72,17 @@ def nodo_analizar(estado: EstadoJuego, *, caso: Caso, analista: Runnable) -> dic
     if sospechoso is None or not sospechoso.secretos:
         return {"pistas_nuevas": []}
 
+    # Dos mensajes y no un string suelto, y no es cosmético: medido contra
+    # qwen2.5:7b sobre una respuesta que cumplía el criterio al pie de la
+    # letra, pasarlo como texto plano detectaba la pista 2 de 8 veces; como
+    # SystemMessage con las instrucciones + HumanMessage con el pedido, 4 de
+    # 4, sin inventar pistas que no estaban. El modelo trata las reglas como
+    # instrucciones en vez de como una parrafada más para resumir.
     veredicto: SecretosRevelados = analista.invoke(
-        prompt_analista(sospechoso, estado.get("respuesta", ""))
+        [
+            SystemMessage(prompt_analista(sospechoso, estado.get("respuesta", ""))),
+            HumanMessage("¿Qué secretos se revelaron en esa respuesta?"),
+        ]
     )
 
     validos = {s.id for s in sospechoso.secretos}

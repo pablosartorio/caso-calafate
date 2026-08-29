@@ -119,8 +119,10 @@ def test_el_caso_embebido_en_la_partida_no_spoilea(cliente, caso_asado):
     assert caso["titulo"] == caso_asado.titulo
     assert caso["max_preguntas"] == 5
     assert caso["total_secretos"] == 2
-    assert [s["id"] for s in caso["sospechosos"]] == ["moro", "michi"]
-    assert caso["sospechosos"][0]["coartada"] == "Dice que dormía en la cucha."
+    # El orden se baraja por partida, así que se compara el conjunto.
+    assert {s["id"] for s in caso["sospechosos"]} == {"moro", "michi"}
+    coartadas = {s["id"]: s["coartada"] for s in caso["sospechosos"]}
+    assert coartadas["moro"] == "Dice que dormía en la cucha."
 
 
 def test_el_detalle_de_una_partida_abierta_tampoco_spoilea(cliente):
@@ -627,3 +629,20 @@ def test_si_el_llm_explota_el_socket_avisa_y_sigue_vivo(caso_asado, analista_fij
             # El socket sigue abierto: una jugada mal formada se contesta igual.
             ws.send_json({"tipo": "bailar"})
             assert ws.receive_json()["tipo"] == "error"
+
+
+def test_el_orden_de_los_sospechosos_es_estable_dentro_de_la_partida(cliente):
+    """Se baraja por partida, no por request.
+
+    El orden del archivo del caso delataba al culpable (casi nunca era el del
+    medio), así que ahora cada partida tiene el suyo. Pero tiene que ser
+    SIEMPRE el mismo dentro de una: si cambiara en cada request, las fichas
+    del escritorio se reordenarían solas al recargar la página.
+    """
+    id_ = _nueva_partida(cliente)
+
+    ordenes = {
+        tuple(s["id"] for s in cliente.get(f"/api/partidas/{id_}").json()["caso"]["sospechosos"])
+        for _ in range(4)
+    }
+    assert len(ordenes) == 1, f"el orden cambió entre requests: {ordenes}"

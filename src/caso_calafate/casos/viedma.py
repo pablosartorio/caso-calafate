@@ -14,8 +14,8 @@ CASO_VIEDMA = Caso(
     delito="la certificación del Hito 3 con un alcance que el radar nunca alcanzó",
     culpable_alias="falsificador",
     gancho=(
-        "Un hito de pago se cobró con un número que el radar nunca alcanzó "
-        "— y alguien lo escondió mal."
+        "El radar costero nunca alcanzó el número que se informó arriba — y alguien lo "
+        "escondió mal."
     ),
     # Los párrafos van en una sola línea lógica (concatenación implícita de
     # strings): rich los envuelve al ancho de la terminal. Los saltos duros

@@ -15,8 +15,8 @@ CASO_NAHUEL = Caso(
     delito="la adulteración del registro de calibración del acelerador",
     culpable_alias="encubridor",
     gancho=(
-        "Un paciente recibió más dosis de la indicada, y alguien se encargó "
-        "de que nadie supiera cuándo empezó el error."
+        "Un paciente recibió más dosis de la indicada. Nadie puede decir desde cuándo, "
+        "y no es por falta de registros."
     ),
     briefing=(
         "Neuquén, 08:15 de la mañana. Te suena el teléfono.\n\n"

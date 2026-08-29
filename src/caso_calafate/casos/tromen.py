@@ -14,8 +14,8 @@ CASO_TROMEN = Caso(
     delito="el daño al mecanismo de rotación de la antena del radar Tromen",
     culpable_alias="saboteador",
     gancho=(
-        "A horas de la demo para las Fuerzas Armadas, alguien dejó el radar "
-        "más nuevo del país mirando para cualquier lado."
+        "A horas de la demo para las Fuerzas Armadas, el radar más nuevo del país "
+        "falló feo. Y no fue mala suerte."
     ),
     briefing=(
         "Zapala, 05:40 de la mañana. Te suena el teléfono en el hotel.\n\n"

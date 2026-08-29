@@ -14,6 +14,7 @@ medio de una partida — y porque es la misma librería que LangChain usa para
 "structured output", así que la vas a ver por todo el proyecto.
 """
 
+import random
 import unicodedata
 from collections.abc import Iterable
 
@@ -133,6 +134,24 @@ class Caso(BaseModel):
 
     def culpable(self) -> Sospechoso:
         return next(s for s in self.sospechosos if s.es_culpable)
+
+    def sospechosos_para(self, semilla: str) -> list[Sospechoso]:
+        """Los sospechosos en un orden barajado, propio de cada partida.
+
+        El orden en que están escritos en el archivo del caso terminó siendo
+        una pista involuntaria: en los once casos, el culpable casi nunca es
+        el del medio. Un jugador que lo nota descarta uno sin preguntar nada.
+
+        La semilla es el id de la partida, así que el orden es distinto entre
+        partidas pero SIEMPRE el mismo dentro de una: si cambiara en cada
+        request, las fichas del escritorio se reordenarían solas al recargar.
+
+        Ojo: esto solo cambia cómo se MUESTRAN. Buscar por nombre, resolver
+        la acusación y contar secretos no dependen del orden.
+        """
+        barajados = list(self.sospechosos)
+        random.Random(semilla).shuffle(barajados)
+        return barajados
 
 
 def buscar_caso(catalogo: Iterable[Caso], texto: str) -> Caso | None:

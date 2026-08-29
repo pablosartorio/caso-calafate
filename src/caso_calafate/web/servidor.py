@@ -290,7 +290,8 @@ def crear_app(
             "motor_motivo": app.state.motivos.get(modelo_id, "ese motor ya no está en el catálogo"),
         }
 
-    def _caso_dto(caso: Caso, motor: str) -> CasoDTO:
+    def _caso_dto(caso: Caso, partida: dict) -> CasoDTO:
+        motor = partida["modelo_id"]
         return CasoDTO(
             id=caso.id,
             titulo=caso.titulo,
@@ -298,7 +299,11 @@ def crear_app(
             max_preguntas=caso.max_preguntas,
             total_secretos=caso.total_secretos(),
             motor=motor,
-            sospechosos=[SospechosoDTO(**s.model_dump()) for s in caso.sospechosos],
+            # Barajados por partida: el orden del archivo delataba al culpable.
+            sospechosos=[
+                SospechosoDTO(**s.model_dump())
+                for s in caso.sospechosos_para(partida["id"])
+            ],
             sede=caso.sede,
             ciudad=caso.ciudad,
             delito=caso.delito,
@@ -413,7 +418,7 @@ def crear_app(
         detalle = {
             **partida,
             **_estado_del_motor(partida["modelo_id"]),
-            "caso": _caso_dto(caso, partida["modelo_id"]),
+            "caso": _caso_dto(caso, partida),
             **_resumen(estado, caso),
             "pistas": _pistas_descubiertas(estado, caso),
             "conversaciones": _serializar_conversaciones(estado.get("conversaciones", {})),

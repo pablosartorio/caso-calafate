@@ -6,8 +6,11 @@ ni checkpointer — eso se prueba aparte, en ``test_grafo.py``.
 """
 
 import pytest
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.runnables import RunnableLambda
 
 from caso_calafate.nodos import decidir_accion, nodo_acusar, nodo_analizar, nodo_cerrar_turno
+from caso_calafate.prompts import SecretosRevelados
 
 # ── decidir_accion (el ruteo de entrada) ─────────────────────────────────────
 
@@ -106,3 +109,32 @@ def test_el_veredicto_usa_las_palabras_del_caso(caso_asado):
     derrota = nodo_acusar({"sospechoso_actual": "michi"}, caso=caso_asado)
     assert f"El verdadero {caso_asado.culpable_alias}" in derrota["respuesta"]
     assert "saboteador" not in derrota["respuesta"]
+
+
+def test_el_analista_recibe_instrucciones_como_system(caso_asado):
+    """El encuadre del prompt no es cosmético: es la diferencia entre detectar
+    la pista y comérsela.
+
+    Medido contra qwen2.5:7b sobre una respuesta que cumplía el criterio: como
+    string suelto salía 2 de 8 veces; como SystemMessage + HumanMessage, 4 de
+    4. Este test congela el encuadre para que nadie lo "simplifique" sin
+    saber lo que cuesta.
+    """
+    recibido = {}
+
+    def espia(entrada):
+        recibido["entrada"] = entrada
+        return SecretosRevelados(ids=[])
+
+    nodo_analizar(
+        {"sospechoso_actual": "michi", "respuesta": "Vi al perro llevarse el asado."},
+        caso=caso_asado,
+        analista=RunnableLambda(espia),
+    )
+
+    entrada = recibido["entrada"]
+    assert isinstance(entrada, list), "el analista tiene que recibir mensajes, no un string"
+    assert [type(m) for m in entrada] == [SystemMessage, HumanMessage]
+    # Las reglas y los criterios viajan como instrucciones del sistema.
+    assert "criterio" in entrada[0].content or "revelado" in entrada[0].content
+    assert entrada[0].content.count("vio_al_perro") == 1
