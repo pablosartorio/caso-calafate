@@ -1,0 +1,15 @@
+# uv.lock es un archivo GENERADO, no escrito a mano.
+#
+# El merge textual de git es una trampa acá: al mezclar dos ramas con
+# dependencias distintas puede armar un lock sintácticamente válido pero
+# inconsistente — versiones que nunca resolvieron juntas — y eso no se nota
+# hasta que un `uv sync` instala algo raro. Marcarlo como binario obliga a
+# elegir un lado entero y regenerarlo:
+#
+#     git checkout --theirs uv.lock   (o --ours: da igual cuál)
+#     uv lock                         # lo regenera desde pyproject.toml
+#     git add uv.lock
+#
+# linguist-generated hace que GitHub lo colapse en los diffs, que es lo que
+# uno quiere de un lockfile de 8000 líneas.
+uv.lock merge=binary linguist-generated=true
