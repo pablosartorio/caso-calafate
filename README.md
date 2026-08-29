@@ -168,8 +168,10 @@ De más fácil a más difícil:
    que dijo otro (necesita pasar fragmentos de una conversación a otra).
 4. **Motores de nube.** `init_chat_model` acepta `google_genai:` y `groq:` sin
    tocar el motor: alcanza con instalar el paquete de integración y agregar una
-   línea a `MOTORES`. Está probado en la rama `motores-multiproveedor`, que
-   suma Gemini y Groq encima de esto.
+   línea a `MOTORES` — el servidor, el CLI y el frontend ni se enteran. Ojo con
+   el analista: `with_structured_output` sobre Groq usa `tool_choice` forzado
+   por defecto y no todos los modelos gratis lo respetan; para esos hay que
+   pedirle `method="json_schema"` (para eso está `Motor.metodo_estructurado`).
 4. ~~**Partidas guardadas.**~~ Resuelto en la interfaz web (`web/partidas.py` +
    `AsyncSqliteSaver`). Queda para el CLI: agregá `--partida <nombre>` usando
    el mismo `thread_id` contra la misma base.
