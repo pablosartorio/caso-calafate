@@ -3,219 +3,215 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El Caso Calafate</title>
 <meta name="description" content="Juego de misterio por interrogatorios: tres sospechosos interpretados por un LLM local, quince preguntas y una sola acusación. Proyecto didáctico de LangGraph.">
-<meta name="theme-color" content="#0d0906">
+<meta name="theme-color" content="#0b0705">
 <link rel="canonical" href="https://pablosartorio.github.io/caso-calafate/">
-
 <meta property="og:type" content="website">
 <meta property="og:title" content="El Caso Calafate">
-<meta property="og:description" content="Juego de misterio por interrogatorios: tres sospechosos interpretados por un LLM local, quince preguntas y una sola acusación. Proyecto didáctico de LangGraph.">
+<meta property="og:description" content="Tres sospechosos interpretados por un LLM te mienten en la cara. Quince preguntas y una sola acusación.">
 <meta property="og:url" content="https://pablosartorio.github.io/caso-calafate/">
 <meta property="og:image" content="https://pablosartorio.github.io/caso-calafate/og.png">
 <meta property="og:locale" content="es_AR">
 <meta name="twitter:card" content="summary_large_image">
-<title>El Caso Calafate</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Archivo:wght@400;500;600&family=VT323&family=Caveat:wght@600&display=swap">
 <style>
 :root{
-  --noche:#0d0906; --cuero:#1c140d; --cuero-alto:#2a1e13;
-  --papel:#ece0c4; --papel-oscuro:#d9c9a4; --papel-borde:#b9a67c;
+  --noche:#0b0705; --cuero:#171009; --cuero-alto:#241a10; --linea:#2c1f13;
+  --papel:#eee2c8; --papel-oscuro:#d8c7a2; --papel-borde:#b9a67c;
   --tinta:#2b2119; --tinta-suave:#5c4c3a; --tinta-tenue:#8a765c;
-  --ambar:#d99a3d; --ambar-tenue:#8a6224;
-  --fosforo:#86efac; --fosforo-tenue:#4a8f66;
-  --hueso:#cbbda1; --hueso-tenue:#8d8069;
+  --ambar:#d99a3d; --ambar-hondo:#8a6224;
+  --fosforo:#7dfcb0; --fosforo-hondo:#3f7f5c;
+  --sello:#b3402f;
+  --hueso:#cdbfa4; --hueso-tenue:#8b7e68;
   --maquina:"Special Elite","Courier New",monospace;
   --cuerpo:"Archivo","Helvetica Neue",Arial,sans-serif;
   --terminal:"VT323","Courier New",monospace;
   --mano:"Caveat","Segoe Script",cursive;
-  --medida:64ch;
 }
 *{box-sizing:border-box}
+html{scroll-behavior:smooth}
 body{
   margin:0; background:var(--noche); color:var(--hueso);
   font-family:var(--cuerpo); font-size:17px; line-height:1.65;
-  -webkit-font-smoothing:antialiased;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
 }
-/* El velador: un halo cálido arriba, el resto en penumbra. */
-.escritorio{
-  background:
-    radial-gradient(120% 70% at 50% -10%, rgba(217,154,61,.16), transparent 60%),
-    linear-gradient(180deg,#1a120b 0%, var(--noche) 45%);
-}
-.marco{max-width:1120px; margin:0 auto; padding:0 clamp(1.2rem,4vw,3rem)}
+.marco{max-width:1180px; margin:0 auto; padding:0 clamp(1.2rem,4vw,3.4rem)}
 h1,h2,h3{font-family:var(--maquina); font-weight:400; text-wrap:balance; margin:0}
-p{margin:0; max-width:var(--medida)}
-a{color:var(--ambar)}
-a:focus-visible,button:focus-visible{outline:2px solid var(--ambar); outline-offset:3px}
+p{margin:0; max-width:62ch}
+a{color:var(--ambar); text-underline-offset:.25em}
+a:focus-visible{outline:2px solid var(--ambar); outline-offset:4px}
+.rotulo{font-family:var(--maquina); font-size:.7rem; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--ambar-hondo)}
 
-.rotulo{
-  font-family:var(--maquina); font-size:.72rem; letter-spacing:.22em;
-  text-transform:uppercase; color:var(--ambar-tenue);
-}
+/* ══ HERO ══════════════════════════════════════════════════════════════ */
+.hero{position:relative; padding:clamp(1.8rem,4vw,3rem) 0 clamp(2.4rem,5vw,3.6rem);
+  background:radial-gradient(130% 80% at 50% -20%, rgba(217,154,61,.15), transparent 62%)}
+.membrete{display:flex; align-items:center; gap:1rem; margin-bottom:clamp(1.2rem,2.6vw,2rem)}
+.membrete .linea{flex:1; height:1px; background:linear-gradient(90deg,var(--ambar-hondo),transparent)}
 
-/* ── Encabezado ─────────────────────────────────────────────────────── */
-header{padding:clamp(2.5rem,7vw,5rem) 0 0}
-.membrete{display:flex; align-items:center; gap:.9rem; margin-bottom:2.2rem}
-.membrete .linea{flex:1; height:1px; background:linear-gradient(90deg,var(--ambar-tenue),transparent)}
-h1{
-  font-size:clamp(2.6rem,8.5vw,5.4rem); line-height:.95; letter-spacing:.04em;
-  color:var(--papel); margin-bottom:1rem;
-}
-.tesis{font-size:clamp(1.05rem,2.4vw,1.3rem); color:var(--hueso); max-width:44ch}
+.titular{display:grid; gap:clamp(1.4rem,4vw,3rem); align-items:end}
+@media(min-width:900px){ .titular{grid-template-columns:1fr auto} }
+h1{font-size:clamp(2.5rem,7.6vw,5.4rem); line-height:.88; letter-spacing:.02em; color:var(--papel)}
+h1 .fina{display:block; font-size:.42em; letter-spacing:.3em; color:var(--ambar);
+  margin-bottom:.7em; text-transform:uppercase}
+.tesis{font-size:clamp(1.02rem,2.1vw,1.24rem); max-width:38ch; color:var(--hueso)}
 .tesis strong{color:var(--papel); font-weight:600}
 
-/* ── El hero: el juego jugándose solo ───────────────────────────────── */
-.interrogatorio{
-  display:grid; gap:clamp(1.2rem,3vw,2.4rem); align-items:start;
-  grid-template-columns:minmax(0,1fr); margin:clamp(2.2rem,6vw,3.6rem) 0 0;
+/* ── El osciloscopio: la pieza fuerte ──────────────────────────────── */
+.instrumento{
+  margin-top:clamp(1.4rem,3vw,2.2rem); position:relative;
+  border:1px solid #22301f; border-radius:3px; background:#050805;
+  box-shadow:0 26px 60px rgba(0,0,0,.6), inset 0 0 90px rgba(125,252,176,.045);
+  overflow:hidden;
 }
-@media(min-width:860px){ .interrogatorio{grid-template-columns:300px minmax(0,1fr)} }
-
-.camara{
-  background:#080c08; border:1px solid #1f2a1f; border-radius:2px;
-  padding:14px; position:relative; overflow:hidden;
-}
-.camara canvas{
-  display:block; width:100%; height:auto; image-rendering:pixelated;
-  filter:saturate(.92) contrast(1.04);
-}
-/* Barrido del CRT, sutil y sin distraer. */
-.camara::after{
+#scope{display:block; width:100%; height:clamp(120px,15vw,168px)}
+.pantalla{position:relative}
+.pantalla::after{
   content:""; position:absolute; inset:0; pointer-events:none;
-  background:repeating-linear-gradient(180deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);
+  background:
+    repeating-linear-gradient(180deg,rgba(0,0,0,.3) 0 1px,transparent 1px 3px),
+    radial-gradient(120% 160% at 50% 50%, transparent 52%, rgba(0,0,0,.72));
 }
-.chapa{
-  display:flex; justify-content:space-between; align-items:baseline; gap:1rem;
-  margin-top:12px; font-family:var(--maquina); font-size:.78rem;
+.instrumento-pie{
+  display:flex; flex-wrap:wrap; gap:.6rem 1.6rem; align-items:baseline;
+  padding:.55rem .95rem; border-top:1px solid #1a241a;
+  font-family:var(--maquina); font-size:.66rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--fosforo-hondo); background:#050805;
 }
-.chapa b{color:var(--fosforo); font-weight:400; letter-spacing:.06em}
-.chapa span{color:var(--fosforo-tenue); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase}
+.instrumento-pie .vivo{color:var(--fosforo)}
+.instrumento-pie .vivo::before{content:"● "; animation:latir 1.6s ease-in-out infinite}
+@keyframes latir{50%{opacity:.25}}
 
-.consola{
-  background:#070b07; border:1px solid #1f2a1f; border-radius:2px;
-  padding:clamp(1rem,2.5vw,1.6rem); min-height:330px;
-  font-family:var(--terminal); font-size:1.32rem; line-height:1.5;
-  display:flex; flex-direction:column; gap:.55rem;
+.transcripcion{
+  padding:clamp(1rem,2.4vw,1.7rem) clamp(1rem,2.4vw,1.7rem) clamp(1.2rem,3vw,2rem);
+  font-family:var(--terminal); font-size:clamp(1.15rem,2.2vw,1.42rem); line-height:1.45;
+  display:flex; flex-direction:column; gap:.45rem; min-height:7.6em;
+  position:relative; z-index:1;
 }
-.consola .det{color:var(--fosforo-tenue)}
-.consola .det b{color:var(--fosforo); font-weight:400}
-.consola .voz{color:var(--fosforo); text-shadow:0 0 10px rgba(134,239,172,.28)}
-.cursor{display:inline-block; width:.55ch; height:1.05em; vertical-align:-.16em;
-  background:var(--fosforo); animation:latir 1.05s steps(1) infinite}
-@keyframes latir{50%{opacity:0}}
+.det{color:var(--fosforo-hondo)}
+.det b{color:var(--fosforo); font-weight:400}
+.voz{color:var(--fosforo); text-shadow:0 0 12px rgba(125,252,176,.3)}
+.cursor{display:inline-block; width:.5ch; height:1em; vertical-align:-.13em;
+  background:var(--fosforo); animation:latir 1s steps(1) infinite}
 
-/* La pista entra como un papelito que cae sobre la terminal. */
 .pista{
-  background:var(--papel); color:var(--tinta);
-  border-left:3px solid var(--ambar); padding:.85rem 1rem;
-  font-family:var(--cuerpo); font-size:.92rem; line-height:1.5;
-  box-shadow:0 10px 26px rgba(0,0,0,.55);
-  opacity:0; transform:translateY(10px) rotate(-.4deg); transition:opacity .5s ease, transform .5s ease;
+  align-self:flex-start; max-width:56ch; margin-top:.3rem;
+  background:linear-gradient(168deg,var(--papel),var(--papel-oscuro)); color:var(--tinta);
+  border-left:3px solid var(--sello); padding:.8rem 1.05rem;
+  font-family:var(--cuerpo); font-size:.9rem; line-height:1.5;
+  box-shadow:0 14px 34px rgba(0,0,0,.6);
+  opacity:0; transform:translateY(14px) rotate(-.5deg);
+  transition:opacity .45s ease, transform .45s cubic-bezier(.2,.9,.3,1.2);
 }
-.pista.visible{opacity:1; transform:translateY(0) rotate(-.4deg)}
-.pista .rotulo{color:var(--ambar-tenue); display:block; margin-bottom:.25rem}
+.pista.visible{opacity:1; transform:translateY(0) rotate(-.5deg)}
+.pista .rotulo{display:block; color:var(--sello); margin-bottom:.25rem}
 
-/* ── Comandos ───────────────────────────────────────────────────────── */
-.arranque{
-  display:flex; flex-wrap:wrap; gap:1.4rem 2.4rem; align-items:center;
-  margin:clamp(2rem,5vw,3rem) 0 clamp(3rem,8vw,5rem);
-  padding-top:1.6rem; border-top:1px solid #2a1e13;
-}
-.comandos{display:flex; flex-direction:column; gap:.45rem}
-code{
-  font-family:var(--terminal); font-size:1.16rem; color:var(--papel);
-  background:#150f09; border:1px solid #2f2317; padding:.28em .7em; border-radius:2px;
-}
-code .prompt{color:var(--ambar-tenue)}
-.nota-mano{font-family:var(--mano); font-size:1.3rem; color:var(--ambar); max-width:26ch; line-height:1.35}
+.arranque{display:flex; flex-wrap:wrap; gap:1.2rem 2.6rem; align-items:center;
+  margin-top:clamp(1.8rem,4vw,2.8rem)}
+.comandos{display:flex; flex-direction:column; gap:.4rem}
+code{font-family:var(--terminal); font-size:1.14rem; color:var(--papel);
+  background:#120c07; border:1px solid #2f2317; padding:.26em .7em; border-radius:2px}
+code .p{color:var(--ambar-hondo)}
+.nota-mano{font-family:var(--mano); font-size:1.32rem; color:var(--ambar);
+  max-width:24ch; line-height:1.3}
 
-/* ── Secciones sobre papel ──────────────────────────────────────────── */
-section{padding:clamp(2.6rem,6vw,4.2rem) 0}
-.seccion-titulo{font-size:clamp(1.5rem,3.6vw,2.1rem); color:var(--papel); letter-spacing:.03em; margin:.5rem 0 1rem}
+/* ══ SECCIONES ═════════════════════════════════════════════════════════ */
+section{padding:clamp(2.8rem,6.5vw,4.8rem) 0}
+.seccion-titulo{font-size:clamp(1.6rem,3.8vw,2.4rem); color:var(--papel);
+  letter-spacing:.02em; margin:.45rem 0 1rem}
 .bajada{color:var(--hueso-tenue); margin-bottom:2.4rem}
 
-.reglas{display:grid; gap:1px; background:#2a1e13; border:1px solid #2a1e13;
-  grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
-.regla{background:var(--cuero); padding:1.5rem 1.4rem}
-.regla b{display:block; font-family:var(--maquina); font-size:2.6rem; color:var(--ambar);
-  line-height:1; margin-bottom:.5rem; font-variant-numeric:tabular-nums}
-.regla span{font-size:.95rem; color:var(--hueso-tenue)}
-
-/* El archivo: fichas de papel */
-.fichas{display:grid; gap:1rem; grid-template-columns:repeat(auto-fill,minmax(255px,1fr))}
-.ficha{
-  background:linear-gradient(172deg,#f4ebd6,var(--papel-oscuro));
-  color:var(--tinta); border:1px solid var(--papel-borde); border-radius:2px;
-  padding:1.1rem 1.15rem; display:flex; flex-direction:column; gap:.5rem;
-  box-shadow:0 6px 16px rgba(0,0,0,.45);
+/* Las fichas de los sospechosos: foto censurada, sin caras */
+.elenco{display:grid; gap:clamp(1rem,2.5vw,1.7rem);
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.ficha-persona{
+  background:linear-gradient(168deg,var(--papel),var(--papel-oscuro)); color:var(--tinta);
+  border:1px solid var(--papel-borde); padding:1rem; position:relative;
+  box-shadow:0 12px 30px rgba(0,0,0,.5);
 }
-.ficha h3{font-size:.95rem; letter-spacing:.05em; text-transform:uppercase}
-.ficha p{font-size:.88rem; line-height:1.45; color:var(--tinta-suave); max-width:none}
-.ficha .sede{margin-top:auto; font-family:var(--maquina); font-size:.7rem;
+.ficha-persona:nth-child(1){transform:rotate(-.7deg)}
+.ficha-persona:nth-child(3){transform:rotate(.6deg)}
+.ficha-persona canvas{display:block; width:100%; height:auto; border:1px solid #b0996b}
+.ficha-persona .nombre{font-family:var(--maquina); font-size:.95rem; letter-spacing:.04em;
+  text-transform:uppercase; margin-top:.75rem}
+.ficha-persona .cargo{font-size:.82rem; color:var(--tinta-suave); line-height:1.4}
+.ficha-persona .dice{font-family:var(--mano); font-size:1.12rem; color:#6a3b30;
+  line-height:1.25; margin-top:.6rem}
+.ficha-persona .sello-ficha{
+  position:absolute; top:1.4rem; right:1.3rem; transform:rotate(-8deg);
+  font-family:var(--maquina); font-size:.72rem; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--sello);
+  border:2px solid var(--sello); padding:.3em .6em; background:rgba(238,226,200,.55);
+}
+
+.reglas{display:grid; gap:1px; background:var(--linea); border:1px solid var(--linea);
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.regla{background:var(--cuero); padding:1.4rem 1.3rem}
+.regla b{display:block; font-family:var(--maquina); font-size:2.7rem; color:var(--ambar);
+  line-height:1; margin-bottom:.4rem; font-variant-numeric:tabular-nums}
+.regla span{font-size:.93rem; color:var(--hueso-tenue)}
+
+.fichas{display:grid; gap:1rem; grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.ficha{background:linear-gradient(172deg,#f2e8d0,var(--papel-oscuro)); color:var(--tinta);
+  border:1px solid var(--papel-borde); padding:1.05rem 1.1rem;
+  display:flex; flex-direction:column; gap:.45rem; box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.ficha h3{font-size:.92rem; letter-spacing:.05em; text-transform:uppercase}
+.ficha p{font-size:.86rem; line-height:1.45; color:var(--tinta-suave); max-width:none}
+.ficha .sede{margin-top:auto; font-family:var(--maquina); font-size:.67rem;
   letter-spacing:.08em; color:var(--tinta-tenue); text-transform:uppercase}
 
-/* El turno: una secuencia real, por eso va numerada */
-.turno{display:grid; gap:1px; background:#2a1e13; border:1px solid #2a1e13}
-@media(min-width:820px){ .turno{grid-template-columns:repeat(4,1fr)} }
-.paso{background:var(--cuero); padding:1.5rem 1.35rem; display:flex; flex-direction:column; gap:.55rem}
-.paso .n{font-family:var(--maquina); font-size:.72rem; letter-spacing:.2em; color:var(--ambar-tenue)}
-.paso h3{font-family:var(--terminal); font-size:1.5rem; color:var(--fosforo); letter-spacing:.02em}
-.paso p{font-size:.92rem; color:var(--hueso-tenue); max-width:none}
-.paso.sin-llm h3{color:var(--papel)}
+.turno{display:grid; gap:1px; background:var(--linea); border:1px solid var(--linea)}
+@media(min-width:840px){ .turno{grid-template-columns:repeat(4,1fr)} }
+.paso{background:var(--cuero); padding:1.4rem 1.3rem; display:flex; flex-direction:column; gap:.5rem}
+.paso .n{font-family:var(--maquina); font-size:.68rem; letter-spacing:.2em; color:var(--ambar-hondo)}
+.paso h3{font-family:var(--terminal); font-size:1.55rem; color:var(--fosforo)}
+.paso.frio h3{color:var(--papel)}
+.paso p{font-size:.9rem; color:var(--hueso-tenue); max-width:none}
 
-/* Motores */
-.motores{width:100%; border-collapse:collapse; font-size:.94rem}
-.motores th,.motores td{text-align:left; padding:.85rem 1rem; border-bottom:1px solid #2a1e13; vertical-align:top}
-.motores th{font-family:var(--maquina); font-size:.72rem; letter-spacing:.16em;
-  text-transform:uppercase; color:var(--ambar-tenue); border-bottom-color:var(--ambar-tenue)}
-.motores td:first-child{font-family:var(--terminal); font-size:1.18rem; color:var(--papel); white-space:nowrap}
+.dos{display:grid; gap:clamp(1.6rem,4vw,3.2rem)}
+@media(min-width:840px){ .dos{grid-template-columns:1.05fr .95fr; align-items:start} }
+.motores{width:100%; border-collapse:collapse; font-size:.93rem}
+.motores th,.motores td{text-align:left; padding:.8rem 1rem; border-bottom:1px solid var(--linea); vertical-align:top}
+.motores th{font-family:var(--maquina); font-size:.68rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--ambar-hondo); border-bottom-color:var(--ambar-hondo)}
+.motores td:first-child{font-family:var(--terminal); font-size:1.16rem; color:var(--papel); white-space:nowrap}
 .motores td{color:var(--hueso-tenue)}
 .tabla-marco{overflow-x:auto}
+.sello-verde{display:inline-block; font-family:var(--maquina); font-size:.76rem;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--fosforo);
+  border:2px solid var(--fosforo-hondo); padding:.34em .8em; transform:rotate(-2deg)}
 
-.dos-columnas{display:grid; gap:clamp(1.6rem,4vw,3rem)}
-@media(min-width:820px){ .dos-columnas{grid-template-columns:1.1fr .9fr; align-items:start} }
+footer{border-top:1px solid var(--linea); padding:2.4rem 0 3.2rem;
+  color:var(--hueso-tenue); font-size:.89rem}
+.pie{display:flex; flex-wrap:wrap; gap:.8rem 2rem; align-items:baseline; justify-content:space-between}
 
-.sello{
-  display:inline-block; font-family:var(--maquina); font-size:.78rem; letter-spacing:.14em;
-  text-transform:uppercase; color:var(--fosforo); border:2px solid var(--fosforo-tenue);
-  padding:.35em .8em; transform:rotate(-2.5deg); border-radius:2px;
-}
-
-footer{border-top:1px solid #2a1e13; padding:2.6rem 0 3.4rem; color:var(--hueso-tenue); font-size:.9rem}
-.pie{display:flex; flex-wrap:wrap; gap:1rem 2rem; align-items:baseline; justify-content:space-between}
-
-@media (prefers-reduced-motion:reduce){
-  *,*::after{animation:none!important; transition:none!important}
-}
+@media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation:none!important; transition:none!important} }
 </style>
 </head>
 <body>
 
-
-<div class="escritorio">
 <div class="marco">
-
-  <header>
+  <header class="hero">
     <div class="membrete">
       <span class="rotulo">Centro Espacial Patagónico · División Seguridad</span>
       <span class="linea"></span>
-      <span class="rotulo">Expediente 01</span>
+      <span class="rotulo">Sala 2 · 06:50</span>
     </div>
-    <h1>El Caso<br>Calafate</h1>
-    <p class="tesis">Tres sospechosos interpretados por un LLM te mienten en la cara.
-      Tenés <strong>quince preguntas</strong> y <strong>una sola acusación</strong>.</p>
 
-    <div class="interrogatorio">
-      <div>
-        <div class="camara">
-          <canvas id="retrato" width="80" height="96" aria-label="Retrato pixel art de la sospechosa en la cámara del interrogatorio"></canvas>
-        </div>
-        <div class="chapa"><b id="chapa-nombre">MARTA IRIARTE</b><span id="chapa-cargo">Ingeniera jefa</span></div>
+    <div class="titular">
+      <h1><span class="fina">Expediente abierto</span>El Caso<br>Calafate</h1>
+      <p class="tesis">Tres sospechosos interpretados por un LLM te mienten en la cara.
+        Tenés <strong>quince preguntas</strong> y <strong>una sola acusación</strong>.</p>
+    </div>
+
+    <div class="instrumento">
+      <div class="pantalla">
+        <canvas id="scope" aria-label="Osciloscopio: la voz del sospechoso en el interrogatorio"></canvas>
       </div>
-
-      <div class="consola" id="consola">
+      <div class="transcripcion">
         <div class="det" id="linea-det"></div>
         <div class="voz" id="linea-voz"></div>
         <div class="pista" id="pista">
@@ -224,73 +220,78 @@ footer{border-top:1px solid #2a1e13; padding:2.6rem 0 3.4rem; color:var(--hueso-
           la perdió el jueves y no lo reportó.
         </div>
       </div>
+      <div class="instrumento-pie">
+        <span class="vivo" id="estado-scope">en interrogatorio</span>
+        <span>sujeto: 01 / 03</span>
+        <span>analista: activo</span>
+        <span id="contador-pistas">pistas 0 / 7</span>
+      </div>
     </div>
 
     <div class="arranque">
       <div class="comandos">
-        <code><span class="prompt">$</span> uv sync</code>
-        <code><span class="prompt">$</span> uv run detective</code>
+        <code><span class="p">$</span> uv sync</code>
+        <code><span class="p">$</span> uv run detective</code>
       </div>
       <p class="nota-mano">Sin API key. Los modelos corren en tu máquina.</p>
     </div>
   </header>
 
   <section>
+    <span class="rotulo">El elenco</span>
+    <h2 class="seccion-titulo">Uno de los tres miente más que los otros</h2>
+    <p class="bajada">Cada sospechoso tiene su coartada, su forma de esquivar y secretos que
+      solo suelta si le apretás donde duele. El culpable jamás confiesa: como mucho, comete
+      un desliz.</p>
+    <div class="elenco" id="elenco"></div>
+  </section>
+
+  <section>
     <span class="rotulo">La mecánica</span>
     <h2 class="seccion-titulo">Preguntar es gastar</h2>
-    <p class="bajada">Cada pregunta descuenta. Los sospechosos esquivan, se contradicen y sueltan
-      deslices solo cuando los apretás donde duele. El culpable jamás confiesa.</p>
     <div class="reglas">
       <div class="regla"><b>11</b><span>casos, cada uno con su elenco y su culpable</span></div>
-      <div class="regla"><b>3</b><span>sospechosos por caso, uno miente más que los otros</span></div>
+      <div class="regla"><b>3</b><span>sospechosos por caso</span></div>
       <div class="regla"><b>15</b><span>preguntas para toda la investigación</span></div>
-      <div class="regla"><b>1</b><span>acusación: si errás, el culpable queda libre</span></div>
+      <div class="regla"><b>1</b><span>acusación: si errás, queda libre</span></div>
     </div>
   </section>
 
   <section>
     <span class="rotulo">El archivo</span>
     <h2 class="seccion-titulo">Once expedientes abiertos</h2>
-    <p class="bajada">Todos en el mismo universo: satélites, reactores, radares y medicina nuclear
-      en la Patagonia. Agregar uno es agregar un archivo en <code style="font-size:.95rem">casos/</code>.</p>
+    <p class="bajada">Todos en el mismo universo: satélites, reactores, radares y medicina
+      nuclear en la Patagonia. Agregar uno es agregar un archivo en <code>casos/</code>.</p>
     <div class="fichas" id="fichas"></div>
   </section>
 
   <section>
     <span class="rotulo">Bajo el capó</span>
     <h2 class="seccion-titulo">Un turno, cuatro nodos</h2>
-    <p class="bajada">Es un proyecto didáctico de LangGraph. El grafo rutea según la jugada y el
-      estado sobrevive en un checkpointer, así que una partida se retoma donde la dejaste.</p>
+    <p class="bajada">Es un proyecto didáctico de LangGraph. El grafo rutea según la jugada y
+      el estado sobrevive en un checkpointer, así que una partida se retoma donde la dejaste.</p>
     <div class="turno">
-      <div class="paso">
-        <span class="n">Nodo 1</span><h3>interrogar</h3>
+      <div class="paso"><span class="n">Nodo 1</span><h3>interrogar</h3>
         <p>El LLM <em>actor</em> contesta en personaje, con el historial de ese sospechoso y un
-          system prompt armado desde los datos del caso. Streamea token por token.</p>
-      </div>
-      <div class="paso">
-        <span class="n">Nodo 2</span><h3>analizar</h3>
-        <p>Un segundo rol, el <em>analista</em>, lee la respuesta y decide con salida estructurada
-          qué secretos se revelaron. El nodo filtra alucinaciones y repetidos.</p>
-      </div>
-      <div class="paso sin-llm">
-        <span class="n">Nodo 3 · sin LLM</span><h3>cerrar_turno</h3>
-        <p>Descuenta la pregunta y acumula las pistas nuevas en la libreta. Determinista.</p>
-      </div>
-      <div class="paso sin-llm">
-        <span class="n">Nodo 4 · sin LLM</span><h3>acusar</h3>
-        <p>Compara acusado contra culpable, cierra la partida y recién ahí libera el epílogo.</p>
-      </div>
+          system prompt armado desde los datos del caso. Streamea token por token.</p></div>
+      <div class="paso"><span class="n">Nodo 2</span><h3>analizar</h3>
+        <p>Un segundo rol, el <em>analista</em>, lee la respuesta y decide con salida
+          estructurada qué secretos se revelaron. El nodo filtra alucinaciones y repetidos.</p></div>
+      <div class="paso frio"><span class="n">Nodo 3 · sin LLM</span><h3>cerrar_turno</h3>
+        <p>Descuenta la pregunta y acumula las pistas nuevas en la libreta. Determinista.</p></div>
+      <div class="paso frio"><span class="n">Nodo 4 · sin LLM</span><h3>acusar</h3>
+        <p>Compara acusado contra culpable, cierra la partida y recién ahí libera el epílogo.</p></div>
     </div>
   </section>
 
   <section>
-    <div class="dos-columnas">
+    <div class="dos">
       <div>
         <span class="rotulo">Dónde corre</span>
         <h2 class="seccion-titulo">En tu máquina, gratis</h2>
-        <p class="bajada">El motor se elige al empezar cada partida, en la terminal y en la web.
-          Los que no están disponibles igual se muestran, con el motivo — así la lista sirve
-          también de ayuda de instalación.</p>
+        <p class="bajada">El motor se elige al empezar cada partida. Los que no están
+          disponibles igual se muestran, con el motivo — así la lista sirve también de ayuda
+          de instalación.</p>
         <div class="tabla-marco">
           <table class="motores">
             <thead><tr><th>Motor</th><th>Qué necesita</th></tr></thead>
@@ -307,11 +308,11 @@ footer{border-top:1px solid #2a1e13; padding:2.6rem 0 3.4rem; color:var(--hueso-
         <span class="rotulo">Y además</span>
         <h2 class="seccion-titulo">Dos pieles, un motor</h2>
         <p class="bajada">La misma partida en la terminal o en el escritorio del detective: un
-          monitor CRT con los retratos pixel art, la libreta de pistas y un corcho con hilos rojos.
-          El grafo no sabe que existe una pantalla.</p>
-        <p style="margin-bottom:1.6rem"><code><span class="prompt">$</span> uv run detective-web</code></p>
-        <p><span class="sello">142 tests · 0 tokens</span></p>
-        <p style="margin-top:1rem; color:var(--hueso-tenue); font-size:.92rem">
+          monitor CRT, la libreta de pistas y un corcho con hilos rojos. El grafo no sabe que
+          existe una pantalla.</p>
+        <p style="margin-bottom:1.5rem"><code><span class="p">$</span> uv run detective-web</code></p>
+        <p><span class="sello-verde">144 tests · 0 tokens</span></p>
+        <p style="margin-top:.9rem; color:var(--hueso-tenue); font-size:.9rem">
           Toda la suite corre sin API key y sin red: modelos falsos de LangChain, un caso de
           juguete y un cliente de WebSocket en memoria.</p>
       </div>
@@ -324,131 +325,245 @@ footer{border-top:1px solid #2a1e13; padding:2.6rem 0 3.4rem; color:var(--hueso-
       <a href="https://github.com/pablosartorio/caso-calafate">github.com/pablosartorio/caso-calafate</a>
     </div>
   </footer>
-
-</div>
 </div>
 
 <script>
-const RETRATOS = {"paleta":{"k":"#000000","v":"#222034","m":"#45283c","M":"#663931","B":"#8f563b","o":"#df7126","t":"#d9a066","F":"#eec39a","y":"#fbf236","L":"#99e550","g":"#6abe30","E":"#37946e","d":"#4b692f","O":"#524b24","Z":"#323c39","z":"#3f3f74","A":"#306082","a":"#5b6ee1","C":"#639bff","c":"#5fcde4","e":"#cbdbfc","w":"#ffffff","S":"#9badb7","s":"#847e87","G":"#696a6a","h":"#595652","p":"#76428a","r":"#ac3232","R":"#d95763","P":"#d77bba","n":"#8f974a","u":"#8a6f30"},"transparente":".","ancho":80,"alto":96,"retratos":{"marta":{"base":["FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","ttttttttttttttttttttttttttttttttttttttthhttttttttttttttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFhhhhhhhhhhFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFhhSSSSSSSSShhhFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFhhhhSSSSSSSShhhhFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFhhhhhhhhhhhhhhhhhhFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFhhhhhhhhhhhhhhhhhhhhFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFhhhhhhhhhhhhhhhhhhhhhhFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFhhhhhhhhhhhhhhhhhhhhhhFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFhhhhhhhhhhhhhhhhhhhhhhhhFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFhhhhhhhhtttttttthhhhhhhhFFFFFFFFFFFFFFFFFFFFFFFFFFFF","ttttttttttttttttttttttttttthhhhhhhtttttttttttthhhhhhtttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFFhhhhhhtttttttttttttthhhhhhFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFhhhhhtttttttttttttttthhhhhFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFhhhhtttttttttttttttttthhhhFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhhhhhtttttttttttttttttthhhhhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhhhhtttttttttttttttttttthhhhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhhhhtttttttttttttttttttthhhhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhhhtttttttttttttttttttttthhhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhhhtttttttttttttttttttttthhhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhhhttttttttZttttZtttttttthhhFFFFFFFFFFFFFFFFFFFFFFFFFF","tttttttttttttttttttttttttthhhtZZZZZZZZZttZZZZZZZZZthhhtttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFhhhZZZZZZZZZttttZZZZZZZZZhhhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhhhtZvvvvvvttttttvvvvvvvtthhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFhhvvvvvvvvvvvttttvvvvvvvvvvvhhFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFthvvvvtwwwwtvvvvvvtwwwwtvvvvhttFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFtthhhvvwwOOwwvvvvvvwwOOwwvvhhhttFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFtthhhvvwwkOwwvtBBtvwwkOwwvvthhhtFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFtthhhvvvvvvvvvtBBtvvvvvvvvvthhhtFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFthhhhtvvvvvvvvtBBtvvvvvvvvtthhhtFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFhhhhttttttttttBtttttttttttthhhFFFFFFFFFFFFFFFFFFFFFFFFF","ttttttttttttttttttttttttthhhhttttttttttBttttttttttthhhhttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFhhhhttttttttttBttttttttttthhhhFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFhhhhtttttttttBBtBttttttttthhhhFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhshttttttttttBBBttttttttthhhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhshtttttttttttttttttttttthhhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhshtttttttttttttttttttttthhhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhshhttttBttttttttttBtttthhhhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhshhtttttttttttttttttttthhhhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFhsshFttttttttttttttttttFhhhhFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFshhFFttttttttttttttttFFhhhFFFFFFFFFFFFFFFFFFFFFFFFFFF","ttttttttttttttttttttttttttthhhhtttttttttttttttttthhhhttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFhFFttttttttttttttFFhFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBttttttBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","tttttttttttttttttttttttttttttttttttBBBBBBBBBBttttttttttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFZZBBBBBBBBBBZZFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFZZZZZBBBBBBZZZZZFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFZZZZZZZZBBZZZZZZZZFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFZZZZZZZZZZZZZZZZZZZZFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFZhhZZZZZZZZZhhZZZZZZZZZhhZFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFZZZhhhhZZZZZZhhhhZZZZZZhhhhZZZFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFZZZZZhhhhhZZZZhhhhhhZZZZhhhhhZZZZZFFFFFFFFFFFFFFFFFFFFFFF","ttttttttttttttttttttttZZZZZZhhhhhhZZhhhZZhhhZZhhhhhhZZZZZZtttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFZZZZZZZhhhhhhhhhhhZZhhhhhhhhhhhZZZZZZZFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFZZZZZZZZhhhhhhhhhhhZZhhhhhhhhhhhZZZZZZZZFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFZZZZZZZZZhhhhhhhhhhhZZhhhhhhhhhhhZZZZZZZZZFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhhZZZZZZZZZZFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhhZZZZZZZZZZZFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhZZZZZZZZZZZZFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFZZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhsssZZZZZZZZZZFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFZZZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhFFZZZZZZZZZZZZFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFZZZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhFFFZZZZZZZZZZZFFFFFFFFFFFFFFF","tttttttttttttttZZZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhZFFZZZZZZZZZZZttttttttttttttt","FFFFFFFFFFFFFFZZZZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhZFFZZZZZZZZZZZZFFFFFFFFFFFFFF","FFFFFFFFFFFFFFZZZZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhZFFZZZZZZZZZZZZFFFFFFFFFFFFFF","FFFFFFFFFFFFFFZZZZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhZFFZZZZZZZZZZZZFFFFFFFFFFFFFF","FFFFFFFFFFFFFZZZZZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhZZZZZZZZZZZZZZZZFFFFFFFFFFFFF","FFFFFFFFFFFFFZZZZZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhZZZZZZZZZZZZZZZZFFFFFFFFFFFFF","FFFFFFFFFFFFFZZZZZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhZZZZZZZZZZZZZZZZFFFFFFFFFFFFF","FFFFFFFFFFFFFZZZZZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhZZZZZZZZZZZZZZZZFFFFFFFFFFFFF","FFFFFFFFFFFFZZZZZZZZZZZZZZZZZhhhhhhhhhhZZhhhhhhhhhhZZZZZZZZZZZZZZZZZFFFFFFFFFFFF","FFFFFFFFFFFFZZZZZZZZZZZZZZZZZZhhhhhhhhhZZhhhhhhhhhhZZZZZZZZZZZZZZZZZFFFFFFFFFFFF","FFFFFFFFFFFhZZZZZZZZZZZZZZZZZZhhhhhhhhhZZhhhhhhhhhhZZZZZZZZZZZZZZZZZhhFFFFFFFFFF","FFFFFFFFFFhhZZZZZZZZZZZZZZZZZZhhhhhhhhhZZhhhhhhhhhZZZZZZZZZZZZZZZZZZhhhFFFFFFFFF"],"capas":{"parpado":{"x":31,"y":38,"filas":["tttttt......tttttt","tttttt......tttttt","tttttt......tttttt",".tttt........tttt."]},"boca_cerrada":{"x":35,"y":52,"filas":["BBBBBBBBBB","BBBBBBBBBB"]},"boca_abierta":{"x":38,"y":52,"filas":["MMMM","MMMM","MMMM"]}}},"julian":{"base":["FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","tttttttttttttttttttttttttttttttttttttvvvvvvvvttttttttttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvvvvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvvvvvvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvvvvvvvvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvvvvvvvvvvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvvvvvvvvvvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvvvvvvvvvvvvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvvvvvvvvvvvvvvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFF","ttttttttttttttttttttttttvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvtttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvvvtvvvvvtttvvvttvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvtttttttttttttttvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvtttttttttttttttttvvvvvvFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvtttttttttttttttttttvvvvvFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFvvvvvvttttttttttttttttttttvvvvvvFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFvvvvvttttttttttttttttttttvvvvvFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFvvvttttZZZZZttttZZZZZttttvvvFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFtttZZZZZZZZttZZZZZZZZtttFFFFFFFFFFFFFFFFFFFFFFFFFFFF","ttttttttttttttttttttttttttttttZZZZZttZttttZttZZZZZtttttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFFtttZZttttttttttttttttZZtttFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttttttttttttFeFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttttttttttttFeeFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFtttttttwwwwttttttttwwwwtttttteFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFtttttttwwOOwwttttttwwOOwwtttttttFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFtttttttwwOOwwttttttwwOOwwtttttttFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFttttttttwwwwtttBBtttwwwwttttttttFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFtttttttttttttttBBtttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFtttttttttttttttBBtttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFF","tttttttttttttttttttttttttttttttttttttttBBttttttttttttttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFtFtttttttttttBBtttttttttttFtFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFttttBttttttBBtttttttBtttFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttBttttBBBBtttBtttttFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFtttttttttttBBtttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBttttttBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","ttttttttttttttttttttttttttttttttttttBBBBBBBBBttttttttttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFZZZZBBBBBBBBBZZZFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFZZZZrrBBBBBBBBrrZZZZFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFZZZZorrrrhhhhhhrrrroZZZZFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFZZZooorrrrhhhhhhrrrroooZZZFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFZhhoooorrrrhhhhhhrrrroooohhZFFFFFFFFFFFFFFFFFFFFFFFFFF","tttttttttttttttttttttttthhhooooooorrrrhhhhrrrrooooooohhhtttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFhhhhoooooooorrrrhhhhrrrroooooooohhhhFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFhhhhhoooooooorrrrhhhhrrrroooooooohhhhhFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFhhhhhoooooooooorrrrhhrrrroooooooooohhhhhFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFhhhhhooooooooooorrrrhhrrrrooooooooooohhhhhFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFhhhhhhooooooooooorrrrhhrrrrooooooooooohhhhhhFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFhhhhhoooooooooooorrrrrrrrrroooooooooooohhhhhFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFhhhhhhooooooooooooorrrrrrrrooooooooooooohhhhhhFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFhhhhhhoooooooooooooorrrrrrrroooooooooooooohhhhhhFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFhhhhhhFFFFFFFFFooooorrrrrrrroooooFFFFFFFFFhhhhhhFFFFFFFFFFFFFFFF","ttttttttttttttthhhhhhhFFFFFFFFFFFFoohrrrrrrhooFFFFFFFFFFFFhhhhhhhttttttttttttttt","FFFFFFFFFFFFFFFhhhhhhhFFFFFFFFFFFFooheeeeeehoooFFFFFFFFFFFhhhhhhhFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFhhhhhhhoooooooFFFFFoooheeseeehhooFFFFFooooooohhhhhhhFFFFFFFFFFFFFF","FFFFFFFFFFFFFFhhhhhhhoooooooooooooohhessseeehoooooooooooooohhhhhhhFFFFFFFFFFFFFF","FFFFFFFFFFFFFFhhhhhhhoooooooooooooohhessseeehoooooooooooooohhhhhhhFFFFFFFFFFFFFF","FFFFFFFFFFFFFhhhhhhhhoooooooooooooohheeeeeeehoooooooooooooohhhhhhhhFFFFFFFFFFFFF","FFFFFFFFFFFFFhhhhhhhhoooooooooooooohheeeeeeehooooooooooooooohhhhhhhFFFFFFFFFFFFF","FFFFFFFFFFFFFhhhhhhhooooooooooooooohheeeeeeehooooooooooooooohhhhhhhFFFFFFFFFFFFF","FFFFFFFFFFFFFhhhhhhhooooooooooooooohheeeeeeehooooooooooooooohhhhhhhFFFFFFFFFFFFF","FFFFFFFFFFFFhhhhhhhhooooooooooooooohhhhhhhhhhooooooooooooooohhhhhhhhFFFFFFFFFFFF","FFFFFFFFFFFhhhhhhhhhooooooooooooooohhhhhhhhhhooooooooooooooohhhhhhhhhhFFFFFFFFFF","FFFFFFFFFFhhhhhhhhhhooooooooooooooohhhhhhhhhhhoooooooooooooohhhhhhhhhhhFFFFFFFFF"],"capas":{"parpado":{"x":31,"y":38,"filas":["tttttt......tttttt","tttttt......tttttt","tttttt......tttttt",".tttt........tttt."]},"boca_cerrada":{"x":35,"y":53,"filas":["BBBBBBBBBB",".BBBBBBBBB"]},"boca_abierta":{"x":38,"y":52,"filas":[".MM.","MMMM","MMMM",".MM."]}}},"silvia":{"base":["FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFvvFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFvmmmmvFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFmmmmmmmmFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFmmvvvvvvmmFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","tttttttttttttttttttttttttttttttttttvvvvvvvvvvttttttttttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvkkvvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvvvkkvvvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvvvvkkvvvvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFvvmmvvvvkkvvvvmmvvFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFvmmvvvvvkkvvvvvmmvFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFvmmvvvvvvkkvvvvvvmmvFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFvmmvvvvvvvkkvvvvvvvmmvFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFmmvvvvvvttttttvvvvvvmmFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","tttttttttttttttttttttttttttttmvvvvvttttttttttvvvvvmttttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFFFvmvvvttttttttttttttvvvmvFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvttttttttttttttttvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvvttttttttttttttttvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvttttttttttttttttttvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFvvvvttttttttttttttttttvvvvFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFvvvttttttttttttttttttttvvvFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFvvvttttttttttttttttttttvvvFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFvvvttttttttttttttttttttvvvFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFvvvttttmmmttttttttmmmttttvvFFFFFFFFFFFFFFFFFFFFFFFFFFF","ttttttttttttttttttttttttttvvvtmmmmmmmmttttmmmmmmmmtvvvtttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFvvvtmmmmmmmmttttmmmmmmmmtvvvFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFvvvttttttttttttttttttttttvvvFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFtvvvttttttttttttttttttttttvvvtFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFtvvvtttwwwwttttttttwwwwtttvvvttFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFttvvvttwwZZwwttttttwwZZwwttvvvttFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFtttttttwwZZwwttBBttwwZZwwtttttttFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFttttttttwwwwtttBBtttwwwwttttttttFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFtttttttttttttttBBtttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttBBttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFF","tttttttttttttttttttttttttwwttttttttttttBBttttttttttttwwttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFwwFtttttttttttBBtttttttttttFwwFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttBBBtttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFtttttttttttBBtttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFttttttttFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBttttttBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","ttttttttttttttttttttttttttttttttttttBBBBBBBBBttttttttttttttttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBBBBBBBBFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFzzBBBBBBBBBzFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFzzBBBBBBBBBzFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFAzzBBBBBBBBzzAFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFAAAAzzzzzzzzzzzzAAAAFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFFFFAAAAAAAzzzzzzzzzzAAAAAAAFFFFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFFAAAAAAAAAAAAzzzzzzAAAAAAAAAAAAFFFFFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFFFFFAAAAAAAAAAAAAAzzzzAAAAAAAAAAAAAAFFFFFFFFFFFFFFFFFFFFFFFF","ttttttttttttttttttttttAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAtttttttttttttttttttttt","FFFFFFFFFFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAeeAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAeeeeeeeeeeeeeAAFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAeeeeeeeeeeeeeAAFFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAeAAAeAAeAAAAAAFFFFFFFFFFFFFFF","FFFFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAeeeeeeeeeeeeeAAAFFFFFFFFFFFFFFF","tttttttttttttttAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAeeeeeeeeeeeeeAAAttttttttttttttt","FFFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAeeeeeeeeeeeeeAAAAFFFFFFFFFFFFFF","FFFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFFF","FFFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFFF","FFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFF","FFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFF","FFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFF","FFFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFF","FFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFF","FFFFFFFFFFFFAAAAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFF","FFFFFFFFFFFhAAAAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAAAAAAAAAhhFFFFFFFFFF","FFFFFFFFFFhhAAAAAAAAAAAAAAAAAAAAAAAAAAAzzAAAAAAAAAAAAAAAAAAAAAAAAAAAhhhFFFFFFFFF"],"capas":{"parpado":{"x":31,"y":38,"filas":["tttttt......tttttt","tttttt......tttttt","tttttt......tttttt",".tttt........tttt."]},"boca_cerrada":{"x":35,"y":52,"filas":["BBBB..BBBB",".BBBBBBBB.","....BB...."]},"boca_abierta":{"x":38,"y":52,"filas":["MMMM","MMMM",".MM."]}}}}};
+const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/* ── El retrato: el mismo pixel art que usa el juego, con sus capas ──── */
-const cv = document.getElementById("retrato");
-const cx = cv.getContext("2d");
-const P = RETRATOS.paleta, VACIO = RETRATOS.transparente;
-const marta = RETRATOS.retratos.marta;
+/* ══ El osciloscopio ═══════════════════════════════════════════════════
+   La traza ES la voz del sospechoso: dibuja mientras habla, se aplana
+   cuando calla, y destella en el instante en que el analista encuentra la
+   pista. Nada de esto es una imagen: se dibuja cuadro a cuadro. */
+const cv = document.getElementById("scope");
+const cx = cv.getContext("2d", { alpha: false });
+let W = 0, H = 0;
 
-function pintarFilas(filas, ox = 0, oy = 0) {
-  for (let y = 0; y < filas.length; y++) {
-    const fila = filas[y];
-    for (let x = 0; x < fila.length; x++) {
-      const c = fila[x];
-      if (c === VACIO) continue;
-      const color = P[c];
-      if (!color) continue;
-      cx.fillStyle = color;
-      cx.fillRect(ox + x, oy + y, 1, 1);
-    }
+function medir() {
+  const r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+  W = Math.max(1, Math.round(r.width)); H = Math.max(1, Math.round(r.height));
+  cv.width = W * d; cv.height = H * d;
+  cx.setTransform(d, 0, 0, d, 0, 0);
+}
+addEventListener("resize", () => { medir(); quieto ? estatico() : rejilla(); });
+
+let energia = 0;      // 0 = callado, 1 = hablando fuerte
+let destello = 0;     // el fogonazo de la pista
+let t = 0;
+
+function rejilla() {
+  cx.fillStyle = "#050805";
+  cx.fillRect(0, 0, W, H);
+  cx.strokeStyle = "rgba(125,252,176,.07)";
+  cx.lineWidth = 1;
+  const paso = 34;
+  cx.beginPath();
+  for (let x = 0; x <= W; x += paso) { cx.moveTo(x + .5, 0); cx.lineTo(x + .5, H); }
+  for (let y = paso / 2; y <= H; y += paso) { cx.moveTo(0, y + .5); cx.lineTo(W, y + .5); }
+  cx.stroke();
+}
+
+/* Una onda de voz creíble: tres senos desfasados con una envolvente que
+   sube y baja, más ruido fino. Nada de random puro, que se ve como pasto. */
+function altura(x, fase) {
+  const u = x / W;
+  const envolvente = Math.sin(u * Math.PI) ** .6;                 // se apaga en los bordes
+  const silaba = .55 + .45 * Math.sin(u * 26 + fase * 2.1);       // cadencia del habla
+  const onda = Math.sin(u * 47 + fase * 5.2) * .6
+             + Math.sin(u * 113 + fase * 3.1) * .26
+             + Math.sin(u * 211 + fase * 8.7) * .12;
+  return onda * envolvente * silaba;
+}
+
+/* La traza, en una sola función: la usan el bucle animado y la versión
+   quieta. Antes la estática se dibujaba suelta y el handler de resize la
+   borraba al redibujar la rejilla — quedaba una pantalla vacía. */
+function trazo(fase, amp, grosor, color) {
+  const medio = H / 2;
+  cx.beginPath();
+  for (let x = 0; x <= W; x += 2) {
+    const y = medio + altura(x, fase) * amp;
+    x ? cx.lineTo(x, y) : cx.moveTo(x, y);
   }
+  cx.lineWidth = grosor;
+  cx.strokeStyle = color;
+  cx.stroke();
 }
 
-function pintar({ parpado = false, boca = "cerrada" } = {}) {
-  cx.clearRect(0, 0, cv.width, cv.height);
-  pintarFilas(marta.base);
-  const capas = marta.capas;
-  const b = boca === "abierta" ? capas.boca_abierta : capas.boca_cerrada;
-  if (b) pintarFilas(b.filas, b.x, b.y);
-  if (parpado && capas.parpado) pintarFilas(capas.parpado.filas, capas.parpado.x, capas.parpado.y);
+function estatico() {
+  rejilla();
+  cx.shadowColor = "rgba(125,252,176,.7)"; cx.shadowBlur = 9;
+  trazo(1.2, H * .3, 1.8, "#7dfcb0");
+  cx.shadowBlur = 0;
 }
 
-const quieto = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-let hablando = false;
+function cuadro() {
+  // Persistencia de fósforo: en vez de borrar, se apaga un poco.
+  cx.fillStyle = "rgba(5,8,5,.30)";
+  cx.fillRect(0, 0, W, H);
 
-pintar();
+  const amp = (H * .34) * (0.045 + energia * .95) * (1 + destello * 1.5);
+  cx.shadowColor = "rgba(125,252,176,.85)";
+  cx.shadowBlur = 8 + destello * 26 + energia * 8;
+  trazo(t, amp, 1.7 + destello * 1.6, destello > .02 ? "#eafff2" : "#7dfcb0");
+  cx.shadowBlur = 0;
 
-if (!quieto) {
-  // Parpadeo irregular: dos seguidos a veces, como una persona.
-  (function parpadear() {
-    setTimeout(() => {
-      pintar({ parpado: true, boca: hablando ? "abierta" : "cerrada" });
-      setTimeout(() => {
-        pintar({ boca: hablando ? "abierta" : "cerrada" });
-        parpadear();
-      }, 110);
-    }, 2200 + Math.random() * 3400);
-  })();
-
-  setInterval(() => {
-    if (hablando) pintar({ boca: Math.random() > .5 ? "abierta" : "cerrada" });
-  }, 130);
+  t += .016 + energia * .05;
+  destello *= .93;
+  requestAnimationFrame(cuadro);
 }
 
-/* ── El interrogatorio: un turno real del Caso Calafate ─────────────── */
+medir();
+if (quieto) estatico();
+else { rejilla(); requestAnimationFrame(cuadro); }
+
+/* ══ El interrogatorio ═════════════════════════════════════════════════ */
 const PREGUNTA = "¿Dónde estaba su tarjeta esa noche? El registro dice que entró a las 03:02.";
 const RESPUESTA = "Perdí la tarjeta el jueves y no la reporté. No entré a la sala esa madrugada.";
 const elDet = document.getElementById("linea-det");
 const elVoz = document.getElementById("linea-voz");
 const elPista = document.getElementById("pista");
+const elEstado = document.getElementById("estado-scope");
+const elContador = document.getElementById("contador-pistas");
+const DET = '<b>(15?) Marta &rsaquo;</b> ';
+const espera = (ms) => new Promise((r) => setTimeout(r, ms));
 
-function tipear(el, texto, ms, prefijo = "") {
+function tipear(el, texto, ms, prefijo = "", hablando = false) {
   return new Promise((listo) => {
     let i = 0;
     (function paso() {
       i++;
       el.innerHTML = prefijo + texto.slice(0, i) + '<span class="cursor"></span>';
+      // La energía sigue al texto: sube en las vocales, cae en los espacios.
+      if (hablando) energia = texto[i - 1] === " " ? .12 : .55 + Math.random() * .45;
       if (i < texto.length) return setTimeout(paso, ms);
       el.innerHTML = prefijo + texto;
+      if (hablando) energia = 0;
       listo();
     })();
   });
 }
-
-const espera = (ms) => new Promise((r) => setTimeout(r, ms));
-const DET = "<b>(15?) Marta &rsaquo;</b> ";
 
 async function escena() {
   if (quieto) {
     elDet.innerHTML = DET + PREGUNTA;
     elVoz.textContent = RESPUESTA;
     elPista.classList.add("visible");
+    elContador.textContent = "pistas 1 / 7";
+    elEstado.textContent = "pista registrada";
     return;
   }
-  while (true) {
-    elDet.innerHTML = ""; elVoz.textContent = ""; elPista.classList.remove("visible");
+  for (;;) {
+    elDet.innerHTML = ""; elVoz.textContent = "";
+    elPista.classList.remove("visible");
+    elContador.textContent = "pistas 0 / 7";
+    elEstado.textContent = "en interrogatorio";
     await espera(900);
-    await tipear(elDet, PREGUNTA, 34, DET);
-    await espera(520);
-    hablando = true;
-    await tipear(elVoz, RESPUESTA, 26);
-    hablando = false;
-    pintar();
-    await espera(420);
+    await tipear(elDet, PREGUNTA, 33, DET);
+    await espera(480);
+    elEstado.textContent = "sujeto hablando";
+    await tipear(elVoz, RESPUESTA, 25, "", true);
+    elEstado.textContent = "analista leyendo";
+    await espera(620);
+    destello = 1;                       // el fogonazo, justo cuando cae la pista
     elPista.classList.add("visible");
-    await espera(7000);
+    elContador.textContent = "pistas 1 / 7";
+    elEstado.textContent = "pista registrada";
+    await espera(7200);
   }
 }
 escena();
 
-/* ── El archivo de casos ─────────────────────────────────────────────── */
+/* ══ Las fichas del elenco ═════════════════════════════════════════════
+   Foto de identificación censurada: silueta plana con trama de semitono.
+   Sin caras a propósito — todavía no sabés quién es quién. */
+const ELENCO = [
+  ["Marta Iriarte", "Ingeniera jefa de integración",
+   "«Me fui a las 21:00 y dormí sola. Nadie puede confirmarlo.»", 0.13],
+  ["Julián Funes", "Técnico de guardia (junior)",
+   "«Estuve en el puesto toda la noche. No vi entrar a nadie.»", 0.55],
+  ["Silvia Roldán", "Responsable de Calidad y Seguridad",
+   "«Cené con mi hermana y me quedé en casa terminando informes.»", 0.81],
+];
+
+function retratoCensurado(canvas, semilla) {
+  const g = canvas.getContext("2d");
+  const w = canvas.width = 300, h = canvas.height = 340;
+  let s = Math.floor(semilla * 10000) + 7;
+  const azar = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+  const entre = (a, b) => a + azar() * (b - a);
+
+  // Cada ficha es una persona distinta: cambian el porte, la cabeza, el
+  // volumen del pelo y hasta cómo se paró frente a la cámara. Sin caras
+  // —todavía no sabés quién es quién— pero tres siluetas, no una repetida.
+  const hombro   = entre(.34, .45);
+  const radio    = entre(.145, .185);
+  const altura   = entre(.315, .365);
+  const pelo     = entre(.9, 1.35);
+  const inclina  = entre(-.045, .045);
+
+  g.fillStyle = "#cdb98f"; g.fillRect(0, 0, w, h);
+  g.save();
+  g.translate(w / 2, h);
+  g.rotate(inclina);
+  g.translate(-w / 2, -h);
+
+  const cxr = w / 2, base = h * .99, cy = h * altura;
+  g.fillStyle = "#241a13";
+  g.beginPath();
+  g.moveTo(cxr - w * hombro, base);
+  g.bezierCurveTo(cxr - w * (hombro - .02), h * .60, cxr - w * .20, h * .55, cxr - w * .125, h * .53);
+  g.lineTo(cxr + w * .125, h * .53);
+  g.bezierCurveTo(cxr + w * .20, h * .55, cxr + w * (hombro - .02), h * .60, cxr + w * hombro, base);
+  g.closePath(); g.fill();
+  g.beginPath(); g.ellipse(cxr, cy, w * radio, h * (radio * 1.16), 0, 0, Math.PI * 2); g.fill();
+  // El pelo: una masa por encima de la cabeza, distinta en cada uno.
+  g.beginPath();
+  g.ellipse(cxr, cy - h * radio * .30, w * radio * pelo, h * radio * .95 * pelo, 0, Math.PI, 0);
+  g.fill();
+  // La barra va acá adentro: si se dibujara después del restore, quedaría
+  // horizontal sobre una cabeza inclinada, como pegada de apuro.
+  g.fillStyle = "#100b07";
+  g.fillRect(cxr - w * (radio + .05), cy - h * .028, w * (radio + .05) * 2, h * .072);
+  g.restore();
+
+  g.fillStyle = "rgba(36,26,19,.30)";
+  for (let y = 6; y < h; y += 7) {
+    for (let x = 6; x < w; x += 7) {
+      const r = azar() * 2.1;
+      if (r > .55) { g.beginPath(); g.arc(x, y, r * .9, 0, Math.PI * 2); g.fill(); }
+    }
+  }
+  const vin = g.createRadialGradient(cxr, h * .45, w * .18, cxr, h * .5, w * .72);
+  vin.addColorStop(0, "rgba(0,0,0,0)"); vin.addColorStop(1, "rgba(40,28,16,.45)");
+  g.fillStyle = vin; g.fillRect(0, 0, w, h);
+}
+
+document.getElementById("elenco").innerHTML = ELENCO.map(([n, c, d], i) => `
+  <article class="ficha-persona">
+    <span class="sello-ficha">Sin identificar</span>
+    <canvas id="retrato-${i}"></canvas>
+    <div class="nombre">${n}</div>
+    <div class="cargo">${c}</div>
+    <div class="dice">${d}</div>
+  </article>`).join("");
+ELENCO.forEach((e, i) => retratoCensurado(document.getElementById(`retrato-${i}`), e[3]));
+
+/* ══ El archivo de casos ═══════════════════════════════════════════════ */
 const CASOS = [
   ["El Caso Calafate", "A 48 horas del lanzamiento, alguien saboteó el satélite desde adentro.", "Centro Espacial Patagónico · Bariloche"],
-  ["El Caso Huemul", "A la 01:47 el reactor se frenó solo, como tenía que hacer. Lo raro es lo que alguien escribió después.", "Complejo Atómico Huemul · Bariloche"],
-  ["El Caso Penitentes", "A 72 horas de la demo para las Fuerzas Armadas, alguien vendió los planos del radar por afuera.", "Planta Los Penitentes · Bariloche"],
-  ["El Caso Nahuel", "Un paciente recibió más dosis de la indicada, y alguien se encargó de que nadie supiera cuándo empezó el error.", "Centro Nahuel de Medicina Nuclear · Neuquén"],
+  ["El Caso Huemul", "A la 01:47 el reactor se frenó solo, como tenía que hacer. Lo raro es lo que pasó en la hora siguiente.", "Complejo Atómico Huemul · Bariloche"],
+  ["El Caso Penitentes", "A 72 horas de la demo, los planos del radar aparecieron en manos que no debían tenerlos.", "Planta Los Penitentes · Bariloche"],
+  ["El Caso Nahuel", "Un paciente recibió más dosis de la indicada. Nadie puede decir desde cuándo, y no es por falta de registros.", "Centro Nahuel de Medicina Nuclear · Neuquén"],
   ["El Caso Chaltén III", "A cuatro días de un ensayo crítico, alguien maquilló los números para que el satélite pasara un examen que no debía pasar.", "Centro Espacial Patagónico · Bariloche"],
-  ["El Caso Andesita", "Un lote de elementos combustibles salió aprobado del laboratorio — pero los datos crudos cuentan otra historia.", "Planta Andesita · Bariloche"],
-  ["El Caso Tromen", "A horas de la demo, alguien dejó el radar más nuevo del país mirando para cualquier lado.", "Planta del Sistema Tromen · Zapala"],
-  ["El Caso Río Negro I", "Un ensayo crítico casi se arruina en el banco de pruebas — y alguien reescribió los registros para que pareciera mala suerte.", "Banco de Ensayos Ambientales · Bariloche"],
-  ["El Caso Esquel", "Un control de rutina destapó que el patrón que calibra la radioterapia de media Patagonia estaba mal — y alguien lo tapó.", "Centro de Dosimetría y Calibración · Esquel"],
-  ["El Caso Viedma", "Un hito de pago se cobró con un número que el radar nunca alcanzó — y alguien lo escondió mal.", "Estación de Radar Costero · Viedma"],
-  ["El Caso Piltriquitrón", "En la puesta en marcha de un reactor, alguien tocó el sistema de parada de emergencia — y después movió papeles para que pareciera el error de otro.", "Central Piltriquitrón · El Bolsón"],
+  ["El Caso Andesita", "Un lote de elementos combustibles salió aprobado — pero los datos crudos cuentan otra historia.", "Planta Andesita · Bariloche"],
+  ["El Caso Tromen", "A horas de la demo, el radar más nuevo del país falló feo. Y no fue mala suerte.", "Planta del Sistema Tromen · Zapala"],
+  ["El Caso Río Negro I", "Un ensayo crítico casi se arruina de madrugada — y después alguien acomodó los registros.", "Banco de Ensayos Ambientales · Bariloche"],
+  ["El Caso Esquel", "Un control de rutina destapó que media Patagonia se venía irradiando con un número equivocado.", "Centro de Dosimetría y Calibración · Esquel"],
+  ["El Caso Viedma", "El radar costero nunca alcanzó el número que se informó arriba — y alguien lo escondió mal.", "Estación de Radar Costero · Viedma"],
+  ["El Caso Piltriquitrón", "Alguien tocó el sistema de parada de emergencia — y se ocupó de que pareciera el error de otro.", "Central Piltriquitrón · El Bolsón"],
 ];
 document.getElementById("fichas").innerHTML = CASOS.map(([t, g, s]) => `
-  <article class="ficha">
-    <h3>${t}</h3>
-    <p>${g}</p>
-    <span class="sede">${s}</span>
-  </article>`).join("");
+  <article class="ficha"><h3>${t}</h3><p>${g}</p><span class="sede">${s}</span></article>`).join("");
 </script>
-
 </body>
 </html>
