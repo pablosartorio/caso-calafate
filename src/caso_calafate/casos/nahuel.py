@@ -10,6 +10,10 @@ from caso_calafate.caso import Caso, Secreto, Sospechoso
 CASO_NAHUEL = Caso(
     id="nahuel",
     titulo="EL CASO NAHUEL",
+    sede="Centro Nahuel de Medicina Nuclear",
+    ciudad="Neuquén",
+    delito="la adulteración del registro de calibración del acelerador",
+    culpable_alias="encubridor",
     gancho=(
         "Un paciente recibió más dosis de la indicada, y alguien se encargó "
         "de que nadie supiera cuándo empezó el error."

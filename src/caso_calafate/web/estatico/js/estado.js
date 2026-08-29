@@ -12,8 +12,9 @@
  */
 
 export const estado = {
-  motor: "",             // el motor LLM (o "fake"), de GET /api/casos — global
-  casosDisponibles: [],  // el catálogo para el selector, de GET /api/casos
+  casosDisponibles: [],  // el catálogo de casos, de GET /api/casos
+  motoresDisponibles: [],// el catálogo de motores LLM, de GET /api/casos
+  motorSugerido: "",     // el que viene preseleccionado en el desplegable
   caso: null,            // el caso DE LA PARTIDA ABIERTA (viaja embebido en el detalle)
   partidaId: null,       // la partida abierta en pantalla
   detalle: null,         // lo que devolvió GET /api/partidas/<id> al entrar

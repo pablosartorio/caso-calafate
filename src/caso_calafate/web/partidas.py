@@ -21,6 +21,8 @@ from datetime import UTC, datetime
 
 import aiosqlite
 
+from caso_calafate.llm import MOTOR_POR_DEFECTO
+
 
 class RegistroPartidas:
     """CRUD mínimo de partidas sobre una conexión aiosqlite compartida.
@@ -37,29 +39,36 @@ class RegistroPartidas:
         """Crea la tabla si no existe (y migra las que ya existían). Llamalo
         una vez al levantar la app."""
         await self._conexion.execute(
-            """
+            f"""
             CREATE TABLE IF NOT EXISTS partidas (
-                id      TEXT PRIMARY KEY,
-                nombre  TEXT NOT NULL,
-                creada  TEXT NOT NULL,
-                tablero TEXT NOT NULL DEFAULT '{}',
-                caso_id TEXT NOT NULL DEFAULT 'calafate'
+                id        TEXT PRIMARY KEY,
+                nombre    TEXT NOT NULL,
+                creada    TEXT NOT NULL,
+                tablero   TEXT NOT NULL DEFAULT '{{}}',
+                caso_id   TEXT NOT NULL DEFAULT 'calafate',
+                modelo_id TEXT NOT NULL DEFAULT '{MOTOR_POR_DEFECTO}'
             )
             """
         )
-        # Migración liviana: un partidas.sqlite de antes de que existiera el
-        # multi-caso tiene la tabla sin esta columna — CREATE TABLE IF NOT
-        # EXISTS no la agrega sola. Las partidas viejas quedan como
-        # 'calafate', que era el único caso que existía entonces.
+        # Migración liviana: un partidas.sqlite viejo tiene la tabla sin estas
+        # columnas — CREATE TABLE IF NOT EXISTS no las agrega sola. Cada una
+        # entra con el default que representa "lo único que existía antes":
+        # 'calafate' era el único caso, y antes del selector de motores el
+        # modelo salía del .env y era uno solo para todo el servidor.
         cursor = await self._conexion.execute("PRAGMA table_info(partidas)")
         columnas = {fila[1] for fila in await cursor.fetchall()}
         if "caso_id" not in columnas:
             await self._conexion.execute(
                 "ALTER TABLE partidas ADD COLUMN caso_id TEXT NOT NULL DEFAULT 'calafate'"
             )
+        if "modelo_id" not in columnas:
+            await self._conexion.execute(
+                "ALTER TABLE partidas ADD COLUMN modelo_id TEXT NOT NULL "
+                f"DEFAULT '{MOTOR_POR_DEFECTO}'"
+            )
         await self._conexion.commit()
 
-    async def crear(self, nombre: str, caso_id: str) -> dict:
+    async def crear(self, nombre: str, caso_id: str, modelo_id: str) -> dict:
         """Da de alta una partida y devuelve sus metadatos.
 
         El id es un uuid recortado: corto para viajar en URLs, único de sobra
@@ -70,10 +79,17 @@ class RegistroPartidas:
             "nombre": nombre,
             "creada": datetime.now(UTC).isoformat(timespec="seconds"),
             "caso_id": caso_id,
+            "modelo_id": modelo_id,
         }
         await self._conexion.execute(
-            "INSERT INTO partidas (id, nombre, creada, caso_id) VALUES (?, ?, ?, ?)",
-            (partida["id"], partida["nombre"], partida["creada"], partida["caso_id"]),
+            "INSERT INTO partidas (id, nombre, creada, caso_id, modelo_id) VALUES (?, ?, ?, ?, ?)",
+            (
+                partida["id"],
+                partida["nombre"],
+                partida["creada"],
+                partida["caso_id"],
+                partida["modelo_id"],
+            ),
         )
         await self._conexion.commit()
         return partida
@@ -81,15 +97,20 @@ class RegistroPartidas:
     async def listar(self) -> list[dict]:
         """Todas las partidas, la más nueva primero."""
         cursor = await self._conexion.execute(
-            "SELECT id, nombre, creada, caso_id FROM partidas ORDER BY creada DESC, id"
+            "SELECT id, nombre, creada, caso_id, modelo_id "
+            "FROM partidas ORDER BY creada DESC, id"
         )
         filas = await cursor.fetchall()
-        return [{"id": f[0], "nombre": f[1], "creada": f[2], "caso_id": f[3]} for f in filas]
+        return [
+            {"id": f[0], "nombre": f[1], "creada": f[2], "caso_id": f[3], "modelo_id": f[4]}
+            for f in filas
+        ]
 
     async def obtener(self, id_: str) -> dict | None:
         """Una partida con su tablero deserializado, o None si no existe."""
         cursor = await self._conexion.execute(
-            "SELECT id, nombre, creada, tablero, caso_id FROM partidas WHERE id = ?", (id_,)
+            "SELECT id, nombre, creada, tablero, caso_id, modelo_id FROM partidas WHERE id = ?",
+            (id_,),
         )
         fila = await cursor.fetchone()
         if fila is None:
@@ -100,6 +121,7 @@ class RegistroPartidas:
             "creada": fila[2],
             "tablero": json.loads(fila[3]),
             "caso_id": fila[4],
+            "modelo_id": fila[5],
         }
 
     async def borrar(self, id_: str) -> bool:

@@ -10,13 +10,16 @@ from contextlib import ExitStack
 
 import pytest
 from fastapi.testclient import TestClient
+from langchain_core.language_models.fake_chat_models import FakeListChatModel
 from starlette.websockets import WebSocketDisconnect
 
+from caso_calafate.llm import MOTOR_FAKE
 from caso_calafate.web import crear_app
+from caso_calafate.web.servidor import MAX_PREGUNTA
 
 
 @pytest.fixture
-def crear_cliente(caso_asado, actor_loro, analista_fijo):
+def crear_cliente(caso_asado, motores_fake):
     """Fábrica de clientes de prueba: cada test elige qué "detecta" el analista.
 
     El TestClient se usa como context manager para que dispare el lifespan de
@@ -26,7 +29,7 @@ def crear_cliente(caso_asado, actor_loro, analista_fijo):
     with ExitStack() as pila:
 
         def _crear(ids: list[str] | None = None) -> TestClient:
-            app = crear_app({caso_asado.id: caso_asado}, actor_loro, analista_fijo(ids or []))
+            app = crear_app({caso_asado.id: caso_asado}, motores_fake(ids))
             return pila.enter_context(TestClient(app))
 
         yield _crear
@@ -39,9 +42,14 @@ def cliente(crear_cliente) -> TestClient:
 
 
 def _nueva_partida(
-    cliente: TestClient, nombre: str = "expediente de prueba", caso_id: str = "asado"
+    cliente: TestClient,
+    nombre: str = "expediente de prueba",
+    caso_id: str = "asado",
+    modelo_id: str = MOTOR_FAKE,
 ) -> str:
-    respuesta = cliente.post("/api/partidas", json={"nombre": nombre, "caso_id": caso_id})
+    respuesta = cliente.post(
+        "/api/partidas", json={"nombre": nombre, "caso_id": caso_id, "modelo_id": modelo_id}
+    )
     assert respuesta.status_code == 201
     return respuesta.json()["id"]
 
@@ -145,13 +153,18 @@ def test_crear_listar_y_borrar_partidas(cliente):
 
 
 def test_las_partidas_necesitan_nombre(cliente):
-    vacio = cliente.post("/api/partidas", json={"nombre": "   ", "caso_id": "asado"})
+    vacio = cliente.post(
+        "/api/partidas", json={"nombre": "   ", "caso_id": "asado", "modelo_id": MOTOR_FAKE}
+    )
     assert vacio.status_code == 422
-    assert cliente.post("/api/partidas", json={"caso_id": "asado"}).status_code == 422
+    sin_nombre = {"caso_id": "asado", "modelo_id": MOTOR_FAKE}
+    assert cliente.post("/api/partidas", json=sin_nombre).status_code == 422
 
 
 def test_las_partidas_necesitan_un_caso_que_exista(cliente):
-    respuesta = cliente.post("/api/partidas", json={"nombre": "x", "caso_id": "no-existe"})
+    respuesta = cliente.post(
+        "/api/partidas", json={"nombre": "x", "caso_id": "no-existe", "modelo_id": MOTOR_FAKE}
+    )
     assert respuesta.status_code == 422
 
 
@@ -317,3 +330,300 @@ def test_los_retratos_pixel_viajan_por_rest(cliente):
     datos = respuesta.json()
     assert set(datos) == {"paleta", "transparente", "ancho", "alto", "retratos"}
     assert set(datos["retratos"]) == {"marta", "julian", "silvia"}
+
+
+# ── El vocabulario del caso viaja al frontend ────────────────────────────────
+
+
+def test_el_detalle_trae_el_vocabulario_del_caso(cliente, caso_asado):
+    """El briefing, la orden de acusación y el diario hablan del hecho REAL:
+    para eso necesitan estos campos. No spoilean — describen el hecho, no al
+    autor — pero igual el test de arriba vigila que nada más se cuele."""
+    id_ = _nueva_partida(cliente)
+    caso = cliente.get(f"/api/partidas/{id_}").json()["caso"]
+
+    assert caso["sede"] == caso_asado.sede
+    assert caso["ciudad"] == caso_asado.ciudad
+    assert caso["delito"] == caso_asado.delito
+    assert caso["culpable_alias"] == caso_asado.culpable_alias
+
+
+def test_el_veredicto_no_habla_del_caso_calafate(cliente):
+    """Regresión: la calificación decía «el CALAFATE-2 va a necesitar otro
+    detective» en todos los casos."""
+    id_ = _nueva_partida(cliente)
+    with cliente.websocket_connect(f"/ws/partidas/{id_}") as ws:
+        ws.send_json({"tipo": "acusar", "sospechoso": "michi"})
+        veredicto = ws.receive_json()
+
+    assert "CALAFATE" not in veredicto["calificacion"]
+    assert "chorro de asados" in veredicto["calificacion"]  # el alias del caso de juguete
+    assert "saboteador" not in veredicto["texto"]
+
+
+# ── El socket no se cae con lo que le manden ─────────────────────────────────
+
+
+@pytest.mark.parametrize(
+    "payload", ['"hola"', "[1, 2, 3]", "null", "42", "no soy json", ""], ids=repr
+)
+def test_el_socket_contesta_error_ante_un_mensaje_ilegible(cliente, payload):
+    """El browser es territorio del jugador: un mensaje roto tiene que
+    devolver un error, no matar la conexión de la partida."""
+    id_ = _nueva_partida(cliente)
+
+    with cliente.websocket_connect(f"/ws/partidas/{id_}") as ws:
+        ws.send_text(payload)
+        mensaje = ws.receive_json()
+        assert mensaje["tipo"] == "error"
+
+        # Y la partida sigue jugable después del papelón.
+        _, turno = _interrogar(ws, "michi", "¿Qué viste anoche?")
+        assert turno["preguntas_usadas"] == 1
+
+
+# ── Partidas huérfanas: su caso ya no está en el registro ────────────────────
+
+
+@pytest.fixture
+def partida_huerfana(tmp_path, caso_asado, motores_fake):
+    """Crea una partida de un caso que después desaparece del registro.
+
+    Pasa de verdad: alcanza con renombrar un caso o sacarlo de ``casos/``.
+    Antes, una sola partida así tiraba abajo TODO el archivo (500 en
+    /api/partidas) y ni siquiera se la podía borrar.
+    """
+    ruta = str(tmp_path / "partidas.sqlite")
+    otro = caso_asado.model_copy(
+        update={"id": "milanesa", "titulo": "¿QUIÉN SE COMIÓ LA MILANESA?"}
+    )
+    registro_completo = {caso_asado.id: caso_asado, otro.id: otro}
+
+    with TestClient(crear_app(registro_completo, motores_fake(), ruta_db=ruta)) as c:
+        id_ = _nueva_partida(c, "la milanesa", caso_id="milanesa")
+
+    # La misma base, pero ahora el caso "milanesa" ya no existe.
+    app = crear_app({caso_asado.id: caso_asado}, motores_fake(), ruta_db=ruta)
+    with TestClient(app) as cliente_sin_el_caso:
+        yield cliente_sin_el_caso, id_
+
+
+def test_una_partida_huerfana_no_tumba_el_archivo(partida_huerfana):
+    cliente, id_ = partida_huerfana
+    respuesta = cliente.get("/api/partidas")
+
+    assert respuesta.status_code == 200
+    partidas = respuesta.json()
+    assert [p["id"] for p in partidas] == [id_]
+    assert partidas[0]["caso_disponible"] is False
+    assert partidas[0]["caso_titulo"] == "— expediente ilegible —"
+
+
+def test_una_partida_huerfana_no_se_puede_abrir_pero_avisa(partida_huerfana):
+    cliente, id_ = partida_huerfana
+    respuesta = cliente.get(f"/api/partidas/{id_}")
+
+    assert respuesta.status_code == 410
+    assert "milanesa" in respuesta.json()["detail"]
+
+
+def test_el_socket_rechaza_una_partida_huerfana(partida_huerfana):
+    cliente, id_ = partida_huerfana
+    with pytest.raises(WebSocketDisconnect) as excinfo:
+        with cliente.websocket_connect(f"/ws/partidas/{id_}"):
+            pass
+    assert excinfo.value.code == 4404
+
+
+def test_una_partida_huerfana_se_puede_incinerar(partida_huerfana):
+    """Lo importante: que el jugador pueda limpiar el archivo."""
+    cliente, id_ = partida_huerfana
+    assert cliente.delete(f"/api/partidas/{id_}").status_code == 204
+    assert cliente.get("/api/partidas").json() == []
+
+
+# ── El selector de motores ───────────────────────────────────────────────────
+
+
+def test_el_catalogo_de_motores_viaja_con_el_motivo_de_los_que_no_estan(cliente):
+    """El desplegable necesita saber qué NO se puede usar, y por qué.
+
+    Acá la app se armó con un solo motor inyectado, así que el catálogo tiene
+    exactamente ese: los tests no dependen de si hay ollama prendido ni de qué
+    API keys tenga el entorno.
+    """
+    motores = cliente.get("/api/casos").json()["motores"]
+
+    assert [m["id"] for m in motores] == [MOTOR_FAKE]
+    assert motores[0]["disponible"] is True
+    assert motores[0]["motivo"] is None
+    assert motores[0]["etiqueta"]  # el jugador ve un nombre, no un id crudo
+
+
+def test_las_partidas_necesitan_un_motor_disponible(cliente):
+    """Elegir un motor que no está tiene que fallar en el alta y no a mitad
+    del primer interrogatorio."""
+    respuesta = cliente.post(
+        "/api/partidas",
+        json={"nombre": "x", "caso_id": "asado", "modelo_id": "groq:openai/gpt-oss-120b"},
+    )
+    assert respuesta.status_code == 422
+    assert "no está disponible" in respuesta.json()["detail"]
+
+    sin_motor = cliente.post("/api/partidas", json={"nombre": "x", "caso_id": "asado"})
+    assert sin_motor.status_code == 422
+
+
+def test_cada_partida_juega_con_su_propio_motor(caso_asado, actor_loro, analista_fijo):
+    """Dos partidas, dos motores, dos voces: el grafo de una no pisa al de la otra.
+
+    Es la prueba de que ``_grafo_de`` cachea por ``(caso, motor)`` y no solo
+    por caso, que era el bug fácil de este refactor.
+    """
+    otro_actor = FakeListChatModel(responses=["Hablo distinto porque soy otro modelo."])
+    motores = {
+        MOTOR_FAKE: (actor_loro, analista_fijo([])),
+        "otro": (otro_actor, analista_fijo([])),
+    }
+
+    with TestClient(crear_app({caso_asado.id: caso_asado}, motores)) as cliente:
+        id_fake = _nueva_partida(cliente, "con el loro", modelo_id=MOTOR_FAKE)
+        id_otro = _nueva_partida(cliente, "con el otro", modelo_id="otro")
+
+        with cliente.websocket_connect(f"/ws/partidas/{id_fake}") as ws:
+            _, turno_fake = _interrogar(ws, "michi", "¿dónde estabas?")
+        with cliente.websocket_connect(f"/ws/partidas/{id_otro}") as ws:
+            _, turno_otro = _interrogar(ws, "michi", "¿dónde estabas?")
+
+    assert turno_fake["respuesta"] == "Yo no fui."
+    assert turno_otro["respuesta"] == "Hablo distinto porque soy otro modelo."
+
+
+def test_una_partida_con_el_motor_caido_se_lee_pero_no_se_juega(
+    tmp_path, caso_asado, motores_fake
+):
+    """El gemelo del caso huérfano, pero del lado del motor.
+
+    Apagaste ollama o sacaste una API key: el expediente tiene que seguir
+    abriéndose (leer estado no invoca al LLM) y el socket tiene que decir qué
+    le falta, en vez de tirar un 500.
+    """
+    ruta = str(tmp_path / "partidas.sqlite")
+    motores_de_mas = {**motores_fake(), "ollama:qwen2.5:7b": motores_fake()[MOTOR_FAKE]}
+
+    with TestClient(crear_app({caso_asado.id: caso_asado}, motores_de_mas, ruta_db=ruta)) as c:
+        id_ = _nueva_partida(c, "con qwen", modelo_id="ollama:qwen2.5:7b")
+
+    # La misma base, pero ahora ese motor ya no está disponible.
+    with TestClient(crear_app({caso_asado.id: caso_asado}, motores_fake(), ruta_db=ruta)) as c:
+        listado = c.get("/api/partidas").json()
+        assert listado[0]["motor_disponible"] is False
+        assert c.get(f"/api/partidas/{id_}").status_code == 200
+
+        with pytest.raises(WebSocketDisconnect) as excinfo:
+            with c.websocket_connect(f"/ws/partidas/{id_}") as ws:
+                ws.receive_json()  # el error explicativo
+                ws.receive_json()  # y recién ahí el cierre
+        assert excinfo.value.code == 4409
+
+
+@pytest.mark.anyio
+async def test_una_base_vieja_se_migra_sin_perder_partidas(tmp_path):
+    """Una base de antes del selector de motores no puede quedar ilegible.
+
+    Se arma a mano la tabla como era (sin ``modelo_id``), se corre
+    ``preparar()`` y la partida vieja tiene que seguir ahí, con el motor por
+    defecto en vez de un NULL.
+    """
+    import aiosqlite
+
+    from caso_calafate.llm import MOTOR_POR_DEFECTO
+    from caso_calafate.web.partidas import RegistroPartidas
+
+    ruta = str(tmp_path / "vieja.sqlite")
+    conexion = await aiosqlite.connect(ruta)
+    await conexion.execute(
+        "CREATE TABLE partidas (id TEXT PRIMARY KEY, nombre TEXT NOT NULL, "
+        "creada TEXT NOT NULL, tablero TEXT NOT NULL DEFAULT '{}', "
+        "caso_id TEXT NOT NULL DEFAULT 'calafate')"
+    )
+    await conexion.execute(
+        "INSERT INTO partidas (id, nombre, creada) VALUES ('vieja', 'de antes', '2026-01-01')"
+    )
+    await conexion.commit()
+
+    registro = RegistroPartidas(conexion)
+    await registro.preparar()
+
+    partida = await registro.obtener("vieja")
+    assert partida["nombre"] == "de antes"
+    assert partida["caso_id"] == "calafate"
+    assert partida["modelo_id"] == MOTOR_POR_DEFECTO
+    await conexion.close()
+
+
+def test_el_socket_rechaza_una_pregunta_gigante(cliente):
+    """El `maxlength` del input es cosmético: por el socket entra lo que sea.
+
+    Sin tope del lado del servidor, un pegado de 20.000 caracteres viajaba
+    entero al LLM (plata y latencia sin techo en los motores de nube) y el
+    socket se caía de keepalive esperando la respuesta.
+    """
+    id_ = _nueva_partida(cliente)
+
+    with cliente.websocket_connect(f"/ws/partidas/{id_}") as ws:
+        ws.send_json({"tipo": "interrogar", "sospechoso": "michi", "pregunta": "a" * 20_000})
+        mensaje = ws.receive_json()
+        assert mensaje["tipo"] == "error"
+        assert str(MAX_PREGUNTA) in mensaje["mensaje"]
+
+        # Una pregunta rechazada no gasta turno, y la partida sigue jugable.
+        _, turno = _interrogar(ws, "michi", "¿Qué viste anoche?")
+        assert turno["preguntas_usadas"] == 1
+
+
+def test_una_pregunta_justo_en_el_tope_pasa(cliente):
+    """El límite es inclusivo: 280 entra, 281 no."""
+    id_ = _nueva_partida(cliente)
+
+    with cliente.websocket_connect(f"/ws/partidas/{id_}") as ws:
+        _, turno = _interrogar(ws, "michi", "¿" + "a" * (MAX_PREGUNTA - 2) + "?")
+        assert turno["preguntas_usadas"] == 1
+
+        larga = {"tipo": "interrogar", "sospechoso": "michi", "pregunta": "a" * (MAX_PREGUNTA + 1)}
+        ws.send_json(larga)
+        assert ws.receive_json()["tipo"] == "error"
+
+
+def test_si_el_llm_explota_el_socket_avisa_y_sigue_vivo(caso_asado, analista_fijo):
+    """Un LLM caído (timeout, 429, API key vencida) no puede tumbar la partida.
+
+    El `except Exception` del interrogatorio avisa por el socket; lo que se
+    prueba acá es que ese aviso llega y que la conexión aguanta para el
+    siguiente intento.
+    """
+
+    class ActorRoto(FakeListChatModel):
+        # Hay que romper los dos caminos: el servidor interroga con
+        # ``astream``, que entra por ``_stream``, no por ``_call``.
+        def _call(self, *args, **kwargs):
+            raise RuntimeError("429 rate limit")
+
+        def _stream(self, *args, **kwargs):
+            raise RuntimeError("429 rate limit")
+
+    motores = {MOTOR_FAKE: (ActorRoto(responses=["nunca llega"]), analista_fijo([]))}
+    with TestClient(crear_app({caso_asado.id: caso_asado}, motores)) as cliente:
+        id_ = _nueva_partida(cliente)
+        with cliente.websocket_connect(f"/ws/partidas/{id_}") as ws:
+            ws.send_json({"tipo": "interrogar", "sospechoso": "michi", "pregunta": "¿y?"})
+            # Se corta en el primer mensaje terminal: si el fake no explotara,
+            # llegaría un "turno" y el test falla en vez de colgarse esperando.
+            while (m := ws.receive_json())["tipo"] in ("comienzo", "fragmento"):
+                pass
+            assert m["tipo"] == "error", f"esperaba un error, llegó {m['tipo']}"
+            assert "429" in m["mensaje"]
+
+            # El socket sigue abierto: una jugada mal formada se contesta igual.
+            ws.send_json({"tipo": "bailar"})
+            assert ws.receive_json()["tipo"] == "error"

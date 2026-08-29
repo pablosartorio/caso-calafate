@@ -10,6 +10,10 @@ from caso_calafate.caso import Caso, Secreto, Sospechoso
 CASO_PILTRIQUITRON = Caso(
     id="piltriquitron",
     titulo="EL CASO PILTRIQUITRÓN",
+    sede="Central Piltriquitrón",
+    ciudad="El Bolsón",
+    delito="el cambio del módulo de disparo del sistema de parada rápida",
+    culpable_alias="responsable",
     gancho=(
         "En la puesta en marcha de un reactor, alguien tocó el sistema de "
         "parada de emergencia — y después movió papeles para que pareciera "

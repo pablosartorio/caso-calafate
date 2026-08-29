@@ -10,7 +10,7 @@ Dos grupos:
 
 import pytest
 
-from caso_calafate.caso import Caso, Secreto, Sospechoso
+from caso_calafate.caso import Caso, Secreto, Sospechoso, buscar_caso
 from caso_calafate.casos import CASOS
 from caso_calafate.casos.calafate import CASO_CALAFATE
 
@@ -37,6 +37,10 @@ def _caso_con(sospechosos: list[Sospechoso]) -> Caso:
         briefing="B",
         contexto_actores="C",
         epilogo="E",
+        sede="S",
+        ciudad="Ciudad",
+        delito="el hecho",
+        culpable_alias="responsable",
         sospechosos=sospechosos,
     )
 
@@ -129,3 +133,63 @@ def test_los_textos_de_cada_caso_no_estan_vacios(caso: Caso):
     assert caso.briefing.strip()
     assert caso.contexto_actores.strip()
     assert caso.epilogo.strip()
+
+
+# ── El vocabulario de cada caso ──────────────────────────────────────────────
+# Los prompts, el veredicto y el diario arman frases con estos campos. Si un
+# caso los escribe mal (un artículo de más, un alias en plural), las frases
+# salen torcidas en la partida; acá salen en rojo.
+
+
+@pytest.mark.parametrize("caso", CASOS.values(), ids=CASOS.keys())
+def test_cada_caso_trae_su_vocabulario(caso: Caso):
+    assert caso.sede.strip()
+    assert caso.ciudad.strip()
+    assert caso.delito.strip()
+    assert caso.culpable_alias.strip()
+
+
+@pytest.mark.parametrize("caso", CASOS.values(), ids=CASOS.keys())
+def test_el_delito_encaja_en_las_frases_del_juego(caso: Caso):
+    """``delito`` se usa como «cometiste ___» y «confesó ___»: necesita
+    artículo y no puede empezar con mayúscula ni terminar en punto."""
+    primera = caso.delito.split()[0]
+    assert primera in ("el", "la", "los", "las"), f"«{caso.delito}» no arranca con artículo"
+    assert not caso.delito.endswith("."), "el delito se incrusta en una frase, sin punto final"
+
+
+@pytest.mark.parametrize("caso", CASOS.values(), ids=CASOS.keys())
+def test_el_alias_del_culpable_encaja_en_las_frases_del_juego(caso: Caso):
+    """``culpable_alias`` se usa como «el ___ sigue libre»: sustantivo pelado,
+    sin artículo adelante."""
+    primera = caso.culpable_alias.split()[0]
+    assert primera not in ("el", "la", "un", "una"), "el alias va sin artículo"
+    assert caso.culpable_alias == caso.culpable_alias.lower(), "el alias va en minúscula"
+
+
+def test_ningun_caso_hereda_el_vocabulario_del_calafate():
+    """El bug que motivó estos campos: todo caso hablaba del sabotaje del
+    CALAFATE-1, jugara lo que jugara."""
+    for caso in CASOS.values():
+        if caso.id == "calafate":
+            continue
+        assert "CALAFATE" not in caso.delito
+        assert "sabotaje del satélite" not in caso.delito
+
+
+# ── Búsqueda de casos (la usa el selector del CLI) ───────────────────────────
+
+
+def test_buscar_caso_acepta_id_titulo_tildes_y_prefijos():
+    catalogo = list(CASOS.values())
+    assert buscar_caso(catalogo, "huemul").id == "huemul"
+    assert buscar_caso(catalogo, "PILTRIQUITRÓN").id == "piltriquitron"  # con tilde, como la tabla
+    assert buscar_caso(catalogo, "el caso huemul").id == "huemul"        # el título entero
+    assert buscar_caso(catalogo, "río negro").id == "rio-negro-i"        # el título sin "el caso"
+    assert buscar_caso(catalogo, "pilt").id == "piltriquitron"           # un prefijo del id
+
+
+def test_buscar_caso_devuelve_none_si_no_hay_match():
+    catalogo = list(CASOS.values())
+    assert buscar_caso(catalogo, "el caso del asado") is None
+    assert buscar_caso(catalogo, "   ") is None

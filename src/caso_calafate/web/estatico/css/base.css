@@ -231,6 +231,10 @@ dialog::backdrop {
   line-height: 1.7;
 }
 
+/* El del briefing lo escribe pantallas.js con los datos del caso: viene como
+   texto con un salto de línea, no como <br>. */
+#briefing-membrete { white-space: pre-line; }
+
 .documento-cabecera h2 {
   margin-top: 0.7rem;
   font-size: clamp(1.4rem, 3.5vw, 2rem);

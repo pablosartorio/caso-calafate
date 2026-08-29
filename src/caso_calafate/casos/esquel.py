@@ -9,6 +9,10 @@ from caso_calafate.caso import Caso, Secreto, Sospechoso
 CASO_ESQUEL = Caso(
     id="esquel",
     titulo="EL CASO ESQUEL",
+    sede="Centro de Dosimetría y Calibración",
+    ciudad="Esquel",
+    delito="el encubrimiento del patrón de dosimetría fuera de tolerancia",
+    culpable_alias="encubridor",
     gancho=(
         "Un control de rutina destapó que el patrón que calibra la radioterapia "
         "de media Patagonia estaba mal — y alguien lo tapó."

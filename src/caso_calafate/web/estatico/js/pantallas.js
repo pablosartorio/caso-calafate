@@ -9,6 +9,7 @@
 import { api } from "./api.js";
 import { avisar } from "./avisos.js";
 import { $, estado } from "./estado.js";
+import { retratoPixel } from "./pixelart.js";
 import { sonido } from "./sonido.js";
 
 /* ── El archivo de casos ─────────────────────────────────────────────────── */
@@ -33,9 +34,15 @@ function tarjetaDeExpediente(partida) {
   const item = document.createElement("li");
   item.className = "expediente";
 
+  // Una partida cuyo caso ya no está en el registro no se puede abrir, pero
+  // sí incinerar: se muestra marcada en vez de desaparecer del archivo.
+  const huerfana = partida.caso_disponible === false;
+
   const carpeta = document.createElement("button");
   carpeta.type = "button";
-  carpeta.className = "expediente-carpeta";
+  carpeta.className = `expediente-carpeta${huerfana ? " expediente-huerfano" : ""}`;
+  carpeta.disabled = huerfana;
+  if (huerfana) carpeta.title = "el caso de este expediente ya no está disponible";
   carpeta.addEventListener("click", () => {
     location.hash = `#/partida/${partida.id}`;
   });
@@ -55,21 +62,36 @@ function tarjetaDeExpediente(partida) {
     month: "long",
   })}`;
 
+  const motor = document.createElement("span");
+  motor.className = "expediente-motor";
+  if (!huerfana) {
+    const apagado = partida.motor_disponible === false;
+    motor.textContent = `${apagado ? "⚠" : "🧠"} ${partida.motor_etiqueta ?? ""}`;
+    if (apagado) {
+      motor.classList.add("expediente-motor-caido");
+      motor.title = partida.motor_motivo ?? "";
+    }
+  }
+
   const stats = document.createElement("span");
   stats.className = "expediente-stats";
   const maximo = partida.preguntas_usadas + partida.preguntas_restantes;
-  stats.textContent =
-    `🔎 ${partida.pistas_descubiertas}/${partida.total_secretos} pistas · ` +
-    `❓ ${partida.preguntas_usadas}/${maximo} preguntas`;
+  stats.textContent = huerfana
+    ? "el caso de este expediente ya no existe"
+    : `🔎 ${partida.pistas_descubiertas}/${partida.total_secretos} pistas · ` +
+      `❓ ${partida.preguntas_usadas}/${maximo} preguntas`;
 
   const sello = document.createElement("span");
-  const estadoDelCaso = { victoria: "RESUELTO", derrota: "FALLIDO" }[partida.resultado];
+  const estadoDelCaso = huerfana
+    ? "ILEGIBLE"
+    : { victoria: "RESUELTO", derrota: "FALLIDO" }[partida.resultado];
   sello.className = `sello expediente-sello ${
-    { RESUELTO: "sello-verde", FALLIDO: "sello-rojo" }[estadoDelCaso] ?? "sello-ambar"
+    { RESUELTO: "sello-verde", FALLIDO: "sello-rojo", ILEGIBLE: "sello-rojo" }[estadoDelCaso] ??
+    "sello-ambar"
   }`;
   sello.textContent = estadoDelCaso ?? "ABIERTO";
 
-  carpeta.append(nombre, caso, fecha, stats, sello);
+  carpeta.append(nombre, caso, fecha, motor, stats, sello);
   item.append(carpeta, botonDeIncinerar(partida, item));
   return item;
 }
@@ -131,13 +153,15 @@ export function prepararSelectorDeCasos() {
 
   $("#boton-casos-cancelar").addEventListener("click", () => velo.close());
   $("#boton-casos-volver").addEventListener("click", mostrarPasoElegirCaso);
+  $("#motor-elegido").addEventListener("change", mostrarDetalleDelMotor);
 
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     const nombre = formulario.nombre.value.trim();
-    if (!nombre || !casoElegido) return;
+    const modeloId = $("#motor-elegido").value;
+    if (!nombre || !casoElegido || !modeloId) return;
     try {
-      const partida = await api.crearPartida(nombre, casoElegido.id);
+      const partida = await api.crearPartida(nombre, casoElegido.id, modeloId);
       velo.close();
       location.hash = `#/partida/${partida.id}`;
     } catch {
@@ -146,12 +170,47 @@ export function prepararSelectorDeCasos() {
   });
 }
 
-function abrirSelectorDeCasos() {
+export function abrirSelectorDeCasos({ casoId } = {}) {
   const lista = $("#casos-lista");
   lista.innerHTML = "";
-  for (const caso of estado.casosDisponibles) lista.append(tarjetaDeCaso(caso));
+  const tarjetas = new Map();
+  for (const caso of estado.casosDisponibles) {
+    const tarjeta = tarjetaDeCaso(caso);
+    tarjetas.set(caso.id, tarjeta);
+    lista.append(tarjeta);
+  }
+  poblarMotores();
   mostrarPasoElegirCaso();
   $("#velo-casos").showModal();
+  // Deep link a la carátula de un caso puntual: salta el paso 1.
+  if (casoId) tarjetas.get(casoId)?.querySelector("button")?.click();
+}
+
+/* Los motores que hoy no andan NO se esconden: van deshabilitados y con el
+ * motivo escrito en la opción. Es la única pista que tiene el jugador de que
+ * existe un Gemini esperando una API key, o un modelo a un `ollama pull` de
+ * distancia. */
+function poblarMotores() {
+  const select = $("#motor-elegido");
+  select.innerHTML = "";
+  for (const motor of estado.motoresDisponibles) {
+    const opcion = document.createElement("option");
+    opcion.value = motor.id;
+    opcion.disabled = !motor.disponible;
+    opcion.textContent = motor.disponible ? motor.etiqueta : `${motor.etiqueta} — ${motor.motivo}`;
+    select.append(opcion);
+  }
+  const sugerido = estado.motoresDisponibles.find(
+    (m) => m.id === estado.motorSugerido && m.disponible,
+  );
+  const primero = estado.motoresDisponibles.find((m) => m.disponible);
+  select.value = (sugerido ?? primero)?.id ?? "";
+  mostrarDetalleDelMotor();
+}
+
+function mostrarDetalleDelMotor() {
+  const elegido = estado.motoresDisponibles.find((m) => m.id === $("#motor-elegido").value);
+  $("#motor-detalle").textContent = elegido?.detalle ?? "";
 }
 
 function mostrarPasoElegirCaso() {
@@ -204,6 +263,14 @@ export function mostrarBriefing(texto, { tipear = false, alAceptar = null } = {}
   const saltar = $("#boton-briefing-saltar");
   const aceptar = $("#boton-briefing-aceptar");
 
+  // El documento es DE ESTE caso: el membrete y el título salen de sus datos,
+  // no del HTML — si no, todo expediente parecería del Centro Espacial.
+  const caso = estado.caso;
+  if (caso) {
+    $("#briefing-membrete").textContent = `${caso.sede.toUpperCase()}\nDIVISIÓN SEGURIDAD — ${caso.ciudad.toUpperCase()}`;
+    $("#briefing-titulo").textContent = caso.titulo;
+  }
+
   clearInterval(timerTipeo);
   aceptar.textContent = tipear ? "ACEPTAR EL CASO →" : "VOLVER AL ESCRITORIO →";
 
@@ -244,18 +311,26 @@ export function mostrarBriefing(texto, { tipear = false, alAceptar = null } = {}
 /* ── El diario del día siguiente ─────────────────────────────────────────── */
 
 export function mostrarDiario(veredicto) {
+  const velo = $("#velo-diario");
+  if (velo.open) return; // ya está abierto: showModal() de nuevo tiraría error
+  const caso = estado.caso;
   const gano = veredicto.resultado === "victoria";
-  const acusado = estado.caso.sospechosos.find((s) => s.id === veredicto.acusado);
+  const acusado = caso.sospechosos.find((s) => s.id === veredicto.acusado);
   const nombre = acusado?.nombre ?? "el acusado";
   const cargo = acusado?.cargo ?? "";
 
+  // Toda la tapa habla del caso que se jugó: ciudad, sede, hecho y el mote
+  // que la prensa le puso al culpable salen de los datos del caso.
+  $("#diario-ciudad").textContent = caso.ciudad.toUpperCase();
+
   $("#diario-titular").textContent = gano
-    ? "¡CASO RESUELTO EN EL CENTRO ESPACIAL!"
-    : "EL SABOTEADOR SIGUE LIBRE";
+    ? `¡CASO RESUELTO EN ${caso.ciudad.toUpperCase()}!`
+    : `EL ${caso.culpable_alias.toUpperCase()} SIGUE LIBRE`;
 
   $("#diario-bajada").textContent = gano
-    ? `${nombre}, ${cargo}, confesó el sabotaje del CALAFATE-1. El lanzamiento vuelve a tener fecha.`
-    : `La acusación contra ${nombre}, ${cargo}, se desarmó en minutos. El Centro, en crisis.`;
+    ? `${nombre}, ${cargo}, confesó ${caso.delito}. El expediente se cierra.`
+    : `La acusación contra ${nombre}, ${cargo}, se desarmó en minutos. ` +
+      `${caso.sede}, en crisis.`;
 
   // El cuerpo de la nota: el veredicto y, recién acá, la verdad completa.
   // Con victoria hubo confesión y el diario puede contarlo todo; con derrota
@@ -272,10 +347,15 @@ export function mostrarDiario(veredicto) {
     `PREGUNTAS: ${veredicto.preguntas_usadas}/${estado.caso.max_preguntas}`;
   $("#diario-calificacion").textContent = veredicto.calificacion;
 
-  $("#diario-foto").innerHTML = FOTO_SATELITE;
+  // La foto de tapa es el retrato del acusado: sirve para cualquier caso, a
+  // diferencia del dibujo del satélite que estaba antes acá.
+  $("#diario-foto").replaceChildren(retratoPixel(veredicto.acusado));
+  $("#diario-epigrafe").textContent = gano
+    ? `${nombre}, ${cargo}, tras la confesión.`
+    : `${nombre}, ${cargo}: la acusación no prosperó.`;
 
   sonido.veredicto(veredicto.resultado);
-  $("#velo-diario").showModal();
+  velo.showModal();
 }
 
 export function prepararDiario() {
@@ -285,50 +365,3 @@ export function prepararDiario() {
     $("#velo-diario").close();
   });
 }
-
-/* La foto del diario: el CALAFATE-1 en la sala limpia, la mañana del
-   hallazgo (el mazo de cables colgando, cortado — lo que arrancó todo esto). */
-const FOTO_SATELITE = `
-<svg viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="el satélite CALAFATE-1">
-  <rect width="240" height="160" fill="#d6d0c0"/>
-  <rect y="118" width="240" height="42" fill="#b9b2a0"/>
-  <line x1="0" y1="118" x2="240" y2="118" stroke="#8f8875" stroke-width="1.5"/>
-  <!-- panel solar izquierdo -->
-  <g stroke="#3c4652" stroke-width="1.5">
-    <rect x="22" y="52" width="62" height="34" fill="#5e6d7c"/>
-    <line x1="43" y1="52" x2="43" y2="86"/><line x1="63" y1="52" x2="63" y2="86"/>
-    <line x1="22" y1="69" x2="84" y2="69"/>
-    <line x1="84" y1="69" x2="98" y2="69"/>
-  </g>
-  <!-- panel solar derecho -->
-  <g stroke="#3c4652" stroke-width="1.5">
-    <rect x="156" y="52" width="62" height="34" fill="#5e6d7c"/>
-    <line x1="177" y1="52" x2="177" y2="86"/><line x1="197" y1="52" x2="197" y2="86"/>
-    <line x1="156" y1="69" x2="218" y2="69"/>
-    <line x1="142" y1="69" x2="156" y2="69"/>
-  </g>
-  <!-- cuerpo -->
-  <rect x="98" y="42" width="44" height="56" fill="#8a8578" stroke="#3a352c" stroke-width="2"/>
-  <rect x="98" y="84" width="44" height="14" fill="#a8925c" stroke="#3a352c" stroke-width="1.5"/>
-  <rect x="104" y="50" width="32" height="10" fill="#6f6a5e"/>
-  <circle cx="120" cy="72" r="7" fill="#6f6a5e" stroke="#3a352c" stroke-width="1.5"/>
-  <!-- antena -->
-  <line x1="120" y1="42" x2="120" y2="26" stroke="#3a352c" stroke-width="2"/>
-  <ellipse cx="120" cy="24" rx="10" ry="4" fill="none" stroke="#3a352c" stroke-width="2"/>
-  <!-- el mazo de cables cortado, colgando -->
-  <path d="M112,98 C110,108 112,114 108,120" fill="none" stroke="#77362a" stroke-width="3"/>
-  <path d="M116,98 C116,106 114,112 113,117" fill="none" stroke="#8a5c30" stroke-width="2.5"/>
-  <g stroke="#4a2018" stroke-width="1.5">
-    <line x1="106" y1="120" x2="104" y2="124"/>
-    <line x1="108" y1="120" x2="108" y2="125"/>
-    <line x1="110" y1="120" x2="112" y2="124"/>
-  </g>
-  <!-- el soporte en la sala limpia -->
-  <g stroke="#5c564a" stroke-width="3">
-    <line x1="104" y1="98" x2="96" y2="130"/>
-    <line x1="136" y1="98" x2="144" y2="130"/>
-  </g>
-  <circle cx="96" cy="133" r="4" fill="#5c564a"/>
-  <circle cx="144" cy="133" r="4" fill="#5c564a"/>
-</svg>`;

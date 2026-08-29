@@ -10,6 +10,10 @@ from caso_calafate.caso import Caso, Secreto, Sospechoso
 CASO_HUEMUL = Caso(
     id="huemul",
     titulo="EL CASO HUEMUL",
+    sede="Complejo Atómico Huemul",
+    ciudad="Bariloche",
+    delito="la adulteración de los registros del ensayo del reactor Huemul",
+    culpable_alias="falsificador",
     gancho=(
         "A la 01:47 de la madrugada el reactor Huemul se frenó solo, como "
         "tenía que hacer. Lo raro es lo que alguien escribió después."

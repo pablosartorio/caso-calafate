@@ -16,6 +16,7 @@ from langchain_core.language_models.fake_chat_models import FakeListChatModel
 from langchain_core.runnables import RunnableLambda
 
 from caso_calafate.caso import Caso, Secreto, Sospechoso
+from caso_calafate.llm import MOTOR_FAKE
 from caso_calafate.prompts import SecretosRevelados
 
 
@@ -29,6 +30,10 @@ def caso_asado() -> Caso:
         briefing="El asado que se enfriaba en la mesa del patio desapareció.",
         contexto_actores="Desapareció un asado de la mesa del patio de la casa.",
         epilogo="Fue Moro, el perro. Las huellas en la mesa lo delataron.",
+        sede="la casa de la esquina",
+        ciudad="Cipolletti",
+        delito="el robo del asado",
+        culpable_alias="chorro de asados",
         max_preguntas=5,
         sospechosos=[
             Sospechoso(
@@ -74,6 +79,23 @@ def actor_loro() -> FakeListChatModel:
     return FakeListChatModel(
         responses=["Yo no fui.", "Estaba en otra parte.", "No vi nada, lo juro."]
     )
+
+
+@pytest.fixture
+def motores_fake(actor_loro, analista_fijo):
+    """Fábrica del registro de motores que espera ``crear_app``.
+
+    ``motores_fake(["id1"])`` devuelve ``{"fake": (actor, analista)}``: un
+    catálogo de un solo motor, que es todo lo que hace falta para probar el
+    protocolo web sin tocar ningún LLM de verdad. Pasárselo a ``crear_app``
+    también saltea el relevamiento de motores, así que los tests no dependen
+    de que ollama esté prendido ni de que haya API keys en el entorno.
+    """
+
+    def _crear(ids: list[str] | None = None) -> dict:
+        return {MOTOR_FAKE: (actor_loro, analista_fijo(ids or []))}
+
+    return _crear
 
 
 @pytest.fixture

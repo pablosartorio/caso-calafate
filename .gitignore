@@ -14,5 +14,6 @@ wheels/
 .pytest_cache/
 .ruff_cache/
 
-# Partidas guardadas de la interfaz web
-partidas.sqlite
+# Partidas guardadas de la interfaz web (el * cubre el -wal y el -shm que
+# SQLite deja al lado del archivo mientras el servidor está corriendo)
+partidas.sqlite*

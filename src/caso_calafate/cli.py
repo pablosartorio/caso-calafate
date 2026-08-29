@@ -16,6 +16,7 @@ estado actual con ``grafo.get_state()`` — el checkpointer guarda la partida y
 cualquiera con el ``thread_id`` puede consultarla.
 """
 
+import asyncio
 
 from dotenv import load_dotenv
 from rich.console import Console
@@ -24,10 +25,10 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
 
-from caso_calafate.caso import Caso, Sospechoso
+from caso_calafate.caso import Caso, Sospechoso, buscar_caso
 from caso_calafate.casos import CASOS
 from caso_calafate.grafo import construir_grafo
-from caso_calafate.llm import crear_motores, texto_de
+from caso_calafate.llm import MOTORES, crear_motores, motor_sugerido, relevar_motores, texto_de
 from caso_calafate.pixelart import ALTO, ANCHO, PALETA, RETRATOS, TRANSPARENTE
 
 console = Console()
@@ -48,13 +49,19 @@ def main() -> None:
     """Punto de entrada del comando ``detective`` (ver [project.scripts] en pyproject)."""
     load_dotenv()  # lee el .env del directorio actual, si existe
 
+    nombre_motor = _elegir_motor()
+    if nombre_motor is None:  # se arrepintió antes de empezar
+        return
+
     try:
-        actor, analista, nombre_motor = crear_motores()
-    except Exception as error:  # API key ausente, proveedor mal escrito, etc.
+        actor, analista, _ = crear_motores(nombre_motor)
+    except Exception as error:  # paquete faltante, key inválida, etc.
         _mostrar_error_de_motor(error)
         return
 
     caso = _elegir_caso()
+    if caso is None:  # se arrepintió antes de empezar
+        return
 
     grafo = construir_grafo(caso, actor, analista)
     # El thread_id identifica LA partida dentro del checkpointer. Acá usamos
@@ -73,12 +80,70 @@ def main() -> None:
     _bucle(grafo, config, caso)
 
 
-def _elegir_caso() -> Caso:
+def _elegir_motor() -> str | None:
+    """El selector de motores: qué LLM va a interpretar a los sospechosos.
+
+    Gemelo de ``_elegir_caso``, con una diferencia: los motores que hoy no se
+    pueden usar se muestran igual, en gris y con el motivo (prender ollama,
+    bajar el modelo, poner una API key). Esconderlos dejaría al jugador sin
+    saber que existen; mostrarlos convierte la tabla en la ayuda de
+    instalación. Devuelve None si se arrepiente y corta con Ctrl-C.
+    """
+    motivos = asyncio.run(relevar_motores())
+    disponibles = [id_ for id_, motivo in motivos.items() if motivo is None]
+    sugerido = motor_sugerido()
+    if sugerido not in disponibles:
+        sugerido = disponibles[0]  # ``fake`` siempre está, así que nunca es vacío
+
+    tabla = Table(title="Motores disponibles", show_lines=False)
+    tabla.add_column("#", justify="right")
+    tabla.add_column("Motor", style="bold")
+    tabla.add_column("Qué es")
+    tabla.add_column("Estado")
+    for numero, (id_, motivo) in enumerate(motivos.items(), start=1):
+        motor = MOTORES[id_]
+        estilo = "" if motivo is None else "dim"
+        estado = "[green]listo[/green]" if motivo is None else f"[yellow]{motivo}[/yellow]"
+        tabla.add_row(
+            str(numero) if motivo is None else "—",
+            f"[{estilo}]{motor.etiqueta}[/{estilo}]" if estilo else motor.etiqueta,
+            f"[{estilo}]{motor.detalle}[/{estilo}]" if estilo else motor.detalle,
+            estado,
+        )
+    console.print(tabla)
+
+    catalogo = list(motivos)
+    por_defecto = str(catalogo.index(sugerido) + 1)
+    while True:
+        try:
+            eleccion = Prompt.ask(
+                "[bold]Elegí un motor[/bold] (número o id)", default=por_defecto
+            ).strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Otra vez será, detective.[/dim]")
+            return None
+
+        if eleccion.isdigit() and 1 <= int(eleccion) <= len(catalogo):
+            elegido = catalogo[int(eleccion) - 1]
+        elif eleccion in motivos:
+            elegido = eleccion
+        else:
+            console.print(f"No conozco el motor «{eleccion}». Probá con un número de la tabla.")
+            continue
+
+        if motivos[elegido] is not None:
+            console.print(f"Ese motor no está disponible: [yellow]{motivos[elegido]}[/yellow]")
+            continue
+        return elegido
+
+
+def _elegir_caso() -> Caso | None:
     """El selector de casos: una tabla con todos los expedientes disponibles.
 
-    Acepta el número de fila o el id/nombre del caso (con la misma búsqueda
+    Acepta el número de fila o el id/título del caso (con la misma búsqueda
     tolerante que ``Caso.buscar_sospechoso``, pero sobre el registro).
-    Reintenta hasta que el jugador elija algo válido.
+    Reintenta hasta que el jugador elija algo válido; devuelve None si se
+    arrepiente y corta con Ctrl-C.
     """
     catalogo = list(CASOS.values())
     tabla = Table(title="Archivo de expedientes", show_lines=True)
@@ -90,17 +155,20 @@ def _elegir_caso() -> Caso:
     console.print(tabla)
 
     while True:
-        eleccion = Prompt.ask(
-            "[bold]Elegí un caso[/bold] (número o id)", default="1"
-        ).strip()
+        try:
+            eleccion = Prompt.ask(
+                "[bold]Elegí un caso[/bold] (número, id o título)", default="1"
+            ).strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Otra vez será, detective.[/dim]")
+            return None
 
         if eleccion.isdigit() and 1 <= int(eleccion) <= len(catalogo):
             return catalogo[int(eleccion) - 1]
 
-        normalizado = eleccion.lower()
-        for caso in catalogo:
-            if caso.id == normalizado:
-                return caso
+        caso = buscar_caso(catalogo, eleccion)
+        if caso is not None:
+            return caso
 
         console.print(f"No encuentro el caso «{eleccion}». Probá con un número de la tabla.")
 
@@ -259,15 +327,19 @@ def _turno_acusacion(grafo, config: dict, caso: Caso, sospechoso: Sospechoso) ->
         f"Pistas: [bold]{encontradas}/{caso.total_secretos()}[/bold] · "
         f"Preguntas usadas: [bold]{usadas}/{caso.max_preguntas}[/bold]"
     )
-    console.print(_calificacion(estado["resultado"], encontradas, caso.total_secretos()))
+    console.print(
+        _calificacion(
+            estado["resultado"], encontradas, caso.total_secretos(), caso.culpable_alias
+        )
+    )
 
 
-def _calificacion(resultado: str, encontradas: int, total: int) -> str:
+def _calificacion(resultado: str, encontradas: int, total: int, alias: str) -> str:
     """Un remate según cómo jugaste. Puro chiche de presentación."""
     if resultado != "victoria":
         return (
-            "🪦 [red]El culpable sigue suelto. El CALAFATE-2 "
-            "va a necesitar otro detective.[/red]"
+            f"🪦 [red]El {alias} sigue suelto. "
+            "Alguien va a tener que reabrir el expediente.[/red]"
         )
     if encontradas >= total * 0.8:
         return (
@@ -356,14 +428,16 @@ def _mostrar_error_de_motor(error: Exception) -> None:
         Panel(
             f"No pude inicializar el modelo de lenguaje:\n[red]{error}[/red]\n\n"
             "Opciones para jugar:\n"
-            "  1. [bold]Anthropic[/bold]: copiá .env.example a .env y completá tu "
-            "ANTHROPIC_API_KEY.\n"
-            "  2. [bold]Ollama local[/bold] (gratis): corré [cyan]ollama serve[/cyan], mirá tus "
-            "modelos con [cyan]ollama list[/cyan]\n"
-            "     y poné [cyan]DETECTIVE_MODEL=ollama:<modelo>[/cyan] en el .env "
-            "(ej. [cyan]ollama:llama3.1:8b[/cyan]).\n"
-            "  3. [bold]Sin nada[/bold]: [cyan]DETECTIVE_MODEL=fake[/cyan] para probar la "
-            "mecánica sin ningún LLM.",
+            "  1. [bold]Ollama local[/bold] (gratis): corré [cyan]ollama serve[/cyan] y bajá un "
+            "modelo\n"
+            "     con [cyan]ollama pull qwen2.5:7b[/cyan] (mirá los tuyos con "
+            "[cyan]ollama list[/cyan]).\n"
+            "  2. [bold]Gemini[/bold]: copiá .env.example a .env y completá tu "
+            "[cyan]GOOGLE_API_KEY[/cyan].\n"
+            "  3. [bold]Groq[/bold]: lo mismo con [cyan]GROQ_API_KEY[/cyan].\n"
+            "  4. [bold]Sin nada[/bold]: elegí [cyan]Sin LLM (modo fake)[/cyan] en la tabla para "
+            "probar\n"
+            "     la mecánica sin ningún LLM.",
             title="⚠️  Motor no disponible",
             border_style="red",
         )

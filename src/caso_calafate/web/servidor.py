@@ -20,13 +20,15 @@ Dos decisiones de diseño para mirar de cerca:
    sale del servidor cuando la partida termina.
 
 2. **Inyección de dependencias, otra vez.** ``crear_app()`` recibe el registro
-   de casos, actor y analista igual que ``construir_grafo()``. Los tests le
-   enchufan modelos falsos y una base en memoria, y prueban TODO el protocolo
-   web sin API key (ver ``tests/test_web.py``).
+   de casos y el de motores igual que ``construir_grafo()`` recibe los suyos.
+   Los tests le enchufan modelos falsos y una base en memoria, y prueban TODO
+   el protocolo web sin API key (ver ``tests/test_web.py``).
 
-3. **Multi-caso.** El servidor sirve TODOS los casos del registro a la vez
-   (un grafo por caso, ver el ``lifespan``); cada partida elige su caso al
-   crearse (``NuevaPartida.caso_id``) y queda atada a él para siempre.
+3. **Multi-caso y multi-motor.** El servidor sirve TODOS los casos y todos los
+   modelos usables a la vez; cada partida elige los suyos al crearse
+   (``NuevaPartida.caso_id`` y ``modelo_id``) y queda atada a ellos para
+   siempre. Los grafos se compilan por par ``(caso, motor)`` al primer uso
+   (ver ``_grafo_de``).
 """
 
 import os
@@ -47,11 +49,26 @@ from pydantic import BaseModel, Field
 from caso_calafate.caso import Caso
 from caso_calafate.casos import CASOS
 from caso_calafate.grafo import construir_grafo
-from caso_calafate.llm import crear_motores, texto_de
+from caso_calafate.llm import (
+    MOTOR_FAKE,
+    MOTORES,
+    crear_motores,
+    motor_sugerido,
+    relevar_motores,
+    texto_de,
+)
 from caso_calafate.pixelart import exportar_retratos
 from caso_calafate.web.partidas import RegistroPartidas
 
 ESTATICO = Path(__file__).parent / "estatico"
+
+# El tope de una pregunta, en caracteres. El mismo número está en el
+# ``maxlength`` del input (``estatico/index.html``), pero ese es cosmético: el
+# browser es territorio del jugador y por el socket entra lo que quiera. Sin
+# este chequeo, un pegado de 20.000 caracteres viaja entero al LLM — plata y
+# latencia sin techo en los motores de nube, y el socket se cae de keepalive
+# esperando la respuesta.
+MAX_PREGUNTA = 280
 
 
 # ── DTOs: el contrato con el browser ─────────────────────────────────────────
@@ -75,8 +92,15 @@ class CasoDTO(BaseModel):
     briefing: str
     max_preguntas: int
     total_secretos: int
-    motor: str  # para que el frontend avise si se juega en modo fake
+    motor: str  # el motor de ESTA partida, no el del servidor
     sospechosos: list[SospechosoDTO]
+    # El vocabulario del caso: con esto el briefing, la orden de acusación y
+    # el diario hablan del hecho REAL en vez de repetir el del caso original.
+    # Describe el hecho, nunca a su autor, así que no spoilea nada.
+    sede: str
+    ciudad: str
+    delito: str
+    culpable_alias: str
 
 
 class CasoResumenDTO(BaseModel):
@@ -90,14 +114,32 @@ class CasoResumenDTO(BaseModel):
     max_preguntas: int
 
 
+class MotorDTO(BaseModel):
+    """Una opción del selector de motores, con su estado real.
+
+    ``motivo`` es la mitad útil: un motor que no se puede usar se muestra
+    igual, deshabilitado y diciendo QUÉ le falta (prender ollama, bajar el
+    modelo, poner una API key). Esconderlo dejaría al jugador sin saber que
+    existe ni cómo habilitarlo.
+    """
+
+    id: str
+    etiqueta: str
+    detalle: str
+    disponible: bool
+    motivo: str | None = None
+
+
 class CasosDTO(BaseModel):
-    motor: str  # para que el frontend avise si se juega en modo fake
     casos: list[CasoResumenDTO]
+    motores: list[MotorDTO]
+    motor_sugerido: str
 
 
 class NuevaPartida(BaseModel):
     nombre: str = Field(min_length=1, max_length=60)
     caso_id: str
+    modelo_id: str
 
 
 class Posicion(BaseModel):
@@ -122,20 +164,28 @@ class TableroDTO(BaseModel):
 
 def crear_app(
     casos: dict[str, Caso],
-    actor: BaseChatModel,
-    analista: Runnable,
+    motores: dict[str, tuple[BaseChatModel, Runnable]] | None = None,
+    *,
     ruta_db: str = ":memory:",
-    motor: str = "",
 ) -> FastAPI:
-    """Arma la aplicación FastAPI con un grafo por caso, el registro y las rutas.
+    """Arma la aplicación FastAPI con el registro, los motores y las rutas.
 
     ``casos`` es el registro completo (id → Caso, ver ``caso_calafate.casos``):
     cada partida elige SU caso al crearse y queda atada a él para siempre — el
     servidor sirve todos los casos a la vez, no uno solo.
 
+    ``motores`` es el registro paralelo de modelos (id → actor, analista) y
+    funciona igual: cada partida elige el suyo al crearse. Si es ``None`` (el
+    caso real), el ``lifespan`` releva qué motores se pueden usar y los
+    instancia solo a esos. Los tests le pasan uno falso y se saltan el
+    relevamiento entero — misma inyección de dependencias que ``casos``.
+
     ``ruta_db`` apunta al archivo SQLite que comparte el checkpointer de los
     grafos y el registro de partidas; ``:memory:`` (el default, pensado para
-    tests) dura lo que dura el proceso.
+    tests) dura lo que dura el proceso. Va como keyword-only a propósito: un
+    tercer argumento posicional de más terminaba siendo la ruta de la base, y
+    SQLite creaba tan campante un archivo con el ``repr`` del objeto en el
+    nombre en vez de fallar.
     """
 
     @asynccontextmanager
@@ -146,14 +196,48 @@ def crear_app(
         app.state.registro = RegistroPartidas(conexion)
         await app.state.registro.preparar()
         checkpointer = AsyncSqliteSaver(conexion)
-        # Un grafo por caso, mismo checkpointer: cada partida solo invoca el
-        # grafo de SU caso_id, así que no hay cruce de estado entre casos.
-        app.state.grafos = {
-            id_: construir_grafo(c, actor, analista, checkpointer=checkpointer)
-            for id_, c in casos.items()
-        }
+        # AsyncSqliteSaver crea sus tablas de forma perezosa, en la primera
+        # lectura o escritura de estado. Acá se las pide de una: si no,
+        # ``adelete_thread`` (que NO llama a setup) explota con "no such table"
+        # en una base donde todavía nadie jugó un turno.
+        await checkpointer.setup()
+        # El checkpointer aparte: los checkpoints se indexan por thread_id, no
+        # por caso, así que para borrarlos no hace falta saber de qué caso era
+        # la partida (importa para las partidas huérfanas, ver _caso_de).
+        app.state.checkpointer = checkpointer
+        app.state.motores, app.state.motivos = await _preparar_motores()
+        # Un grafo por (caso, motor), compilado al primer uso y no acá: con 11
+        # casos y 8 motores el producto cartesiano son 88 grafos que casi
+        # nadie va a jugar. Compilar es barato pero no gratis, y la mayoría
+        # sería basura. El checkpointer es el mismo para todos: los
+        # checkpoints se indexan por thread_id (= id de partida), así que
+        # tampoco acá hay cruce de estado.
+        app.state.grafos = {}
         yield
         await conexion.close()
+
+    async def _preparar_motores() -> tuple[dict, dict]:
+        """Los motores usables y el motivo de los que no, al arrancar.
+
+        Un motor que no arranca NO tumba el servidor: se anota el motivo y el
+        selector lo muestra deshabilitado. Que falte una API key no puede
+        impedirte jugar en local.
+        """
+        if motores is not None:  # inyectados (tests): no hay nada que relevar
+            return dict(motores), dict.fromkeys(motores, None)
+
+        motivos = await relevar_motores()
+        listos = {}
+        for id_, motivo in motivos.items():
+            if motivo is not None:
+                continue
+            try:
+                actor, analista, _ = crear_motores(id_)
+            except Exception as error:  # paquete faltante, key inválida, etc.
+                motivos[id_] = f"no pude inicializarlo: {error}"
+                continue
+            listos[id_] = (actor, analista)
+        return listos, motivos
 
     app = FastAPI(title="El Caso Calafate", lifespan=vida)
 
@@ -163,10 +247,50 @@ def crear_app(
         por proceso."""
         return {"configurable": {"thread_id": partida_id}}
 
-    async def _estado_de(partida_id: str, caso_id: str) -> dict:
-        return (await app.state.grafos[caso_id].aget_state(_config(partida_id))).values
+    def _grafo_de(caso_id: str, modelo_id: str):
+        """El grafo de esta partida, compilado la primera vez que se pide.
 
-    def _caso_dto(caso: Caso) -> CasoDTO:
+        Si el motor con el que se creó la partida ya no está disponible
+        (apagaste ollama, sacaste una API key), igual hace falta un grafo para
+        LEER el estado — y leer no invoca al LLM. Para eso cae al motor fake,
+        que siempre está. Jugar, en cambio, se bloquea antes de llegar acá.
+        """
+        if modelo_id not in app.state.motores:
+            modelo_id = MOTOR_FAKE
+        clave = (caso_id, modelo_id)
+        if clave not in app.state.grafos:
+            actor, analista = app.state.motores[modelo_id]
+            app.state.grafos[clave] = construir_grafo(
+                casos[caso_id], actor, analista, checkpointer=app.state.checkpointer
+            )
+        return app.state.grafos[clave]
+
+    async def _estado_de(partida: dict) -> dict:
+        """El estado del grafo de una partida. Recibe la partida entera porque
+        el grafo depende de dos cosas suyas: el caso y el motor."""
+        grafo = _grafo_de(partida["caso_id"], partida["modelo_id"])
+        return (await grafo.aget_state(_config(partida["id"]))).values
+
+    def _caso_de(partida: dict) -> Caso | None:
+        """El caso de una partida guardada, o None si ya no existe.
+
+        Una partida vieja puede apuntar a un caso que se renombró o se sacó
+        del registro. Eso no puede tumbar el archivo entero: la partida queda
+        HUÉRFANA — se lista marcada y se puede incinerar, pero no abrir.
+        """
+        return casos.get(partida["caso_id"])
+
+    def _estado_del_motor(modelo_id: str) -> dict:
+        """Cómo está el motor de una partida guardada, para que el frontend
+        avise antes de que el jugador escriba una pregunta al vacío."""
+        motor = MOTORES.get(modelo_id)
+        return {
+            "motor_etiqueta": motor.etiqueta if motor else modelo_id,
+            "motor_disponible": modelo_id in app.state.motores,
+            "motor_motivo": app.state.motivos.get(modelo_id, "ese motor ya no está en el catálogo"),
+        }
+
+    def _caso_dto(caso: Caso, motor: str) -> CasoDTO:
         return CasoDTO(
             id=caso.id,
             titulo=caso.titulo,
@@ -175,16 +299,34 @@ def crear_app(
             total_secretos=caso.total_secretos(),
             motor=motor,
             sospechosos=[SospechosoDTO(**s.model_dump()) for s in caso.sospechosos],
+            sede=caso.sede,
+            ciudad=caso.ciudad,
+            delito=caso.delito,
+            culpable_alias=caso.culpable_alias,
         )
 
     # ── REST: lo informativo (nada de esto invoca el grafo) ─────────────────
 
     @app.get("/api/casos")
     def api_casos() -> CasosDTO:
-        """El selector de casos: título y gancho de cada uno, sin spoilers
-        (nada de briefing completo, sospechosos ni epílogo todavía)."""
+        """El alta de expediente: qué casos hay y con qué motor se pueden jugar.
+
+        De los casos, título y gancho nomás — nada de briefing completo,
+        sospechosos ni epílogo todavía. De los motores, todo el catálogo:
+        también los que hoy no andan, con el motivo."""
         return CasosDTO(
-            motor=motor,
+            motor_sugerido=motor_sugerido(),
+            motores=[
+                MotorDTO(
+                    id=id_,
+                    etiqueta=MOTORES[id_].etiqueta,
+                    detalle=MOTORES[id_].detalle,
+                    disponible=motivo is None,
+                    motivo=motivo,
+                )
+                for id_, motivo in app.state.motivos.items()
+                if id_ in MOTORES
+            ],
             casos=[
                 CasoResumenDTO(
                     id=c.id,
@@ -211,9 +353,20 @@ def crear_app(
         partidas = await request.app.state.registro.listar()
         resultado = []
         for p in partidas:
-            caso = casos[p["caso_id"]]
-            estado = await _estado_de(p["id"], p["caso_id"])
-            resultado.append({**p, "caso_titulo": caso.titulo, **_resumen(estado, caso)})
+            caso = _caso_de(p)
+            if caso is None:
+                resultado.append({**p, **_resumen_huerfana()})
+                continue
+            estado = await _estado_de(p)
+            resultado.append(
+                {
+                    **p,
+                    "caso_titulo": caso.titulo,
+                    "caso_disponible": True,
+                    **_estado_del_motor(p["modelo_id"]),
+                    **_resumen(estado, caso),
+                }
+            )
         return resultado
 
     @app.post("/api/partidas", status_code=201)
@@ -223,7 +376,13 @@ def crear_app(
             raise HTTPException(422, "la partida necesita un nombre")
         if datos.caso_id not in casos:
             raise HTTPException(422, f"no existe el caso {datos.caso_id!r}")
-        return await request.app.state.registro.crear(nombre, datos.caso_id)
+        # El motor se valida contra los que de verdad andan, no contra el
+        # catálogo entero: elegir uno sin API key desde el browser tiene que
+        # fallar acá y no a mitad del primer interrogatorio.
+        if datos.modelo_id not in app.state.motores:
+            motivo = app.state.motivos.get(datos.modelo_id, "no existe")
+            raise HTTPException(422, f"el motor {datos.modelo_id!r} no está disponible: {motivo}")
+        return await request.app.state.registro.crear(nombre, datos.caso_id, datos.modelo_id)
 
     @app.delete("/api/partidas/{partida_id}", status_code=204)
     async def api_borrar_partida(partida_id: str, request: Request) -> None:
@@ -231,9 +390,10 @@ def crear_app(
         if partida is None:
             raise HTTPException(404, "no existe esa partida")
         await request.app.state.registro.borrar(partida_id)
-        # El registro borró los metadatos; los checkpoints los borra el grafo
-        # de SU caso (cada caso tiene el suyo, ver el lifespan).
-        await app.state.grafos[partida["caso_id"]].checkpointer.adelete_thread(partida_id)
+        # El registro borró los metadatos; los checkpoints los borra el
+        # checkpointer, que indexa por thread_id: así una partida huérfana
+        # (con un caso_id que ya no existe) también se puede incinerar.
+        await app.state.checkpointer.adelete_thread(partida_id)
 
     @app.get("/api/partidas/{partida_id}")
     async def api_detalle_partida(partida_id: str, request: Request) -> dict:
@@ -244,11 +404,16 @@ def crear_app(
         if partida is None:
             raise HTTPException(404, "no existe esa partida")
 
-        caso = casos[partida["caso_id"]]
-        estado = await _estado_de(partida_id, partida["caso_id"])
+        caso = _caso_de(partida)
+        if caso is None:
+            raise HTTPException(
+                410, f"el caso {partida['caso_id']!r} de este expediente ya no está disponible"
+            )
+        estado = await _estado_de(partida)
         detalle = {
             **partida,
-            "caso": _caso_dto(caso),
+            **_estado_del_motor(partida["modelo_id"]),
+            "caso": _caso_dto(caso, partida["modelo_id"]),
             **_resumen(estado, caso),
             "pistas": _pistas_descubiertas(estado, caso),
             "conversaciones": _serializar_conversaciones(estado.get("conversaciones", {})),
@@ -281,39 +446,58 @@ def crear_app(
                     ``{"tipo": "acusar", "sospechoso": id}``
           servidor → ``comienzo`` · ``fragmento``* · ``turno``   (interrogar)
                      ``veredicto``                               (acusar)
-                     ``error``                                   (jugada inválida)
+                     ``error``                                   (jugada rechazada
+                                                                  o ilegible)
 
         El turno completo viaja al final en ``turno.respuesta`` aunque ya haya
         salido por fragmentos: el streaming es mejora progresiva, no la fuente
         de verdad — si un modelo no streamea, el juego funciona igual.
         """
         partida = await websocket.app.state.registro.obtener(partida_id)
-        if partida is None:
-            # 4404: código de aplicación (la franja 4000-4999 es libre en WS).
+        # 4404: código de aplicación (la franja 4000-4999 es libre en WS). Vale
+        # tanto para la partida que no existe como para la huérfana: en las dos
+        # no hay nada que jugar, y el browser no debe reintentar.
+        if partida is None or _caso_de(partida) is None:
             await websocket.close(code=4404)
             return
         await websocket.accept()
-        caso_id = partida["caso_id"]
+        # 4409: el caso existe y la partida también, pero su motor hoy no
+        # anda. Cerramos con un código distinto del 4404 para que el browser
+        # sepa que esto SÍ se arregla (prendiendo ollama, poniendo la key) y
+        # pueda decir cuál de las dos cosas.
+        if partida["modelo_id"] not in app.state.motores:
+            await _error(websocket, _estado_del_motor(partida["modelo_id"])["motor_motivo"])
+            await websocket.close(code=4409)
+            return
 
         try:
             while True:
-                jugada = await websocket.receive_json()
+                # Lo que llega por el socket lo escribe el browser: puede ser
+                # cualquier cosa. Un JSON roto (o uno que no sea un objeto) se
+                # contesta con un error, no tumba la conexión.
+                try:
+                    jugada = await websocket.receive_json()
+                except ValueError:
+                    await _error(websocket, "no entendí el mensaje: esperaba JSON")
+                    continue
+                if not isinstance(jugada, dict):
+                    await _error(websocket, "la jugada tiene que ser un objeto JSON")
+                    continue
                 match jugada.get("tipo"):
                     case "interrogar":
-                        await _jugada_interrogar(websocket, partida_id, caso_id, jugada)
+                        await _jugada_interrogar(websocket, partida, jugada)
                     case "acusar":
-                        await _jugada_acusar(websocket, partida_id, caso_id, jugada)
+                        await _jugada_acusar(websocket, partida, jugada)
                     case desconocido:
                         await _error(websocket, f"no conozco la jugada {desconocido!r}")
         except WebSocketDisconnect:
             pass  # el jugador cerró la pestaña; la partida queda en la base
 
-    async def _jugada_interrogar(
-        websocket: WebSocket, partida_id: str, caso_id: str, jugada: dict
-    ) -> None:
-        caso = casos[caso_id]
-        grafo = app.state.grafos[caso_id]
-        estado = await _estado_de(partida_id, caso_id)
+    async def _jugada_interrogar(websocket: WebSocket, partida: dict, jugada: dict) -> None:
+        partida_id = partida["id"]
+        caso = casos[partida["caso_id"]]
+        grafo = _grafo_de(partida["caso_id"], partida["modelo_id"])
+        estado = await _estado_de(partida)
         sospechoso = caso.buscar_sospechoso(jugada.get("sospechoso", ""))
         pregunta = (jugada.get("pregunta") or "").strip()
 
@@ -325,6 +509,10 @@ def crear_app(
             return await _error(websocket, "no conozco a ese sospechoso")
         if not pregunta:
             return await _error(websocket, "la pregunta está vacía")
+        if len(pregunta) > MAX_PREGUNTA:
+            return await _error(
+                websocket, f"la pregunta no puede pasar los {MAX_PREGUNTA} caracteres"
+            )
 
         await websocket.send_json({"tipo": "comienzo", "sospechoso": sospechoso.id})
 
@@ -350,7 +538,7 @@ def crear_app(
         except Exception as error:  # LLM caído, timeout, etc.: el juego avisa y sigue
             return await _error(websocket, f"el interrogatorio se cortó: {error}")
 
-        estado = await _estado_de(partida_id, caso_id)
+        estado = await _estado_de(partida)
         await websocket.send_json(
             {
                 "tipo": "turno",
@@ -365,12 +553,11 @@ def crear_app(
             }
         )
 
-    async def _jugada_acusar(
-        websocket: WebSocket, partida_id: str, caso_id: str, jugada: dict
-    ) -> None:
-        caso = casos[caso_id]
-        grafo = app.state.grafos[caso_id]
-        estado = await _estado_de(partida_id, caso_id)
+    async def _jugada_acusar(websocket: WebSocket, partida: dict, jugada: dict) -> None:
+        partida_id = partida["id"]
+        caso = casos[partida["caso_id"]]
+        grafo = _grafo_de(partida["caso_id"], partida["modelo_id"])
+        estado = await _estado_de(partida)
         sospechoso = caso.buscar_sospechoso(jugada.get("sospechoso", ""))
 
         if estado.get("resultado"):
@@ -387,7 +574,18 @@ def crear_app(
         await websocket.send_json({"tipo": "veredicto", **_veredicto(estado, caso)})
 
     async def _error(websocket: WebSocket, mensaje: str) -> None:
-        await websocket.send_json({"tipo": "error", "mensaje": mensaje})
+        """Avisa de una jugada rechazada, sin romperse si ya no hay a quién avisarle.
+
+        El aviso de error suele ser lo ÚLTIMO que pasa en un socket agonizante:
+        si el LLM tardó tanto que se cayó el keepalive, uvicorn ya cerró la
+        conexión y este ``send_json`` levanta un ``RuntimeError`` que sube por
+        todo el stack y tapa el error verdadero en el log. El motivo real vale
+        más que el aviso que ya nadie va a leer.
+        """
+        try:
+            await websocket.send_json({"tipo": "error", "mensaje": mensaje})
+        except (RuntimeError, WebSocketDisconnect):
+            print(f"[ws] no pude avisar del error (socket cerrado): {mensaje}")
 
     # ── Traducciones estado → JSON (compartidas por REST y WebSocket) ────────
 
@@ -399,6 +597,19 @@ def crear_app(
             "pistas_descubiertas": len(estado.get("pistas_descubiertas", [])),
             "total_secretos": caso.total_secretos(),
             "resultado": estado.get("resultado"),
+        }
+
+    def _resumen_huerfana() -> dict:
+        """El resumen de una partida cuyo caso ya no existe: sin números que
+        inventar, y marcada para que el archivo la muestre como ilegible."""
+        return {
+            "caso_titulo": "— expediente ilegible —",
+            "caso_disponible": False,
+            "preguntas_usadas": 0,
+            "preguntas_restantes": 0,
+            "pistas_descubiertas": 0,
+            "total_secretos": 0,
+            "resultado": None,
         }
 
     def _pistas_descubiertas(estado: dict, caso: Caso) -> list[dict]:
@@ -429,7 +640,9 @@ def crear_app(
             "texto": estado.get("respuesta", ""),
             "acusado": estado.get("sospechoso_actual"),
             "epilogo": caso.epilogo,
-            "calificacion": _calificacion(estado["resultado"], encontradas, caso.total_secretos()),
+            "calificacion": _calificacion(
+                estado["resultado"], encontradas, caso.total_secretos(), caso.culpable_alias
+            ),
             "pistas_descubiertas": encontradas,
             "total_secretos": caso.total_secretos(),
             "preguntas_usadas": estado.get("preguntas_usadas", 0),
@@ -442,11 +655,11 @@ def crear_app(
     return app
 
 
-def _calificacion(resultado: str, encontradas: int, total: int) -> str:
+def _calificacion(resultado: str, encontradas: int, total: int, alias: str) -> str:
     """El remate según cómo se jugó — gemelo en texto plano del que muestra
     el CLI con markup de rich (``cli._calificacion``)."""
     if resultado != "victoria":
-        return "🪦 El culpable sigue suelto. El CALAFATE-2 va a necesitar otro detective."
+        return f"🪦 El {alias} sigue suelto. Alguien va a tener que reabrir el expediente."
     if encontradas >= total * 0.8:
         return "🏆 Detective de leyenda: resolviste el caso con la evidencia en la mano."
     if encontradas >= total * 0.4:
@@ -458,22 +671,20 @@ def _calificacion(resultado: str, encontradas: int, total: int) -> str:
 
 
 def main() -> None:
-    """Levanta el servidor con el caso real y el motor del ``.env``."""
-    load_dotenv()
+    """Levanta el servidor con todos los casos y todos los motores usables.
 
-    try:
-        actor, analista, nombre_motor = crear_motores()
-    except Exception as error:  # API key ausente, proveedor mal escrito, etc.
-        print(f"No pude inicializar el modelo de lenguaje: {error}")
-        print("Revisá tu .env — las opciones de DETECTIVE_MODEL están en el README.")
-        return
+    A diferencia del CLI, acá no se elige nada por adelantado: el relevamiento
+    de motores pasa dentro del ``lifespan`` y cada jugador elige el suyo al
+    abrir un expediente. Que falte una API key o esté apagado ollama no impide
+    arrancar — se ve reflejado en el selector.
+    """
+    load_dotenv()
 
     ruta_db = os.environ.get("DETECTIVE_DB", "partidas.sqlite")
     puerto = int(os.environ.get("DETECTIVE_WEB_PORT", "8765"))
-    app = crear_app(CASOS, actor, analista, ruta_db=ruta_db, motor=nombre_motor)
+    app = crear_app(CASOS, ruta_db=ruta_db)
 
     print(f"🛰️  El Caso Calafate — http://127.0.0.1:{puerto}")
-    print(f"    motor: {nombre_motor} · partidas en {ruta_db} · {len(CASOS)} casos disponibles")
-    if nombre_motor == "fake":
-        print("    ⚠ modo fake: respuestas enlatadas, pistas que se revelan solas")
+    print(f"    partidas en {ruta_db} · {len(CASOS)} casos · {len(MOTORES)} motores en el catálogo")
+    print(f"    motor sugerido: {motor_sugerido()} (cada partida elige el suyo)")
     uvicorn.run(app, host="127.0.0.1", port=puerto, log_level="warning")

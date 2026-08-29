@@ -93,3 +93,16 @@ def test_acusar_a_un_inocente_es_derrota(caso_asado):
 def test_acusar_a_alguien_inexistente_explota(caso_asado):
     with pytest.raises(ValueError, match="no existe"):
         nodo_acusar({"sospechoso_actual": "fantasma"}, caso=caso_asado)
+
+
+def test_el_veredicto_usa_las_palabras_del_caso(caso_asado):
+    """El motor no sabe qué se investiga: el texto del veredicto lo pone el
+    caso (``delito`` y ``culpable_alias``). Antes decía «sabotaje» siempre,
+    jugaras el caso que jugaras."""
+    victoria = nodo_acusar({"sospechoso_actual": "moro"}, caso=caso_asado)
+    assert caso_asado.delito in victoria["respuesta"]
+    assert "sabotaje" not in victoria["respuesta"]
+
+    derrota = nodo_acusar({"sospechoso_actual": "michi"}, caso=caso_asado)
+    assert f"El verdadero {caso_asado.culpable_alias}" in derrota["respuesta"]
+    assert "saboteador" not in derrota["respuesta"]

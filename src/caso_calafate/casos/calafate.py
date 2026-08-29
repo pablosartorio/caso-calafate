@@ -9,6 +9,10 @@ from caso_calafate.caso import Caso, Secreto, Sospechoso
 CASO_CALAFATE = Caso(
     id="calafate",
     titulo="EL CASO CALAFATE",
+    sede="Centro Espacial Patagónico",
+    ciudad="Bariloche",
+    delito="el sabotaje del satélite CALAFATE-1",
+    culpable_alias="saboteador",
     gancho="A 48 horas del lanzamiento, alguien saboteó el satélite desde adentro.",
     # Los párrafos van en una sola línea lógica (concatenación implícita de
     # strings): rich los envuelve al ancho de la terminal. Los saltos duros
@@ -104,9 +108,10 @@ está interrogando al personal que tenía acceso esa noche.""",
                     ),
                     instruccion_actor=(
                         "Solo si ya admitiste que perdiste la tarjeta y te preguntan "
-                        "DÓNDE la perdiste o quién pudo agarrarla: recordás que la última "
-                        "vez que la usaste fue el jueves a la tarde, antes de la reunión "
-                        "de revisión en la oficina de Calidad."
+                        "DÓNDE la perdiste o quién pudo agarrarla: caés en que se te "
+                        "perdió el jueves a la tarde, en la reunión de revisión en la "
+                        "oficina de Calidad — la usaste para entrar y al salir ya no "
+                        "la tenías."
                     ),
                     criterio_revelacion=(
                         "Dice que perdió la tarjeta en la oficina de Calidad o durante "

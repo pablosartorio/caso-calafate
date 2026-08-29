@@ -7,6 +7,7 @@ persistir la partida entre invocaciones. Como actor y analista se inyectan
 """
 
 from caso_calafate.grafo import construir_grafo
+from caso_calafate.prompts import prompt_sospechoso
 
 
 def _config(partida: str = "test") -> dict:
@@ -108,3 +109,22 @@ def test_acusar_no_gasta_preguntas(caso_asado, actor_loro, analista_fijo):
     estado = grafo.invoke({"accion": "acusar", "sospechoso_actual": "moro"}, config)
 
     assert estado["preguntas_usadas"] == 1  # solo la pregunta, la acusación no cuenta
+
+
+# ── Los prompts hablan del hecho de ESTE caso ────────────────────────────────
+
+
+def test_el_prompt_del_culpable_nombra_el_delito_del_caso(caso_asado):
+    """Al actor se le dice qué cometió. Si el motor le dijera «el sabotaje»
+    jugando el caso del asado, actuaría sobre un crimen inexistente."""
+    culpable = caso_asado.culpable()
+    prompt = prompt_sospechoso(caso_asado, culpable)
+    assert caso_asado.delito.upper() in prompt.upper()
+    assert "SABOTAJE" not in prompt.upper()
+
+
+def test_el_prompt_del_inocente_tambien_nombra_el_delito_del_caso(caso_asado):
+    inocente = next(s for s in caso_asado.sospechosos if not s.es_culpable)
+    prompt = prompt_sospechoso(caso_asado, inocente)
+    assert caso_asado.delito in prompt
+    assert "sabotaje" not in prompt.lower()

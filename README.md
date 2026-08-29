@@ -21,8 +21,8 @@ es una falta grave, ¿entiende? Pero yo no entré a la sala limpia anoche.
 ╰──────────────────────────────────────────────────────────────────────╯
 ```
 
-> ⚠️ **Spoiler**: los datos de `src/caso_calafate/caso.py` revelan al culpable.
-> Jugá una partida antes de leer el código. :)
+> ⚠️ **Spoiler**: los datos de `src/caso_calafate/casos/` revelan al culpable
+> de cada caso. Jugá una partida antes de leer el código. :)
 
 ## Cómo jugar
 
@@ -35,13 +35,22 @@ cp .env.example .env   # elegí el motor LLM acá (ver opciones abajo)
 uv run detective
 ```
 
-Motores disponibles (variable `DETECTIVE_MODEL` en el `.env`):
+El juego es **local**: los modelos corren en tu Ollama, no cuestan nada y no
+necesitan ninguna API key. El motor se elige **al empezar cada partida**, en el
+CLI y en la web, así que no hace falta editar nada para probar otro. El
+catálogo vive en `llm.py` (`MOTORES`) y el selector muestra también los que hoy
+no andan, con el motivo — `ollama serve` apagado, un modelo sin bajar — así que
+la tabla de motores funciona además como ayuda de instalación.
 
-| Valor | Qué necesita | Cómo se juega |
+| Motor | Qué necesita | Cómo se juega |
 |---|---|---|
-| `anthropic:claude-opus-4-8` | `ANTHROPIC_API_KEY` | La mejor actuación de los personajes. Una partida completa cuesta ~US$ 0,50 (con `claude-haiku-4-5`, ~US$ 0,10). |
-| `ollama:llama3.1:8b` | `ollama serve` corriendo y el modelo bajado (`ollama list`) | Gratis y local. Actuación más rústica pero jugable. |
+| `ollama:qwen2.5:7b` | `ollama serve` corriendo y `ollama pull qwen2.5:7b` | El default: el más parejo de los tres. |
+| `ollama:llama3.1:8b` | ídem, con `ollama pull llama3.1:8b` | Más lento, otra voz. |
+| `ollama:llama3.2:1b` | ídem, con `ollama pull llama3.2:1b` | Rapidísimo y el más flojo actuando. |
 | `fake` | Nada | Sin LLM: respuestas enlatadas y pistas que se revelan solas. Para probar la mecánica y para los tests. |
+
+`DETECTIVE_MODEL` en el `.env` ya no es "el motor del juego": es apenas **el
+que viene preseleccionado** en el selector.
 
 ### Comandos dentro del juego
 
@@ -117,22 +126,24 @@ graph LR
 
 | Archivo | Qué es | Concepto que muestra |
 |---|---|---|
-| `caso.py` | Los DATOS del misterio: sospechosos, secretos, textos | Pydantic con validadores (`model_validator`); separar contenido de motor |
+| `caso.py` | El MODELO del misterio: sospechosos, secretos, vocabulario | Pydantic con validadores (`model_validator`); separar contenido de motor |
+| `casos/` | Los casos jugables, uno por archivo, en un registro por id | Datos como módulos; agregar un caso es agregar un archivo |
 | `estado.py` | El estado tipado que fluye por el grafo | `TypedDict` como estado de LangGraph; **reducers** (`Annotated[..., acumular_pistas]`) |
 | `prompts.py` | La "dirección de actores": prompts de actor y analista | El contrato de salida estructurada (`SecretosRevelados`) |
 | `nodos.py` | Las funciones `estado → actualización` | Nodos testeables; inyección de dependencias; validar lo que dice el LLM |
 | `grafo.py` | Ensambla y compila el grafo | `StateGraph`, `add_conditional_edges`, **checkpointer** (`MemorySaver` + `thread_id`) |
-| `llm.py` | Fábrica de modelos | `init_chat_model` multi-proveedor; `with_structured_output`; modelos fake |
+| `llm.py` | El catálogo de motores y su fábrica | `init_chat_model` multi-proveedor; `with_structured_output` (y su `method`); relevar disponibilidad en runtime |
 | `cli.py` | La capa visual (rich) | **Streaming** con `stream_mode="messages"`; leer estado con `get_state()` |
-| `web/servidor.py` | La otra capa visual: FastAPI | REST + WebSocket; DTOs anti-spoiler; `astream` y `aget_state` |
-| `web/partidas.py` | Registro de partidas guardadas | Convivir con el checkpointer en la misma SQLite |
+| `web/servidor.py` | La otra capa visual: FastAPI | REST + WebSocket; DTOs anti-spoiler; `astream` y `aget_state`; cache de grafos por `(caso, motor)` |
+| `web/partidas.py` | Registro de partidas guardadas | Convivir con el checkpointer en la misma SQLite; migraciones livianas con `PRAGMA table_info` |
+| `pixelart.py` | Los retratos VGA como texto, con capas de animación | El arte como dato: se versiona y se valida al importar |
 | `web/estatico/` | El frontend (HTML/CSS/JS a mano) | Streaming por WS; revelado teletipo; texturas con CSS; Web Audio |
-| `tests/` | 45 tests que corren en ~2 s | Testear apps LLM **sin LLM**: fakes, caso de juguete, `TestClient` con WebSocket |
+| `tests/` | 139 tests que corren en ~2 s | Testear apps LLM **sin LLM**: fakes, caso de juguete, `TestClient` con WebSocket |
 
 ## Tests
 
 ```bash
-uv run pytest        # 45 tests, sin API key, sin red
+uv run pytest        # 134 tests, sin API key, sin red
 uv run ruff check .  # lint
 ```
 
@@ -147,13 +158,18 @@ ningún test del motor.
 
 De más fácil a más difícil:
 
-1. **Escribí tu propio caso.** Es solo agregar datos en `caso.py` — los
-   validadores te avisan si te olvidás del culpable. Después hacé que el CLI
-   permita elegir caso.
+1. ~~**Escribí tu propio caso.**~~ Ya hay once: mirá `casos/`, copiá el
+   archivo de uno y cambiale los datos. Los validadores te avisan si te
+   olvidás del culpable, y los tests de `test_caso.py` corren solos sobre el
+   caso nuevo. El selector de casos (CLI y web) lo levanta del registro.
 2. **Pistas falsas.** Agregale a `Secreto` un campo `es_pista_falsa` y que la
    libreta las marque distinto cuando se descubre la verdad.
 3. **Careo.** Un comando `/carear <a> <b>` donde un sospechoso reacciona a lo
    que dijo otro (necesita pasar fragmentos de una conversación a otra).
+4. **Motores de nube.** `init_chat_model` acepta `google_genai:` y `groq:` sin
+   tocar el motor: alcanza con instalar el paquete de integración y agregar una
+   línea a `MOTORES`. Está probado en la rama `motores-multiproveedor`, que
+   suma Gemini y Groq encima de esto.
 4. ~~**Partidas guardadas.**~~ Resuelto en la interfaz web (`web/partidas.py` +
    `AsyncSqliteSaver`). Queda para el CLI: agregá `--partida <nombre>` usando
    el mismo `thread_id` contra la misma base.

@@ -98,7 +98,9 @@ def nodo_cerrar_turno(estado: EstadoJuego) -> dict:
 def nodo_acusar(estado: EstadoJuego, *, caso: Caso) -> dict:
     """Resuelve la acusación final y cierra la partida.
 
-    Pura lógica de juego: comparar al acusado con el culpable del caso.
+    Pura lógica de juego: comparar al acusado con el culpable del caso. El
+    texto del veredicto nombra el hecho con las palabras del caso
+    (``delito``, ``culpable_alias``): el motor no sabe qué se investiga.
     """
     acusado = caso.sospechoso(estado["sospechoso_actual"])
     if acusado is None:
@@ -108,12 +110,13 @@ def nodo_acusar(estado: EstadoJuego, *, caso: Caso) -> dict:
         resultado = "victoria"
         veredicto = (
             f"Acusás a {acusado.nombre}, {acusado.cargo}. La evidencia encaja: "
-            f"tras un largo silencio, {acusado.nombre} confiesa el sabotaje. Caso cerrado."
+            f"tras un largo silencio, {acusado.nombre} confiesa {caso.delito}. Caso cerrado."
         )
     else:
         resultado = "derrota"
         veredicto = (
             f"Acusás a {acusado.nombre}, {acusado.cargo}... y la acusación se desarma "
-            f"en minutos: {acusado.nombre} era inocente. El verdadero saboteador queda libre."
+            f"en minutos: {acusado.nombre} era inocente. "
+            f"El verdadero {caso.culpable_alias} queda libre."
         )
     return {"resultado": resultado, "respuesta": veredicto, "pistas_nuevas": []}

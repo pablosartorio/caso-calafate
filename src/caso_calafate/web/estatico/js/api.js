@@ -34,10 +34,10 @@ export const api = {
   casos: () => traerJSON("/api/casos"),
   retratos: () => traerJSON("/api/retratos"),
   partidas: () => traerJSON("/api/partidas"),
-  crearPartida: (nombre, casoId) =>
+  crearPartida: (nombre, casoId, modeloId) =>
     traerJSON("/api/partidas", {
       method: "POST",
-      body: JSON.stringify({ nombre, caso_id: casoId }),
+      body: JSON.stringify({ nombre, caso_id: casoId, modelo_id: modeloId }),
     }),
   borrarPartida: (id) => traerJSON(`/api/partidas/${id}`, { method: "DELETE" }),
   detalle: (id) => traerJSON(`/api/partidas/${id}`),

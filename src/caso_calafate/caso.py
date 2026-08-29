@@ -15,6 +15,7 @@ medio de una partida — y porque es la misma librería que LangChain usa para
 """
 
 import unicodedata
+from collections.abc import Iterable
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -69,6 +70,22 @@ class Caso(BaseModel):
     briefing: str = Field(description="Lo que se le cuenta al jugador al arrancar")
     contexto_actores: str = Field(description="Resumen de los hechos que todo personaje conoce")
     epilogo: str = Field(description="La verdad completa; se muestra al terminar la partida")
+
+    # ── El vocabulario del caso ──────────────────────────────────────────────
+    # Los prompts, el veredicto y la interfaz hablan del hecho concreto que se
+    # investiga. Sin estos campos, el motor tendría que inventarse una palabra
+    # ("el sabotaje") que solo es cierta en algunos casos: acá cada caso pone
+    # la suya. Nada de esto spoilea — describe el HECHO, nunca a su autor.
+    sede: str = Field(description="El organismo donde pasa todo, ej. 'Centro Espacial Patagónico'")
+    ciudad: str = Field(description="Dónde queda la sede, ej. 'Bariloche'")
+    delito: str = Field(
+        description="El hecho a resolver, con artículo y sin nombrar al culpable: encaja en "
+        "«cometiste ___» y «confesó ___», ej. 'el sabotaje del satélite CALAFATE-1'"
+    )
+    culpable_alias: str = Field(
+        description="Cómo le dice la prensa al culpable sin nombre: un sustantivo masculino "
+        "singular SIN artículo, que encaje en «el ___ sigue libre», ej. 'saboteador'"
+    )
     max_preguntas: int = Field(default=15, ge=1)
     sospechosos: list[Sospechoso]
 
@@ -117,3 +134,25 @@ class Caso(BaseModel):
     def culpable(self) -> Sospechoso:
         return next(s for s in self.sospechosos if s.es_culpable)
 
+
+def buscar_caso(catalogo: Iterable[Caso], texto: str) -> Caso | None:
+    """Búsqueda tolerante de un caso: gemela de ``Caso.buscar_sospechoso``.
+
+    Acepta el id o el título, sin tildes ni mayúsculas y por prefijo, así el
+    jugador puede tipear «piltriquitrón» (como lo ve escrito en la tabla) y
+    no solo el slug pelado «piltriquitron».
+    """
+    consulta = _normalizar(texto)
+    if not consulta:
+        return None
+    for caso in catalogo:
+        # Los títulos arrancan todos con "EL CASO ...", así que se prueba
+        # también sin ese prefijo: "río negro" tiene que encontrar el suyo.
+        titulo = _normalizar(caso.titulo)
+        nombre = titulo.removeprefix("el caso ").strip()
+        if consulta == _normalizar(caso.id) or titulo.startswith(consulta):
+            return caso
+        if nombre.startswith(consulta):
+            return caso
+    # Segunda vuelta, más laxa: un prefijo del id ("pilt" encuentra el caso).
+    return next((c for c in catalogo if _normalizar(c.id).startswith(consulta)), None)

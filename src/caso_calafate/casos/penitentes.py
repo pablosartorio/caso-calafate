@@ -9,6 +9,10 @@ from caso_calafate.caso import Caso, Secreto, Sospechoso
 CASO_PENITENTES = Caso(
     id="penitentes",
     titulo="EL CASO PENITENTES",
+    sede="Planta Los Penitentes",
+    ciudad="Bariloche",
+    delito="la filtración de las especificaciones del radar Centinela-3D",
+    culpable_alias="espía",
     gancho=(
         "A 72 horas de la demo para las Fuerzas Armadas, alguien vendió "
         "los planos del radar por afuera."

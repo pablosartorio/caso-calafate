@@ -9,6 +9,10 @@ from caso_calafate.caso import Caso, Secreto, Sospechoso
 CASO_VIEDMA = Caso(
     id="viedma",
     titulo="EL CASO VIEDMA",
+    sede="Estación de Radar Costero Viedma",
+    ciudad="Viedma",
+    delito="la certificación del Hito 3 con un alcance que el radar nunca alcanzó",
+    culpable_alias="falsificador",
     gancho=(
         "Un hito de pago se cobró con un número que el radar nunca alcanzó "
         "— y alguien lo escondió mal."

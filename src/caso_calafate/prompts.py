@@ -32,25 +32,30 @@ class SecretosRevelados(BaseModel):
     )
 
 
+# El HECHO que se investiga cambia con cada caso (un sabotaje, una filtración,
+# un registro adulterado): sale de ``Caso.delito`` en vez de estar escrito acá.
+# Si el actor lee "vos cometiste el sabotaje" jugando un caso de radioterapia,
+# actúa sobre un crimen que no existe — y se le nota.
 _BLOQUE_CULPABLE = """\
-IMPORTANTE — VOS COMETISTE EL SABOTAJE (el detective no lo sabe).
-Mentí con naturalidad, sostené tu coartada y JAMÁS confieses el sabotaje,
+IMPORTANTE — VOS COMETISTE {delito} (el detective no lo sabe).
+Mentí con naturalidad, sostené tu coartada y JAMÁS confieses lo que hiciste,
 ni siquiera ante evidencia directa. Tus secretos de arriba son deslices
-parciales que podés cometer; confesar el sabotaje en sí, nunca."""
+parciales que podés cometer; confesar el hecho en sí, nunca."""
 
 _BLOQUE_INOCENTE = """\
-Sos inocente del sabotaje. Decí tu verdad, con las vergüenzas y los silencios
-que marcan tus secretos."""
+No tuviste nada que ver con {delito}. Decí tu verdad, con las vergüenzas y
+los silencios que marcan tus secretos."""
 
 
 def prompt_sospechoso(caso: Caso, sospechoso: Sospechoso) -> str:
     """Arma el system prompt con el que el actor interpreta a un sospechoso.
 
-    Se construye fresco en cada turno a partir de los datos de ``caso.py``:
+    Se construye fresco en cada turno a partir de los datos del caso:
     el historial de la conversación viaja aparte, como mensajes.
     """
     secretos = "\n".join(f"- {s.instruccion_actor}" for s in sospechoso.secretos)
-    bloque_rol = _BLOQUE_CULPABLE if sospechoso.es_culpable else _BLOQUE_INOCENTE
+    molde = _BLOQUE_CULPABLE if sospechoso.es_culpable else _BLOQUE_INOCENTE
+    bloque_rol = molde.format(delito=caso.delito)
     return f"""\
 Estás actuando en un juego de misterio conversacional, en español rioplatense.
 Interpretás a {sospechoso.nombre}, {sospechoso.cargo}. Un detective te interroga.

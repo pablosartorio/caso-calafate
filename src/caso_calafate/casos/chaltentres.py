@@ -9,6 +9,10 @@ from caso_calafate.caso import Caso, Secreto, Sospechoso
 CASO_CHALTEN_III = Caso(
     id="chalten-iii",
     titulo="EL CASO CHALTÉN III",
+    sede="Centro Espacial Patagónico",
+    ciudad="Bariloche",
+    delito="la carga de datos de configuración no aprobados en el CHALTÉN-III",
+    culpable_alias="responsable",
     gancho=(
         "A cuatro días de un ensayo crítico, alguien maquilló los números para "
         "que el satélite pasara un examen que no debía pasar."

@@ -31,9 +31,7 @@
       <p class="archivo-membrete">CENTRO ESPACIAL PATAGÓNICO · DIVISIÓN SEGURIDAD</p>
       <h1 class="archivo-titulo">EL CASO CALAFATE</h1>
       <p class="archivo-sub">ARCHIVO DE EXPEDIENTES — elegí uno o abrí el tuyo</p>
-      <p id="aviso-fake" class="aviso-fake" hidden>
-        ⚠ MODO FAKE: sin LLM real — respuestas enlatadas y pistas que se revelan solas.
-      </p>
+      <p id="aviso-motor" class="aviso-fake" hidden></p>
     </header>
     <ul id="estantes" class="estantes"><!-- los expedientes los dibuja pantallas.js --></ul>
   </section>
@@ -139,6 +137,11 @@
         </label>
         <input id="nombre-nuevo" name="nombre" maxlength="60"
                placeholder="ej: la corazonada del viernes" required>
+
+        <label for="motor-elegido">MOTOR — quién interpreta a los sospechosos</label>
+        <select id="motor-elegido" name="motor" class="select-papel"><!-- pantallas.js --></select>
+        <p id="motor-detalle" class="motor-detalle"></p>
+
         <span class="botones">
           <button type="button" id="boton-casos-volver" class="boton-papel">‹ volver</button>
           <button type="submit" class="boton-papel boton-principal">abrir →</button>
@@ -156,8 +159,8 @@
     <article class="papel documento">
       <header class="documento-cabecera">
         <span class="sello sello-rojo documento-confidencial">CONFIDENCIAL</span>
-        <p class="documento-membrete">CENTRO ESPACIAL PATAGÓNICO<br>DIVISIÓN SEGURIDAD — BARILOCHE</p>
-        <h2 id="briefing-titulo">EL CASO CALAFATE</h2>
+        <p id="briefing-membrete" class="documento-membrete">DIVISIÓN SEGURIDAD</p>
+        <h2 id="briefing-titulo">—</h2>
       </header>
       <div id="texto-briefing" class="documento-cuerpo"></div>
       <footer class="documento-pie">
@@ -172,7 +175,7 @@
     <article class="papel documento documento-angosto">
       <header class="documento-cabecera">
         <h2 id="acusacion-titulo">ORDEN DE ACUSACIÓN</h2>
-        <p class="documento-advertencia">⚠ tenés UNA sola oportunidad — si errás, el saboteador queda libre</p>
+        <p id="acusacion-advertencia" class="documento-advertencia">⚠ tenés UNA sola oportunidad</p>
       </header>
       <ul id="acusacion-lista"><!-- filas de sospechosos, escritorio.js --></ul>
       <footer class="documento-pie">
@@ -201,7 +204,7 @@
   <dialog id="velo-diario" class="velo" aria-labelledby="diario-titular">
     <article id="diario" class="papel">
       <header class="diario-cabecera">
-        <p class="diario-fecha"><span>BARILOCHE</span><span>EDICIÓN EXTRA</span><span>$ 1.500</span></p>
+        <p class="diario-fecha"><span id="diario-ciudad">—</span><span>EDICIÓN EXTRA</span><span>$ 1.500</span></p>
         <h2 class="diario-masthead">EL CORDILLERANO</h2>
         <p class="diario-lema">el diario que el viento no se lleva</p>
       </header>
@@ -211,7 +214,7 @@
         <div id="diario-cuerpo"></div>
         <aside class="diario-recuadro">
           <figure id="diario-foto" aria-hidden="true"></figure>
-          <figcaption class="diario-epigrafe">El CALAFATE-1 en la sala limpia, la mañana del hallazgo.</figcaption>
+          <figcaption id="diario-epigrafe" class="diario-epigrafe">—</figcaption>
           <div class="diario-desempeno">
             <h4>EL DESEMPEÑO DEL DETECTIVE</h4>
             <p id="diario-stats">—</p>

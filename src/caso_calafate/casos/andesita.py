@@ -9,6 +9,10 @@ from caso_calafate.caso import Caso, Secreto, Sospechoso
 CASO_ANDESITA = Caso(
     id="andesita",
     titulo="EL CASO ANDESITA",
+    sede="Planta Andesita",
+    ciudad="Bariloche",
+    delito="la aprobación del Lote EC-114 sin los ensayos que correspondían",
+    culpable_alias="falsificador",
     gancho=(
         "Un lote de elementos combustibles salió aprobado del laboratorio — "
         "pero los datos crudos cuentan otra historia."

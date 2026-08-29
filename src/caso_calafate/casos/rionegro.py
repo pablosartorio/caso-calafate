@@ -9,6 +9,10 @@ from caso_calafate.caso import Caso, Secreto, Sospechoso
 CASO_RIO_NEGRO_I = Caso(
     id="rio-negro-i",
     titulo="EL CASO RÍO NEGRO I",
+    sede="Banco de Ensayos Ambientales",
+    ciudad="Bariloche",
+    delito="la manipulación del ensayo térmico del RÍO NEGRO I y de sus registros",
+    culpable_alias="saboteador",
     gancho=(
         "Un ensayo crítico casi se arruina en el banco de pruebas — y alguien "
         "reescribió los registros para que pareciera mala suerte."

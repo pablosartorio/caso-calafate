@@ -76,6 +76,9 @@ export function elegirSospechoso(sospechoso) {
 
 export function cargarPartida(detalle) {
   $("#nombre-partida").textContent = `«${detalle.nombre}»`;
+  // La advertencia de la orden nombra al culpable como lo hace ESTE caso.
+  $("#acusacion-advertencia").textContent =
+    `⚠ tenés UNA sola oportunidad — si errás, el ${estado.caso.culpable_alias} queda libre`;
 
   dibujarFichas(); // cada partida puede ser de un caso distinto: sospechosos propios
   reiniciarSintonia(); // cámara nueva, sin ráfaga de estática de entrada

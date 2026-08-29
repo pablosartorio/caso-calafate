@@ -9,6 +9,10 @@ from caso_calafate.caso import Caso, Secreto, Sospechoso
 CASO_TROMEN = Caso(
     id="tromen",
     titulo="EL CASO TROMEN",
+    sede="Planta del Sistema Tromen",
+    ciudad="Zapala",
+    delito="el daño al mecanismo de rotación de la antena del radar Tromen",
+    culpable_alias="saboteador",
     gancho=(
         "A horas de la demo para las Fuerzas Armadas, alguien dejó el radar "
         "más nuevo del país mirando para cualquier lado."

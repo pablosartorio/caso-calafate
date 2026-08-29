@@ -17,6 +17,7 @@ import * as crt from "./crt.js";
 import * as escritorio from "./escritorio.js";
 import { $, escuchar, estado } from "./estado.js";
 import {
+  abrirSelectorDeCasos,
   mostrarArchivo,
   mostrarBriefing,
   mostrarDiario,
@@ -34,9 +35,10 @@ let veredictoActual = null; // el veredicto recibido, para releer el diario
 
 async function arrancar() {
   try {
-    const { motor, casos } = await api.casos();
-    estado.motor = motor;
+    const { casos, motores, motor_sugerido } = await api.casos();
     estado.casosDisponibles = casos;
+    estado.motoresDisponibles = motores;
+    estado.motorSugerido = motor_sugerido;
   } catch {
     avisar("no pude hablar con el servidor — ¿está corriendo detective-web?", {
       tipo: "error",
@@ -45,7 +47,16 @@ async function arrancar() {
     return;
   }
 
-  if (estado.motor === "fake") $("#aviso-fake").hidden = false;
+  // El aviso global sobrevive al selector de motores, pero cambió de sentido:
+  // antes decía "el servidor arrancó en modo fake"; ahora dice "no tenés
+  // ningún motor de verdad para elegir", que es el problema que hay que
+  // resolver antes de jugar en serio.
+  const usables = estado.motoresDisponibles.filter((m) => m.disponible);
+  if (usables.length && usables.every((m) => m.id === "fake")) {
+    $("#aviso-motor").textContent =
+      "⚠ SIN MOTOR REAL: solo está el modo fake — prendé ollama serve o poné una API key en el .env.";
+    $("#aviso-motor").hidden = false;
+  }
 
   // El arte pixel de la cámara; si falla, el CRT cae a los retratos SVG.
   await cargarRetratos();
@@ -181,6 +192,13 @@ async function rutear() {
     cerrarPartida();
     mostrarSeccion("archivo");
     await mostrarArchivo();
+    // ?abrir=nuevo[&caso=<id>] — el alta de expediente, directo; con `caso`
+    // salta a la carátula de ese caso. Hermano del ?abrir= de más abajo:
+    // sirve para linkear la vista y para capturarla sin tener que clickear.
+    const parametros = new URLSearchParams(location.search);
+    if (parametros.get("abrir") === "nuevo") {
+      abrirSelectorDeCasos({ casoId: parametros.get("caso") });
+    }
   }
 }
 
