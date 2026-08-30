@@ -436,6 +436,8 @@
 .ficha:nth-child(1) { transform: rotate(-1.3deg); }
 .ficha:nth-child(2) { transform: rotate(0.8deg); }
 .ficha:nth-child(3) { transform: rotate(-0.5deg); }
+.ficha:nth-child(4) { transform: rotate(1.1deg); }
+.ficha:nth-child(5) { transform: rotate(-0.9deg); }
 
 .ficha:hover:not(:disabled) {
   transform: translateY(-4px) rotate(0deg);

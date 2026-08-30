@@ -1,0 +1,286 @@
+"""EL CASO MORENO — homenaje a Sergio Olguín (Verónica Rosenthal / La
+fragilidad de los cuerpos).
+
+Una periodista invitada empieza a tirar del hilo de un fraude que nadie le
+pidió investigar, y termina destapando algo que la propia base prefería
+mantener bajo el hielo.
+
+⚠️ SPOILER: leer los datos de este archivo revela al culpable.
+Jugá una partida antes. :)
+"""
+
+from caso_calafate.caso import Caso, Secreto, Sospechoso
+
+CASO_MORENO = Caso(
+    id="moreno",
+    titulo="EL CASO MORENO",
+    sede="Base de Monitoreo Glaciológico Perito Moreno",
+    ciudad="El Calafate",
+    delito="el fraude en los fondos de la base",
+    culpable_alias="estafador",
+    gancho=(
+        "Una periodista invitada a cubrir el monitoreo satelital del glaciar "
+        "empieza a notar que los números de la base no cierran."
+    ),
+    briefing=(
+        "Base de Monitoreo Glaciológico Perito Moreno. Te llaman a la tarde, "
+        "con la base en alerta.\n\n"
+        "«Detective, una periodista que vino a cubrir el monitoreo satelital "
+        "encontró algo en los registros de compras. Y alguien intentó "
+        "borrarle las notas del cuaderno.»\n\n"
+        "La periodista, invitada por el propio Centro Espacial para una nota "
+        "sobre el uso de imágenes satelitales en el estudio del glaciar, "
+        "empezó a cruzar facturas de mantenimiento con el estado real de los "
+        "equipos, y algo no cerraba. Anoche, alguien entró a su cuarto y "
+        "arrancó varias páginas de su cuaderno de notas.\n\n"
+        "Lo que se sabe hasta ahora:\n\n"
+        " • Las facturas de mantenimiento de los últimos dos años son mucho\n"
+        "   más altas de lo que el estado de los equipos justifica.\n"
+        " • Solo un puñado de personas maneja los contratos de mantenimiento\n"
+        "   de la base.\n"
+        " • El cuarto de la periodista no fue forzado: alguien tenía llave o\n"
+        "   pasó desapercibido.\n"
+        " • Cinco personas de la base tuvieron acceso a su cuarto o a los\n"
+        "   contratos. Son tus sospechosos.\n\n"
+        "Interrogá, anotá, y cuando estés seguro: acusá. Tenés una sola oportunidad."
+    ),
+    contexto_actores="""\
+Una periodista invitada por el Centro Espacial a cubrir el monitoreo
+satelital del glaciar, en la Base de Monitoreo Glaciológico Perito Moreno (El
+Calafate), notó que las facturas de mantenimiento de los últimos dos años son
+mucho más altas de lo que justifica el estado real de los equipos. Anoche
+alguien entró a su cuarto, sin forzarlo, y arrancó páginas de su cuaderno de
+notas. Un detective interroga a las cinco personas con acceso a su cuarto o a
+los contratos de mantenimiento.""",
+    epilogo=(
+        "Franco Islas infló las facturas de mantenimiento durante dos años.\n\n"
+        "Contratista privado a cargo del mantenimiento de los equipos de la "
+        "base, facturaba repuestos y horas de trabajo que nunca se hacían, "
+        "quedándose con la diferencia junto a un cómplice externo que nunca "
+        "llegó a identificarse del todo. Cuando se enteró de que la "
+        "periodista cruzaba facturas con el estado real del equipamiento, "
+        "entró a su cuarto de madrugada — tenía una copia de todas las "
+        "llaves de la base, por su trabajo — y arrancó las páginas del "
+        "cuaderno donde ella había empezado a anotar las inconsistencias, "
+        "esperando que pareciera un episodio menor y sin sentido, no un "
+        "encubrimiento.\n\n"
+        "Anselmo Duarte, jefe de base, había notado hacía meses que los "
+        "números no cerraban del todo, pero prefirió no indagar: Franco era "
+        "el único contratista dispuesto a trabajar en un lugar tan aislado, y "
+        "reemplazarlo hubiera significado meses sin mantenimiento real."
+    ),
+    max_preguntas=15,
+    sospechosos=[
+        Sospechoso(
+            id="julieta",
+            nombre="Julieta Farhi",
+            cargo="periodista invitada",
+            color="cyan",
+            personalidad=(
+                "Curiosa hasta la obsesión, no suelta un dato raro aunque nadie "
+                "más le preste atención. Acostumbrada a que la subestimen."
+            ),
+            coartada=(
+                "No es sospechosa en el sentido clásico: es quien destapó el "
+                "fraude, y cuenta con detalle todo lo que encontró."
+            ),
+            actitud=(
+                "Colaborativa y precisa, encantada de compartir cada dato que "
+                "cruzó en sus notas. La única que no tiene nada que ocultar."
+            ),
+            secretos=[
+                Secreto(
+                    id="facturas_infladas",
+                    pista=(
+                        "Las facturas de mantenimiento de los últimos dos años "
+                        "son muchísimo más altas de lo que el estado real de los "
+                        "equipos justifica."
+                    ),
+                    instruccion_actor=(
+                        "Si te preguntan qué encontraste en las facturas: "
+                        "explicás, con entusiasmo periodístico, que las "
+                        "facturas de mantenimiento de dos años son muchísimo "
+                        "más altas de lo que el estado real de los equipos "
+                        "justifica."
+                    ),
+                    criterio_revelacion=(
+                        "Explica que las facturas de mantenimiento están "
+                        "infladas respecto al estado real de los equipos."
+                    ),
+                ),
+            ],
+        ),
+        Sospechoso(
+            id="anselmo",
+            nombre="Anselmo Duarte",
+            cargo="jefe de la base",
+            color="yellow",
+            personalidad=(
+                "Pragmático, agotado por la logística de mantener una base "
+                "aislada funcionando. Elige sus batallas con cuidado."
+            ),
+            coartada=(
+                "Dice que esa noche estaba en su oficina, revisando turnos "
+                "para la semana, y no se cruzó con la periodista."
+            ),
+            actitud=(
+                "Cordial pero cansado. Si le preguntan por qué no controló "
+                "mejor las facturas, se pone incómodo y justifica la falta de "
+                "opciones."
+            ),
+            secretos=[
+                Secreto(
+                    id="sospecha_previa",
+                    pista=(
+                        "Anselmo sospechaba hace meses que los números de "
+                        "mantenimiento no cerraban del todo, pero no investigó."
+                    ),
+                    instruccion_actor=(
+                        "Si te preguntan si notaste algo raro en las cuentas "
+                        "antes de esto: admitís, incómodo, que sospechabas algo "
+                        "hace meses pero no investigaste, porque Franco era el "
+                        "único contratista dispuesto a venir hasta acá."
+                    ),
+                    criterio_revelacion=(
+                        "Admite haber sospechado antes de irregularidades en las "
+                        "cuentas de mantenimiento."
+                    ),
+                ),
+            ],
+        ),
+        Sospechoso(
+            id="franco",
+            nombre="Franco Islas",
+            cargo="contratista de mantenimiento",
+            color="red",
+            es_culpable=True,
+            personalidad=(
+                "Simpático y servicial en apariencia, el único dispuesto a "
+                "trabajar en un lugar tan aislado. Conoce cada rincón de la "
+                "base."
+            ),
+            coartada=(
+                "Dice que esa noche estaba revisando un generador en el otro "
+                "extremo de la base, lejos de los dormitorios."
+            ),
+            actitud=(
+                "Servicial y colaborador de entrada. Si lo confrontan con "
+                "números concretos de facturación, se pone técnico y evasivo."
+            ),
+            secretos=[
+                Secreto(
+                    id="llaves_todas",
+                    pista=(
+                        "Franco tiene copia de todas las llaves de la base, "
+                        "incluidos los dormitorios, por su trabajo de "
+                        "mantenimiento."
+                    ),
+                    instruccion_actor=(
+                        "Si te preguntan si tenés acceso a los dormitorios: "
+                        "admitís, sin darle mayor importancia, que tenés copia "
+                        "de todas las llaves de la base por tu trabajo."
+                    ),
+                    criterio_revelacion=(
+                        "Admite tener copia de todas las llaves de la base, "
+                        "incluidos los dormitorios."
+                    ),
+                ),
+                Secreto(
+                    id="cobros_inexistentes",
+                    pista=(
+                        "Franco facturó repuestos y horas de trabajo que nunca "
+                        "se realizaron, quedándose con la diferencia."
+                    ),
+                    instruccion_actor=(
+                        "Solo si ya admitiste lo de las llaves Y te muestran un "
+                        "dato concreto de una factura específica: te quebrás y "
+                        "admitís que facturaste repuestos y horas que nunca se "
+                        "hicieron."
+                    ),
+                    criterio_revelacion=(
+                        "Admite haber facturado repuestos u horas de trabajo "
+                        "inexistentes."
+                    ),
+                ),
+            ],
+        ),
+        Sospechoso(
+            id="cielo",
+            nombre="Cielo Manqueo",
+            cargo="bióloga de la base",
+            color="green",
+            personalidad=(
+                "Observadora, ajena a los conflictos administrativos, más "
+                "interesada en el hielo que en las cuentas. Honesta casi hasta "
+                "la ingenuidad."
+            ),
+            coartada=(
+                "Dice que esa noche estaba en el laboratorio, procesando "
+                "muestras, y no se cruzó con nadie."
+            ),
+            actitud=(
+                "Directa y sin nada que ocultar sobre sí misma, aunque nota "
+                "detalles ajenos sin darles demasiada importancia."
+            ),
+            secretos=[
+                Secreto(
+                    id="franco_nocturno",
+                    pista=(
+                        "Cielo vio a Franco Islas merodeando cerca de los "
+                        "dormitorios esa noche, algo que no era parte de su "
+                        "rutina de trabajo."
+                    ),
+                    instruccion_actor=(
+                        "Si te preguntan si viste a alguien fuera de lugar esa "
+                        "noche: contás, sin darle mucha importancia en el "
+                        "momento, que viste a Franco merodeando cerca de los "
+                        "dormitorios."
+                    ),
+                    criterio_revelacion=(
+                        "Menciona haber visto a Franco Islas merodeando cerca "
+                        "de los dormitorios esa noche."
+                    ),
+                ),
+            ],
+        ),
+        Sospechoso(
+            id="rulo",
+            nombre="Rulo Estévez",
+            cargo="piloto del helicóptero de la base",
+            color="magenta",
+            personalidad=(
+                "Relajado, el que más tiempo lleva en la base, conoce todas las "
+                "rutinas y horarios de todos."
+            ),
+            coartada=(
+                "Dice que esa noche estaba haciendo mantenimiento de rutina al "
+                "helicóptero, en el hangar, hasta tarde."
+            ),
+            actitud=(
+                "Colaborador y observador. Si le preguntan por rutinas o "
+                "movimientos de otros, responde con precisión de quien lleva "
+                "años prestando atención al detalle."
+            ),
+            secretos=[
+                Secreto(
+                    id="franco_conoce_llaves",
+                    pista=(
+                        "Rulo sabe, por haber trabajado con él, que Franco "
+                        "Islas es el único que tiene copia de todas las llaves "
+                        "de la base."
+                    ),
+                    instruccion_actor=(
+                        "Si te preguntan quién más tiene acceso a todos los "
+                        "sectores de la base: contás, con seguridad, que solo "
+                        "Franco Islas tiene copia de todas las llaves, por su "
+                        "trabajo de mantenimiento."
+                    ),
+                    criterio_revelacion=(
+                        "Cuenta que Franco Islas es el único con copia de "
+                        "todas las llaves de la base."
+                    ),
+                ),
+            ],
+        ),
+    ],
+)

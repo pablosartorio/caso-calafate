@@ -108,8 +108,10 @@ def test_hay_al_menos_once_casos_y_ninguno_repite_id():
 
 
 @pytest.mark.parametrize("caso", CASOS.values(), ids=CASOS.keys())
-def test_cada_caso_tiene_tres_sospechosos_y_un_culpable(caso: Caso):
-    assert len(caso.sospechosos) == 3
+def test_cada_caso_tiene_entre_tres_y_cinco_sospechosos_y_un_culpable(caso: Caso):
+    # Los once casos originales tienen 3; los basados en cuentos policiales
+    # argentinos (ver casos/llaollao.py y hermanos) piden 5.
+    assert 3 <= len(caso.sospechosos) <= 5
     # culpable() explota si no hay ninguno; el validador ya garantizó que hay uno solo.
     assert caso.culpable().es_culpable
 
