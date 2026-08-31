@@ -171,6 +171,29 @@ section{padding:clamp(2.8rem,6.5vw,4.8rem) 0}
 .paso.frio h3{color:var(--papel)}
 .paso p{font-size:.9rem; color:var(--hueso-tenue); max-width:none}
 
+/* ── El grafo: el mismo dibujo que arma LangGraph al compilar ────────── */
+.grafo-wrap{margin-top:clamp(1.6rem,3.4vw,2.6rem); overflow-x:auto}
+.grafo-svg{display:block; width:100%; min-width:640px; height:auto}
+.grafo-svg .nodo{fill:var(--cuero); stroke:var(--linea); stroke-width:1}
+.grafo-svg .nodo-llm{stroke:var(--fosforo-hondo)}
+.grafo-svg .nodo-punta{fill:var(--cuero-alto); stroke:var(--ambar-hondo)}
+.grafo-svg .texto-llm,.grafo-svg .texto-frio{font-family:var(--terminal); font-size:17px; text-anchor:middle}
+.grafo-svg .texto-llm{fill:var(--fosforo)}
+.grafo-svg .texto-frio{fill:var(--papel)}
+.grafo-svg .texto-punta{font-family:var(--maquina); font-size:11px; letter-spacing:.1em;
+  fill:var(--ambar); text-anchor:middle}
+.grafo-svg .arista{fill:none}
+.grafo-svg .arista-fija{stroke:var(--hueso-tenue); stroke-width:1.5}
+.grafo-svg .arista-cond{stroke:var(--ambar-hondo); stroke-width:1.5; stroke-dasharray:5 4}
+.grafo-svg .etiqueta-cond{font-family:var(--maquina); font-size:11px; letter-spacing:.06em;
+  fill:var(--ambar-hondo)}
+.grafo-leyenda{margin-top:.8rem; font-size:.85rem; color:var(--hueso-tenue)}
+.grafo-leyenda .muestra{display:inline-block; width:1.5em; margin-right:.4em; vertical-align:middle;
+  border-bottom:2px solid}
+.grafo-leyenda .muestra-cond{border-bottom-style:dashed; border-color:var(--ambar-hondo)}
+.grafo-leyenda .muestra-fija{border-bottom-style:solid; border-color:var(--hueso-tenue)}
+.grafo-leyenda .sep{margin:0 1.1rem}
+
 .dos{display:grid; gap:clamp(1.6rem,4vw,3.2rem)}
 @media(min-width:840px){ .dos{grid-template-columns:1.05fr .95fr; align-items:start} }
 .motores{width:100%; border-collapse:collapse; font-size:.93rem}
@@ -282,6 +305,53 @@ footer{border-top:1px solid var(--linea); padding:2.4rem 0 3.2rem;
       <div class="paso frio"><span class="n">Nodo 4 · sin LLM</span><h3>acusar</h3>
         <p>Compara acusado contra culpable, cierra la partida y recién ahí libera el epílogo.</p></div>
     </div>
+
+    <div class="grafo-wrap">
+      <svg class="grafo-svg" viewBox="0 0 880 280" role="img" aria-label="Diagrama del grafo: desde START la jugada rutea a interrogar o a acusar; interrogar sigue a analizar y cerrar_turno antes de END, acusar va directo a END.">
+        <defs>
+          <marker id="flecha-fija" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--hueso-tenue)"/>
+          </marker>
+          <marker id="flecha-cond" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ambar-hondo)"/>
+          </marker>
+        </defs>
+
+        <!-- arista condicional de entrada: decidir_accion mira la jugada -->
+        <path class="arista arista-cond" d="M90,140 V50 H180" marker-end="url(#flecha-cond)"/>
+        <path class="arista arista-cond" d="M90,140 V230 H250" marker-end="url(#flecha-cond)"/>
+        <text class="etiqueta-cond" x="100" y="94">¿acción?</text>
+
+        <!-- tubería fija del interrogatorio -->
+        <path class="arista arista-fija" d="M320,50 H370" marker-end="url(#flecha-fija)"/>
+        <path class="arista arista-fija" d="M500,50 H550" marker-end="url(#flecha-fija)"/>
+        <path class="arista arista-fija" d="M700,50 H750 V132 H800" marker-end="url(#flecha-fija)"/>
+        <path class="arista arista-fija" d="M380,230 H770 V148 H800" marker-end="url(#flecha-fija)"/>
+
+        <rect class="nodo nodo-punta" x="20" y="118" width="70" height="44" rx="8"/>
+        <text class="texto-punta" x="55" y="144">START</text>
+
+        <rect class="nodo nodo-punta" x="800" y="118" width="60" height="44" rx="8"/>
+        <text class="texto-punta" x="830" y="144">END</text>
+
+        <rect class="nodo nodo-llm" x="180" y="28" width="140" height="44" rx="6"/>
+        <text class="texto-llm" x="250" y="54">interrogar</text>
+
+        <rect class="nodo nodo-llm" x="370" y="28" width="130" height="44" rx="6"/>
+        <text class="texto-llm" x="435" y="54">analizar</text>
+
+        <rect class="nodo" x="550" y="28" width="150" height="44" rx="6"/>
+        <text class="texto-frio" x="625" y="54">cerrar_turno</text>
+
+        <rect class="nodo" x="250" y="208" width="130" height="44" rx="6"/>
+        <text class="texto-frio" x="315" y="234">acusar</text>
+      </svg>
+    </div>
+    <p class="grafo-leyenda">
+      <span class="muestra muestra-cond"></span>según la jugada<span class="sep"></span><span class="muestra muestra-fija"></span>secuencia fija
+    </p>
+    <p style="margin-top:.9rem; color:var(--hueso-tenue); font-size:.85rem">
+      Es el mismo dibujo que devuelve LangGraph al compilar: <code>grafo.get_graph().draw_mermaid()</code></p>
   </section>
 
   <section>
