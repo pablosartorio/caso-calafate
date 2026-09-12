@@ -195,3 +195,49 @@ def test_buscar_caso_devuelve_none_si_no_hay_match():
     catalogo = list(CASOS.values())
     assert buscar_caso(catalogo, "el caso del asado") is None
     assert buscar_caso(catalogo, "   ") is None
+
+
+# ── Campos nuevos: defaults y que no rompan los 22 casos reales ─────────────
+
+
+def test_secreto_tiene_defaults_de_es_entrada_y_certeza():
+    secreto = Secreto(id="s", pista="p", instruccion_actor="i", criterio_revelacion="c")
+    assert secreto.es_entrada is False
+    assert secreto.certeza is None
+
+
+def test_sospechoso_tiene_default_de_reaccion_acusacion_fallida():
+    assert _sospechoso_minimo("a", es_culpable=True).reaccion_acusacion_fallida is None
+
+
+@pytest.mark.parametrize("caso", CASOS.values(), ids=CASOS.keys())
+def test_los_22_casos_reales_siguen_validando_con_los_campos_nuevos(caso: Caso):
+    """Los campos nuevos son opcionales: ningún caso existente los completa
+    todavía, así que todos tienen que seguir en sus defaults."""
+    for sospechoso in caso.sospechosos:
+        assert sospechoso.reaccion_acusacion_fallida is None
+        for secreto in sospechoso.secretos:
+            assert secreto.es_entrada is False
+            assert secreto.certeza is None
+
+
+# ── Caso.secretos_no_revelados ───────────────────────────────────────────────
+
+
+def test_secretos_no_revelados_excluye_los_descubiertos(caso_asado):
+    todos = caso_asado.secretos_no_revelados([])
+    assert {s.id for s in todos} == {"huellas_patio", "vio_al_perro"}
+
+    faltantes = caso_asado.secretos_no_revelados(["vio_al_perro"])
+    assert [s.id for s in faltantes] == ["huellas_patio"]
+
+
+def test_secretos_no_revelados_vacio_cuando_ya_se_encontraron_todos(caso_asado):
+    assert caso_asado.secretos_no_revelados(["huellas_patio", "vio_al_perro"]) == []
+
+
+def test_secretos_no_revelados_ignora_ids_de_descubiertos_que_no_existen(caso_asado):
+    """Un id que no corresponde a ningún secreto (alucinado, de otro caso) no
+    debería hacer explotar nada ni filtrar de más."""
+    faltantes = caso_asado.secretos_no_revelados(["inventado"])
+    assert {s.id for s in faltantes} == {"huellas_patio", "vio_al_perro"}
