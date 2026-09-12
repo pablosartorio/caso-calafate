@@ -59,7 +59,7 @@ edificio esa noche.""",
         "contenedor en el baúl de su auto, se dio cuenta de en qué se estaba "
         "metiendo y de a quién podía llegar a lastimar, y la devolvió antes "
         "del amanecer.\n\n"
-        "El comisario retirado Sabate, que rondaba el Centro esa noche por "
+        "El comisario retirado Sabaté, que rondaba el Centro esa noche por "
         "cuentas viejas con la familia Lefiman de la dictadura, no tuvo nada "
         "que ver — pero su sola presencia bastó para que media ciudad "
         "sospechara primero de la política antes que de la plata."
@@ -72,8 +72,13 @@ edificio esa noche.""",
             cargo="delegado sindical rural",
             color="red",
             personalidad=(
-                "Combativo, memoria larga, hijo de un desaparecido de la zona. "
-                "Desconfía profundamente de cualquier uniforme o cargo oficial."
+                "Combativo, memoria larga, hijo de un desaparecido de la zona al "
+                "que buscó durante años sin encontrar nunca los restos. Desconfía "
+                "profundamente de cualquier uniforme o cargo oficial — y en "
+                "particular de Sabaté, a quien reconoce de las rondas de los 70 "
+                "aunque nunca pudo probar nada. Teme, más que a cualquier causa "
+                "judicial, que la lucha gremial de hoy termine tapada otra vez "
+                "por la misma vieja política, en vez de resolverse por los hechos."
             ),
             coartada=(
                 "Dice que pasó la noche en la carpa del corte de ruta, organizando "
@@ -93,17 +98,24 @@ edificio esa noche.""",
                     ),
                     instruccion_actor=(
                         "Si te preguntan por el corte de luz de esa noche en "
-                        "particular: contás, con algo de sospecha propia, que "
-                        "alguien de la empacadora vecina insistió en extender el "
-                        "corte esa noche puntual, algo que no estaba en el plan "
-                        "del paro."
+                        "particular, o en general por cómo se organizó el paro esa "
+                        "noche: contás, con algo de sospecha propia, que alguien de "
+                        "la empacadora vecina insistió en extender el corte esa "
+                        "noche puntual, algo que no estaba en el plan del paro."
                     ),
                     criterio_revelacion=(
                         "Cuenta que alguien de la empacadora insistió en extender "
                         "el corte de luz esa noche en particular."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Ignacio por el corte de luz que él mismo denunció; el "
+                "paro se endurece esa misma tarde y media ciudad dice que ya "
+                "sabía que iba a terminar así."
+            ),
         ),
         Sospechoso(
             id="casandra",
@@ -112,7 +124,11 @@ edificio esa noche.""",
             color="cyan",
             personalidad=(
                 "Rigurosa, protectora de su equipo, viene de una familia con "
-                "historia política pesada en la región. Muy leal a su cuñado."
+                "historia política pesada en la región. Muy leal a su cuñado, en "
+                "parte porque es de los pocos que la trata como colega y no como "
+                "'la sobrina de los Lefiman'. Le aterra que un error de guardia "
+                "le cueste el puesto que tanto le costó conseguir en un pueblo "
+                "chico donde su apellido ya pesa de por sí."
             ),
             coartada=(
                 "Dice que se quedó en el Centro toda la noche, en la guardia, "
@@ -130,16 +146,23 @@ edificio esa noche.""",
                         "Achával meses atrás, para una guardia de emergencia."
                     ),
                     instruccion_actor=(
-                        "Solo si te preguntan directamente quién más conoce la "
-                        "clave del búnker: admitís, incómoda, que se la dictaste "
+                        "Si te preguntan por la clave del búnker o quién más "
+                        "podría conocerla: admitís, incómoda, que se la dictaste "
                         "a tu cuñado Bruno hace meses, para una guardia de "
                         "emergencia en la que vos no pudiste estar."
                     ),
                     criterio_revelacion=(
                         "Admite haberle dado la clave del búnker a Bruno Achával."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a la Dra. Lefiman por una clave que ella misma admitió "
+                "haber compartido; el Centro se queda sin física médica justo "
+                "cuando más la necesita."
+            ),
         ),
         Sospechoso(
             id="bruno",
@@ -149,7 +172,11 @@ edificio esa noche.""",
             es_culpable=True,
             personalidad=(
                 "Correcto, ansioso por caer bien, siempre hablando de números y "
-                "cosechas. La sonrisa se le tensa cuando el tema es plata."
+                "cosechas. La sonrisa se le tensa cuando el tema es plata. Se "
+                "repite que sacar la fuente y devolverla intacta no fue un "
+                "robo de verdad, sino un préstamo desesperado que nadie más "
+                "iba a saber nunca — la misma lógica con la que se convenció, "
+                "esa noche, de que devolverla a tiempo lo dejaba limpio."
             ),
             coartada=(
                 "Dice que pasó la noche en la empacadora, gestionando el corte de "
@@ -168,12 +195,15 @@ edificio esa noche.""",
                     ),
                     instruccion_actor=(
                         "Si te preguntan por la situación financiera de la "
-                        "empacadora: admitís, nervioso, que perdiste una cosecha "
-                        "entera y que las deudas te están ahogando."
+                        "empacadora, o en general cómo te viene yendo: admitís, "
+                        "nervioso, que perdiste una cosecha entera y que las "
+                        "deudas te están ahogando."
                     ),
                     criterio_revelacion=(
                         "Admite estar ahogado en deudas por una cosecha perdida."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="comprador_contrabando",
@@ -192,8 +222,14 @@ edificio esa noche.""",
                         "Admite que un comprador de contrabando le ofreció plata "
                         "por material radiactivo."
                     ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Si por algún motivo no lo acusan a él, Bruno sigue gestionando "
+                "la empacadora como si nada, jurando en el club de proveedores "
+                "que la fuente 'apareció sola'."
+            ),
         ),
         Sospechoso(
             id="norma",
@@ -202,7 +238,10 @@ edificio esa noche.""",
             color="green",
             personalidad=(
                 "Observadora, discreta, la que más tiempo lleva trabajando de "
-                "noche en el Centro. No le gusta meterse en líos ajenos."
+                "noche en el Centro. No le gusta meterse en líos ajenos: enterró "
+                "a un marido joven por una guardia mal cubierta hace años y desde "
+                "entonces prefiere ver todo y no opinar de nada, para no volver a "
+                "cargar con una responsabilidad que no era suya."
             ),
             coartada=(
                 "Dice que hizo su recorrida normal de guardia y no notó nada raro "
@@ -221,26 +260,40 @@ edificio esa noche.""",
                         "búnker durante el corte de luz, algo inusual para esa hora."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan qué viste durante el corte de luz: contás "
-                        "que notaste el auto de Bruno Achával estacionado cerca del "
+                        "Si te preguntan qué viste durante el corte de luz, o en "
+                        "general si notaste algo raro esa noche: contás que "
+                        "notaste el auto de Bruno Achával estacionado cerca del "
                         "búnker, algo raro para esa hora de la noche."
                     ),
                     criterio_revelacion=(
                         "Menciona haber visto el auto de Bruno Achával cerca del "
                         "búnker durante el corte de luz."
                     ),
+                    es_entrada=True,
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Norma por ver lo que vio; la guardia nocturna se "
+                "queda sin la única enfermera que de verdad presta atención, y "
+                "el Centro lo nota enseguida."
+            ),
         ),
         Sospechoso(
             id="sabate",
-            nombre="Comisario retirado Sabate",
+            nombre="Comisario retirado Sabaté",
             cargo="ex jefe de la comisaría local",
             color="magenta",
             personalidad=(
                 "Autoritario por costumbre, de los que todavía se creen con "
                 "mando. Tiene cuentas viejas y oscuras con varias familias de la "
-                "zona, incluida la de Casandra."
+                "zona, incluida la de Casandra: tuvo un rol activo en la "
+                "represión de los 70 contra los Lefiman y nunca lo pagó ni lo "
+                "reconoció como delito — para él fue 'orden', y esa convicción "
+                "es lo único que le queda ahora que ya no manda nada. Vigila a "
+                "la familia por la misma razón de siempre: el miedo, nunca dicho "
+                "en voz alta, de que alguien junte algún día los papeles que "
+                "hacen falta para juzgarlo antes de que se muera."
             ),
             coartada=(
                 "Dice que rondaba la zona del Centro esa noche 'por costumbre', "
@@ -254,21 +307,28 @@ edificio esa noche.""",
                 Secreto(
                     id="historia_lefiman",
                     pista=(
-                        "Sabate tuvo un rol activo en la represión de los 70 contra "
+                        "Sabaté tuvo un rol activo en la represión de los 70 contra "
                         "la familia de Casandra Lefiman, y todavía la vigila."
                     ),
                     instruccion_actor=(
-                        "Solo si te preguntan directamente por tu historia con la "
-                        "familia Lefiman: admitís, sin culpa, que tuviste un rol "
-                        "activo en la represión de los 70 contra esa familia, y "
-                        "que 'la costumbre' de vigilarlos no se te fue."
+                        "Si te preguntan por tu historia con la familia Lefiman, "
+                        "por qué rondás el Centro, o por tu pasado en general: "
+                        "admitís, sin culpa, que tuviste un rol activo en la "
+                        "represión de los 70 contra esa familia, y que 'la "
+                        "costumbre' de vigilarlos no se te fue."
                     ),
                     criterio_revelacion=(
                         "Admite haber tenido un rol en la represión de los 70 "
                         "contra la familia Lefiman."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen al comisario retirado por su pasado, no por esa "
+                "noche; sale libre a los dos días, pero la ciudad ya decidió, "
+                "otra vez, que la política explica todo."
+            ),
         ),
     ],
 )

@@ -73,7 +73,12 @@ noche.""",
             color="green",
             personalidad=(
                 "Parca, observadora, más cómoda con el monte que con la gente. "
-                "Desconfía de cualquiera que hable de fauna sin conocerla."
+                "Desconfía de cualquiera que hable de fauna sin conocerla. Lleva "
+                "años peleando para que no se culpe a un animal real por cada "
+                "problema humano de la zona, y una huella fabricada la ofende "
+                "casi tanto como el robo mismo: es su trabajo el que queda en "
+                "ridículo cada vez que alguien prefiere creer en un oso antes "
+                "que investigar a un vecino."
             ),
             coartada=(
                 "Dice que esa noche estaba rastreando a un oso real varios kilómetros "
@@ -101,8 +106,15 @@ noche.""",
                         "Explica que las huellas son falsas o fabricadas con un molde, "
                         "por tener un patrón repetido o antinatural."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Rutty por saber demasiado de huellas; el oso real "
+                "que rastreaba se pierde monte adentro mientras ella explica, "
+                "por décima vez, por qué un animal no pisa siempre igual."
+            ),
         ),
         Sospechoso(
             id="dino",
@@ -112,7 +124,12 @@ noche.""",
             es_culpable=True,
             personalidad=(
                 "Simpático, hablador, de esos que conocen a todo el mundo en el "
-                "pueblo. Bajo la joda esconde una ansiedad que se le nota en las manos."
+                "pueblo. Bajo la joda esconde una ansiedad que se le nota en las "
+                "manos. Se convence de que el Centro, con todo lo que tiene, no "
+                "va a extrañar unas piezas de repuesto tanto como él va a "
+                "extrañar el refugio que heredó de su viejo si se lo rescinden — "
+                "y de que un molde de huellas es apenas una travesura de "
+                "pueblo, no un delito de verdad."
             ),
             coartada=(
                 "Dice que esa noche cerró el refugio a las 23:00 y se quedó durmiendo "
@@ -139,6 +156,8 @@ noche.""",
                         "Admite que debe alquiler o que están por rescindirle el "
                         "contrato del terreno."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="molde_disfraces",
@@ -156,8 +175,14 @@ noche.""",
                     criterio_revelacion=(
                         "Admite haber comprado o fabricado un molde de huellas de oso."
                     ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Si por algún error no lo acusan a él, Dino reabre el refugio "
+                "la temporada que viene como si la deuda se hubiera arreglado "
+                "sola."
+            ),
         ),
         Sospechoso(
             id="coty",
@@ -166,7 +191,10 @@ noche.""",
             color="cyan",
             personalidad=(
                 "Cumplidora, callada, de las que anotan todo en un cuaderno propio "
-                "porque no confían en el sistema. Muy leal a quien le hace un favor."
+                "porque no confían en el sistema. Muy leal a quien le hace un favor "
+                "— sostiene sola el alquiler de su casa desde que se separó, y el "
+                "descuento de Dino en el refugio es, calladamente, lo que le "
+                "permite llegar a fin de mes sin pedirle nada a nadie más."
             ),
             coartada=(
                 "Dice que estaba en su turno de noche en la sala de telemetría, sola, "
@@ -184,17 +212,24 @@ noche.""",
                         "servicio esa madrugada, pero no lo reportó."
                     ),
                     instruccion_actor=(
-                        "Solo si te preguntan qué viste esa noche, insistiendo más de "
-                        "una vez: confesás, con culpa, que viste la camioneta de Dino "
-                        "saliendo del camino de servicio cerca de las 02:00, y que no "
-                        "dijiste nada porque él te hace descuentos en el refugio."
+                        "Si te preguntan qué viste esa noche, aunque sea de forma "
+                        "general: confesás, con culpa, que viste la camioneta de "
+                        "Dino saliendo del camino de servicio cerca de las 02:00, "
+                        "y que no dijiste nada porque él te hace descuentos en el "
+                        "refugio."
                     ),
                     criterio_revelacion=(
                         "Revela haber visto la camioneta de Dino Filipich esa "
                         "madrugada y no haberlo reportado."
                     ),
+                    es_entrada=True,
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Coty por callar lo que vio; pierde el descuento en "
+                "el refugio y, esta vez, con motivo."
+            ),
         ),
         Sospechoso(
             id="bagu",
@@ -203,7 +238,11 @@ noche.""",
             color="yellow",
             personalidad=(
                 "Cansado, con veinte años en el cargo y ganas de que todo se resuelva "
-                "rápido y sin papelerío. Amigo de medio pueblo, incluido el intendente."
+                "rápido y sin papelerío. Amigo de medio pueblo, incluido el "
+                "intendente. Le quedan pocos años para el retiro y lo único que "
+                "quiere es llegar sin un escándalo que le manche el expediente — "
+                "cerrar rápido, aunque sea mal, le resulta menos peligroso que "
+                "investigar bien y hacerse un enemigo con poder."
             ),
             coartada=(
                 "Dice que esa noche estaba de guardia en la comisaría, a diez "
@@ -232,8 +271,14 @@ noche.""",
                         "Admite presión del intendente para cerrar el caso como "
                         "ataque de fauna."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen al comisario Bagú por no investigar más las huellas; "
+                "el intendente igual consigue su fin de semana largo sin "
+                "sobresaltos."
+            ),
         ),
         Sospechoso(
             id="vera",
@@ -242,7 +287,11 @@ noche.""",
             color="magenta",
             personalidad=(
                 "Curiosa, directa, acostumbrada a que le cierren puertas en la cara. "
-                "Investigaba antes de esto un contrato municipal, no el sabotaje."
+                "Investigaba antes de esto un contrato municipal, no el sabotaje. "
+                "Lleva dos años freelanceando de nota en nota sin firmar nada que "
+                "le importe de verdad, y esta historia —empiece donde empiece— es "
+                "la primera en mucho tiempo que siente que vale la pena perseguir "
+                "hasta el final, aunque eso implique quedar mal con medio pueblo."
             ),
             coartada=(
                 "Dice que esa noche estaba en el hotel, revisando facturas del "
@@ -269,8 +318,15 @@ noche.""",
                         "Cuenta que investigaba un contrato irregular entre el "
                         "municipio y el refugio de Dino Filipich."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Vera por husmear donde no la llamaban; la nota "
+                "sobre el contrato del terreno sale igual, ahora con un "
+                "párrafo nuevo sobre ella."
+            ),
         ),
     ],
 )

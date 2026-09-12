@@ -76,7 +76,11 @@ detective interroga a las cinco personas del barrio con trato cercano a él.""",
             color="cyan",
             personalidad=(
                 "Sabe absolutamente todo sobre todos en el barrio y disfruta "
-                "compartirlo, siempre con un tono de preocupación fingida."
+                "compartirlo, siempre con un tono de preocupación fingida. Ser "
+                "presidenta del consorcio es, en el fondo, el único cargo que "
+                "tuvo en su vida, y sostenerlo depende de que el barrio siga "
+                "creyendo que ella es quien mejor entiende 'el qué dirán' de "
+                "todos — nunca la que lo protagoniza."
             ),
             coartada=(
                 "Dice que esa noche estaba en su casa, sin salir, viendo una "
@@ -103,8 +107,15 @@ detective interroga a las cinco personas del barrio con trato cercano a él.""",
                         "Cuenta que Pilar Wenger impulsó sacar las cámaras del "
                         "sector de la pileta."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Marcela por saber todo sobre todos; el barrio, por "
+                "primera vez, tiene de qué hablar de ella en vez de escucharla "
+                "hablar de los demás."
+            ),
         ),
         Sospechoso(
             id="gaston",
@@ -113,7 +124,10 @@ detective interroga a las cinco personas del barrio con trato cercano a él.""",
             color="yellow",
             personalidad=(
                 "Devastado, pero con un fondo de resentimiento viejo que se le "
-                "escapa sin querer. La relación con su esposo venía tensa."
+                "escapa sin querer. La relación con su esposo venía tensa. Dejó "
+                "su propia carrera en pausa para acompañar el proyecto del "
+                "Centro Espacial, y hace tiempo que no sabe si lo que siente es "
+                "duelo por perderlo o por los años que ya había perdido antes."
             ),
             coartada=(
                 "Dice que esa noche durmió en su casa, sin saber que su marido "
@@ -139,8 +153,15 @@ detective interroga a las cinco personas del barrio con trato cercano a él.""",
                         "Admite que su matrimonio con la víctima estaba muy "
                         "tenso últimamente."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen al marido de la víctima; el barrio, que ya lo miraba "
+                "raro por el matrimonio tenso, encuentra la confirmación que "
+                "estaba esperando sin pruebas."
+            ),
         ),
         Sospechoso(
             id="pilar",
@@ -151,7 +172,11 @@ detective interroga a las cinco personas del barrio con trato cercano a él.""",
             personalidad=(
                 "Impecable, controlada, siempre con el argumento financiero "
                 "justo a mano. La grieta aparece solo cuando se habla de "
-                "números concretos."
+                "números concretos. Se convence de que lo que desvió era, en "
+                "el fondo, un adelanto sobre lo que el proyecto nunca le pagó "
+                "en años de trabajo invisible — y de que lo que pasó en la "
+                "pileta fue un accidente que ella no provocó tanto como "
+                "permitió, congelada, sin animarse a pedir ayuda."
             ),
             coartada=(
                 "Dice que esa noche se quedó en su casa preparando la "
@@ -170,16 +195,18 @@ detective interroga a las cinco personas del barrio con trato cercano a él.""",
                         "propia mediante facturas de proveedores inexistentes."
                     ),
                     instruccion_actor=(
-                        "Solo si te muestran algún dato financiero concreto "
-                        "sobre proveedores del proyecto: cometés tu único "
-                        "descuido, explicando de más un esquema de facturación "
-                        "que, sin querer, revela que hay proveedores que no "
-                        "existen."
+                        "Si te preguntan por las finanzas del proyecto, por los "
+                        "proveedores, o te muestran algún dato financiero "
+                        "concreto: cometés tu único descuido, explicando de más "
+                        "un esquema de facturación que, sin querer, revela que "
+                        "hay proveedores que no existen."
                     ),
                     criterio_revelacion=(
                         "Revela, aunque sea indirectamente, que hay facturas de "
                         "proveedores inexistentes o fondos desviados."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="cita_pileta",
@@ -197,8 +224,14 @@ detective interroga a las cinco personas del barrio con trato cercano a él.""",
                         "Admite haber citado a la víctima en la pileta esa "
                         "noche."
                     ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Si por algún motivo no la acusan a ella, Pilar presenta la "
+                "auditoría dos semanas después, con los números ya "
+                "prolijamente resueltos."
+            ),
         ),
         Sospechoso(
             id="nazareno",
@@ -208,7 +241,10 @@ detective interroga a las cinco personas del barrio con trato cercano a él.""",
             personalidad=(
                 "Amargado con la empresa, no necesariamente con la víctima "
                 "personalmente. Habla con resentimiento pero sin agresividad "
-                "hacia ella."
+                "hacia ella. Perdió no solo el trabajo sino la reputación en un "
+                "rubro chico donde todos se conocen; lo que más quiere no es "
+                "que alguien pague por la muerte del ingeniero, sino que "
+                "alguien reabra por fin la denuncia que hizo y que nadie miró."
             ),
             coartada=(
                 "Dice que esa noche estaba en su casa, fuera del barrio, con "
@@ -234,8 +270,14 @@ detective interroga a las cinco personas del barrio con trato cercano a él.""",
                         "Cuenta que fue despedido tras denunciar irregularidades "
                         "en el proyecto."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Nazareno por un despido injusto que ahora parece, "
+                "encima, sospechoso; nadie investiga tampoco esta vez lo que "
+                "denunció."
+            ),
         ),
         Sospechoso(
             id="ramona",
@@ -244,7 +286,10 @@ detective interroga a las cinco personas del barrio con trato cercano a él.""",
             color="magenta",
             personalidad=(
                 "Discreta, trabajadora, acostumbrada a ser invisible para los "
-                "socios del barrio. Ve más de lo que cualquiera imagina."
+                "socios del barrio. Ve más de lo que cualquiera imagina, y hace "
+                "años aprendió a callarlo: viaja tres horas por día para "
+                "trabajar en Los Arrayanes y no puede permitirse perder el "
+                "puesto por decir algo que a un socio no le guste escuchar."
             ),
             coartada=(
                 "Dice que esa noche limpiaba el club house de madrugada, como "
@@ -271,8 +316,14 @@ detective interroga a las cinco personas del barrio con trato cercano a él.""",
                         "Menciona haber visto la luz de la pileta encendida a "
                         "una hora inusual esa madrugada."
                     ),
+                    es_entrada=True,
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Ramona por prestar atención; después de esto, en "
+                "el barrio la vuelven a mirar como si no estuviera."
+            ),
         ),
     ],
 )
