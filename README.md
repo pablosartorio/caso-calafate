@@ -136,16 +136,19 @@ graph LR
 | `cli.py` | La capa visual (rich) | **Streaming** con `stream_mode="messages"`; leer estado con `get_state()` |
 | `web/servidor.py` | La otra capa visual: FastAPI | REST + WebSocket; DTOs anti-spoiler; `astream` y `aget_state`; cache de grafos por `(caso, motor)` |
 | `web/partidas.py` | Registro de partidas guardadas | Convivir con el checkpointer en la misma SQLite; migraciones livianas con `PRAGMA table_info` |
-| `pixelart.py` | Los retratos VGA como texto, con capas de animación | El arte como dato: se versiona y se valida al importar |
+| `pixelart/` | Los retratos VGA como texto, con capas de animación, un módulo por caso | El arte como dato: se versiona y se valida al importar; agregar un caso nuevo es agregar un archivo |
 | `web/estatico/` | El frontend (HTML/CSS/JS a mano) | Streaming por WS; revelado teletipo; texturas con CSS; Web Audio |
-| `tests/` | 139 tests que corren en ~2 s | Testear apps LLM **sin LLM**: fakes, caso de juguete, `TestClient` con WebSocket |
+| `tests/` | 263 tests que corren en ~3 s | Testear apps LLM **sin LLM**: fakes, caso de juguete, `TestClient` con WebSocket |
 
 ## Tests
 
 ```bash
-uv run pytest        # 134 tests, sin API key, sin red
+uv run pytest        # 263 tests, sin API key, sin red
 uv run ruff check .  # lint
 ```
+
+GitHub Actions (`.github/workflows/ci.yml`) corre ambos comandos en cada push
+y PR — no hace falta acordarse de correrlos a mano antes de mergear.
 
 La idea clave: el grafo recibe el actor y el analista **por parámetro**
 (inyección de dependencias), así que los tests enchufan modelos falsos de
@@ -158,10 +161,14 @@ ningún test del motor.
 
 De más fácil a más difícil:
 
-1. ~~**Escribí tu propio caso.**~~ Ya hay once: mirá `casos/`, copiá el
+1. ~~**Escribí tu propio caso.**~~ Ya hay 22: mirá `casos/`, copiá el
    archivo de uno y cambiale los datos. Los validadores te avisan si te
    olvidás del culpable, y los tests de `test_caso.py` corren solos sobre el
-   caso nuevo. El selector de casos (CLI y web) lo levanta del registro.
+   caso nuevo. El selector de casos (CLI y web) lo levanta del registro. Diez
+   de los 22 (`mascardi`, `roca`, `llaollao`, `arrayanes`, `jacobacci`,
+   `moreno`, `frias`, `tronador`, `epuyen`, `pichileufu`) están inspirados en
+   cuentos y novelas policiales argentinos reales, y son los que tienen
+   retrato pixel art propio — el resto usa el fallback SVG.
 2. **Pistas falsas.** Agregale a `Secreto` un campo `es_pista_falsa` y que la
    libreta las marque distinto cuando se descubre la verdad.
 3. **Careo.** Un comando `/carear <a> <b>` donde un sospechoso reacciona a lo
