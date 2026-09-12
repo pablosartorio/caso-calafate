@@ -161,14 +161,19 @@ ningún test del motor.
 
 De más fácil a más difícil:
 
-1. ~~**Escribí tu propio caso.**~~ Ya hay 22: mirá `casos/`, copiá el
-   archivo de uno y cambiale los datos. Los validadores te avisan si te
-   olvidás del culpable, y los tests de `test_caso.py` corren solos sobre el
-   caso nuevo. El selector de casos (CLI y web) lo levanta del registro. Diez
-   de los 22 (`mascardi`, `roca`, `llaollao`, `arrayanes`, `jacobacci`,
-   `moreno`, `frias`, `tronador`, `epuyen`, `pichileufu`) están inspirados en
-   cuentos y novelas policiales argentinos reales, y son los que tienen
-   retrato pixel art propio — el resto usa el fallback SVG.
+1. ~~**Escribí tu propio caso.**~~ Ya hay 22 en el registro (`casos/`), pero
+   el selector de casos (CLI y web) solo ofrece los 10 profundizados a fondo
+   —inspirados en cuentos y novelas policiales argentinos reales, con
+   personajes complejos y retrato pixel art propio—: `mascardi`, `roca`,
+   `llaollao`, `arrayanes`, `jacobacci`, `moreno`, `frias`, `tronador`,
+   `epuyen`, `pichileufu`. Los otros 12 (el Calafate original y la primera
+   tanda) siguen en el registro completo (`CASOS` en `casos/__init__.py`) sin
+   profundizar todavía, y una partida vieja de alguno se puede seguir
+   retomando — simplemente no aparecen en el alta de expediente nueva
+   (`CASOS_VISIBLES`). Copiá el archivo de un caso, cambiale los datos, y si
+   querés que aparezca en el selector sumalo también a `CASOS_VISIBLES`. Los
+   validadores te avisan si te olvidás del culpable, y los tests de
+   `test_caso.py` corren solos sobre el caso nuevo.
 2. **Pistas falsas.** Agregale a `Secreto` un campo `es_pista_falsa` y que la
    libreta las marque distinto cuando se descubre la verdad.
 3. **Careo.** Un comando `/carear <a> <b>` donde un sospechoso reacciona a lo

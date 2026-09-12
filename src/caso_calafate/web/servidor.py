@@ -47,7 +47,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from pydantic import BaseModel, Field
 
 from caso_calafate.caso import Caso
-from caso_calafate.casos import CASOS
+from caso_calafate.casos import CASOS, CASOS_VISIBLES
 from caso_calafate.grafo import construir_grafo
 from caso_calafate.llm import (
     MOTOR_FAKE,
@@ -167,12 +167,22 @@ def crear_app(
     motores: dict[str, tuple[BaseChatModel, Runnable]] | None = None,
     *,
     ruta_db: str = ":memory:",
+    casos_visibles: dict[str, Caso] | None = None,
 ) -> FastAPI:
     """Arma la aplicación FastAPI con el registro, los motores y las rutas.
 
     ``casos`` es el registro completo (id → Caso, ver ``caso_calafate.casos``):
     cada partida elige SU caso al crearse y queda atada a él para siempre — el
-    servidor sirve todos los casos a la vez, no uno solo.
+    servidor sirve todos los casos a la vez, no uno solo. Las rutas que
+    resuelven una partida YA CREADA (retomar, jugar, ver tablero) siempre
+    buscan en ``casos`` completo, así una partida vieja de un caso oculto del
+    selector se sigue pudiendo abrir.
+
+    ``casos_visibles`` es lo que el selector de "nuevo expediente"
+    (``GET /api/casos``) le ofrece al jugador para EMPEZAR una partida —
+    puede ser un subconjunto de ``casos`` (para no mostrar casos sin
+    profundizar todavía) sin que dejen de existir ni de poder retomarse. Por
+    default (``None``, y en todos los tests) es el mismo ``casos`` completo.
 
     ``motores`` es el registro paralelo de modelos (id → actor, analista) y
     funciona igual: cada partida elige el suyo al crearse. Si es ``None`` (el
@@ -187,6 +197,8 @@ def crear_app(
     SQLite creaba tan campante un archivo con el ``repr`` del objeto en el
     nombre en vez de fallar.
     """
+    if casos_visibles is None:
+        casos_visibles = casos
 
     @asynccontextmanager
     async def vida(app: FastAPI):
@@ -347,7 +359,7 @@ def crear_app(
                     cantidad_sospechosos=len(c.sospechosos),
                     max_preguntas=c.max_preguntas,
                 )
-                for c in casos.values()
+                for c in casos_visibles.values()
             ],
         )
 
@@ -704,7 +716,7 @@ def main() -> None:
 
     ruta_db = os.environ.get("DETECTIVE_DB", "partidas.sqlite")
     puerto = int(os.environ.get("DETECTIVE_WEB_PORT", "8765"))
-    app = crear_app(CASOS, ruta_db=ruta_db)
+    app = crear_app(CASOS, ruta_db=ruta_db, casos_visibles=CASOS_VISIBLES)
 
     print(f"🛰️  El Caso Calafate — http://127.0.0.1:{puerto}")
     print(f"    partidas en {ruta_db} · {len(CASOS)} casos · {len(MOTORES)} motores en el catálogo")

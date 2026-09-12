@@ -27,7 +27,7 @@ from rich.table import Table
 from rich.text import Text
 
 from caso_calafate.caso import Caso, Sospechoso, buscar_caso
-from caso_calafate.casos import CASOS
+from caso_calafate.casos import CASOS_VISIBLES
 from caso_calafate.grafo import construir_grafo
 from caso_calafate.llm import MOTORES, crear_motores, motor_sugerido, relevar_motores, texto_de
 from caso_calafate.pixelart import ALTO, ANCHO, PALETA, RETRATOS, TRANSPARENTE
@@ -150,7 +150,7 @@ def _elegir_caso() -> Caso | None:
     Reintenta hasta que el jugador elija algo válido; devuelve None si se
     arrepiente y corta con Ctrl-C.
     """
-    catalogo = list(CASOS.values())
+    catalogo = list(CASOS_VISIBLES.values())
     tabla = Table(title="Archivo de expedientes", show_lines=True)
     tabla.add_column("#", justify="right")
     tabla.add_column("Caso", style="bold")
