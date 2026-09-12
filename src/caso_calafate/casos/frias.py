@@ -298,7 +298,7 @@ personas con acceso a los tres puntos marcados.""",
             ),
         ),
         Sospechoso(
-            id="perla",
+            id="anzoategui",
             nombre="Perla Anzoátegui",
             cargo="archivista de la Estación",
             color="magenta",

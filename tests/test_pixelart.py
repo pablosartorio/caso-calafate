@@ -39,9 +39,8 @@ def test_cada_sospechoso_del_caso_calafate_tiene_retrato():
 def test_cada_sospechoso_de_los_casos_con_pixel_art_tiene_retrato():
     """Ronda de arte de 10 casos nuevos: por cada uno, sus cinco sospechosos
     tienen que estar en RETRATOS. (``RETRATOS`` es global por id — ver el
-    comentario en ``pixelart/__init__.py`` sobre los ids que se repiten
-    entre casos, p.ej. "perla" y "ceferino": ese es un problema de
-    ``casos/*.py``, no de este test.)"""
+    comentario en ``pixelart/__init__.py`` sobre qué hacer si un caso nuevo
+    reintroduce una colisión de ids entre casos distintos.)"""
     for caso_id in CASOS_CON_PIXEL_ART:
         ids_sospechosos = {s.id for s in CASOS[caso_id].sospechosos}
         faltantes = ids_sospechosos - set(RETRATOS)

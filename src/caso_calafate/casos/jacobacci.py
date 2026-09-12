@@ -237,7 +237,7 @@ directo con él.""",
             ),
         ),
         Sospechoso(
-            id="hernan",
+            id="bracamonte",
             nombre="Hernán Bracamonte",
             cargo="socio técnico del forastero",
             color="green",

@@ -242,7 +242,7 @@ tuvieron acceso al informe antes de que desapareciera.""",
             ),
         ),
         Sospechoso(
-            id="ceferino",
+            id="aguer",
             nombre="Ceferino Aguer",
             cargo="periodista freelance",
             color="green",

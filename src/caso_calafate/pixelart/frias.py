@@ -484,7 +484,7 @@ RETRATOS_FRIAS: dict[str, dict] = {
         },
     },
     # ── Perla Anzoátegui — archivista: canosa, rodete, anteojos, cardigan violeta ──
-    "perla": {
+    "anzoategui": {
         "base": [
             "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
             "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",

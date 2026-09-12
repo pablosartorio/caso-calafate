@@ -70,7 +70,7 @@ detective interroga a las cinco personas del barrio con trato cercano a él.""",
     max_preguntas=15,
     sospechosos=[
         Sospechoso(
-            id="marcela",
+            id="issaly",
             nombre="Marcela Issaly",
             cargo="vecina, presidenta del consorcio del barrio",
             color="cyan",

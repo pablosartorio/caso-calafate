@@ -366,7 +366,7 @@ RETRATOS_JACOBACCI: dict[str, dict] = {
         },
     },
     # ── Hernán Bracamonte — socio técnico: pelo corto, anteojos, campera azul ──
-    "hernan": {
+    "bracamonte": {
         "base": [
             "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
             "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",

@@ -12,7 +12,7 @@ La clave de cada retrato ES el id del sospechoso (ver ``casos/arrayanes.py``).
 
 RETRATOS_ARRAYANES: dict[str, dict] = {
     # ── Marcela Issaly — presidenta de consorcio: rodete prolijo, rosa ──
-    "marcela": {
+    "issaly": {
         "base": [
             "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
             "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",

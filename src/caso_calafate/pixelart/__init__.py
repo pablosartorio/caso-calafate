@@ -49,13 +49,15 @@ from caso_calafate.pixelart.tronador import RETRATOS_TRONADOR
 # consumen cli.py y web/servidor.py. Un caso nuevo se suma con una línea más.
 #
 # ⚠️ OJO — este dict es GLOBAL por id de sospechoso, no por caso: si dos casos
-# reutilizan el mismo id (hoy pasa con "perla" en mascardi/frías y "ceferino"
-# en epuyen/pichileufu), el segundo dict pisa al primero acá abajo y uno de
-# los dos sospechosos queda con el retrato del OTRO personaje. No es un bug
-# de este archivo: viene de que ``casos/*.py`` no garantiza ids únicos entre
-# casos (el fallback SVG de ``retratos.js`` tiene el mismo problema de
-# fondo, aunque hoy no se note porque sus ids no chocan). Arreglarlo de raíz
-# implica tocar los ids en ``casos/*.py``, fuera del alcance de este paquete.
+# reutilizan el mismo id, el segundo dict pisa al primero acá abajo y uno de
+# los dos sospechosos queda con el retrato del OTRO personaje. Pasó con
+# "perla" (mascardi/frías) y "ceferino" (epuyen/pichileufu) al agregar la
+# ronda de pixel art de 2026-09; se resolvió renombrando el id en frías
+# ("perla" → "anzoategui") y en pichileufú ("ceferino" → "aguer") — no es un
+# bug de este archivo, sino de que ``casos/*.py`` no garantiza ids únicos
+# entre casos (el fallback SVG de ``retratos.js`` tiene el mismo problema de
+# fondo). Si en el futuro un caso nuevo reintroduce una colisión, el fix es
+# el mismo: renombrar el id en el archivo del caso más nuevo.
 
 RETRATOS: dict[str, dict] = {
     **RETRATOS_CALAFATE,

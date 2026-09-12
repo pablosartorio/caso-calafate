@@ -248,7 +248,7 @@ RETRATOS_EPUYEN: dict[str, dict] = {
         },
     },
     # ── Braian Melivilu — familiar del paciente: pelo corto, campera olivo ──
-    "braian": {
+    "melivilu": {
         "base": [
             "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
             "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",

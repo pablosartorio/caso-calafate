@@ -366,7 +366,7 @@ RETRATOS_PICHILEUFU: dict[str, dict] = {
         },
     },
     # ── Ceferino Aguer — periodista freelance: pelo largo desprolijo, campera olivo ──
-    "ceferino": {
+    "aguer": {
         "base": [
             "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
             "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
