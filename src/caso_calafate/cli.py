@@ -443,10 +443,7 @@ def _mostrar_error_de_motor(error: Exception) -> None:
             "modelo\n"
             "     con [cyan]ollama pull qwen2.5:7b[/cyan] (mirá los tuyos con "
             "[cyan]ollama list[/cyan]).\n"
-            "  2. [bold]Gemini[/bold]: copiá .env.example a .env y completá tu "
-            "[cyan]GOOGLE_API_KEY[/cyan].\n"
-            "  3. [bold]Groq[/bold]: lo mismo con [cyan]GROQ_API_KEY[/cyan].\n"
-            "  4. [bold]Sin nada[/bold]: elegí [cyan]Sin LLM (modo fake)[/cyan] en la tabla para "
+            "  2. [bold]Sin nada[/bold]: elegí [cyan]Sin LLM (modo fake)[/cyan] en la tabla para "
             "probar\n"
             "     la mecánica sin ningún LLM.",
             title="⚠️  Motor no disponible",
