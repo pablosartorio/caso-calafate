@@ -25,6 +25,14 @@ import {
   prepararSelectorDeCasos,
 } from "./pantallas.js";
 import { cargarRetratos } from "./pixelart.js";
+import {
+  alternarMotionCrt,
+  aplicarPreferenciasVisuales,
+  etiquetaFiltro,
+  filtroMonitor,
+  motionCrtSuave,
+  siguienteFiltroMonitor,
+} from "./preferencias.js";
 import { radioEncendida, sonido } from "./sonido.js";
 import { abrirTablero, prepararTablero } from "./tablero.js";
 
@@ -61,12 +69,16 @@ async function arrancar() {
   // El arte pixel de la cámara; si falla, el CRT cae a los retratos SVG.
   await cargarRetratos();
 
+  aplicarPreferenciasVisuales();
+
   crt.iniciarCRT();
   escritorio.prepararEscritorio();
   prepararTablero();
   prepararDiario();
   prepararSelectorDeCasos();
   prepararRadio();
+  prepararMonitor();
+  prepararNieve();
 
   // El audio recién puede nacer con un gesto del usuario (política de
   // autoplay de los browsers): el primer click o tecla lo despierta.
@@ -88,6 +100,33 @@ function prepararRadio() {
   pintar();
   boton.addEventListener("click", () => {
     sonido.radio(!radioEncendida());
+    pintar();
+  });
+}
+
+/** El "modo monitor": cicla fósforo → ámbar → color real, y lo recuerda. */
+function prepararMonitor() {
+  const boton = $("#boton-monitor");
+  const pintar = () => {
+    $("#monitor-estado").textContent = etiquetaFiltro(filtroMonitor());
+  };
+  pintar();
+  boton.addEventListener("click", () => {
+    document.body.dataset.filtroMonitor = siguienteFiltroMonitor();
+    pintar();
+  });
+}
+
+/** Nieve/parpadeo del CRT a intensidad normal o atenuada (no los apaga). */
+function prepararNieve() {
+  const boton = $("#boton-nieve");
+  const pintar = () => {
+    boton.setAttribute("aria-pressed", String(motionCrtSuave()));
+    $("#nieve-estado").textContent = motionCrtSuave() ? "suave" : "normal";
+  };
+  pintar();
+  boton.addEventListener("click", () => {
+    document.body.classList.toggle("motion-crt-suave", alternarMotionCrt());
     pintar();
   });
 }

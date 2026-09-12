@@ -75,7 +75,12 @@ directo con él.""",
             personalidad=(
                 "Amable con los huéspedes, calculadora con los negocios. "
                 "Conoce cada movimiento del pueblo desde el mostrador de su "
-                "posada."
+                "posada. El forastero la trataba distinto a como la trata el "
+                "pueblo hace años — con una atención de otro lado que la "
+                "halagó bastante más de lo que está dispuesta a admitir, "
+                "aunque nunca cruzó ninguna línea real; lo que de verdad "
+                "quiere es sacar la posada de los números ajustados de "
+                "siempre, con o sin esa atención de por medio."
             ),
             coartada=(
                 "Dice que esa noche cerró la posada temprano y se quedó "
@@ -103,8 +108,15 @@ directo con él.""",
                         "Cuenta que el forastero le ofreció comprarle parte de "
                         "la posada."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Delfina por un negocio que nunca llegó a cerrarse; "
+                "la posada, con ella presa, se queda sin nadie que lleve las "
+                "cuentas."
+            ),
         ),
         Sospechoso(
             id="rogelio",
@@ -113,7 +125,11 @@ directo con él.""",
             color="yellow",
             personalidad=(
                 "Celoso, orgulloso, le cuesta que su mujer maneje la parte "
-                "económica de la posada sin consultarle."
+                "económica de la posada sin consultarle. Se crió viendo a su "
+                "padre perder todo por no bajar nunca la cabeza, y jura que a "
+                "él no le va a pasar lo mismo — aunque esa promesa lo vuelve "
+                "más susceptible, no menos, cada vez que alguien con plata le "
+                "presta a Delfina la atención que él siente que no le puede dar."
             ),
             coartada=(
                 "Dice que esa noche estuvo tomando algo en lo de un vecino, "
@@ -140,8 +156,15 @@ directo con él.""",
                         "Admite haber sospechado, por celos, del forastero y su "
                         "mujer."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Rogelio por celos que él mismo reconoce "
+                "exagerados; Delfina se queda sola con la posada y con la "
+                "sospecha de medio pueblo encima."
+            ),
         ),
         Sospechoso(
             id="frutos",
@@ -152,7 +175,11 @@ directo con él.""",
             personalidad=(
                 "Campechano en apariencia, acostumbrado a que nadie lo "
                 "cuestione en su propio pueblo. Cambia de humor rápido cuando "
-                "algo se le escapa de control."
+                "algo se le escapa de control. Se convence de que en Jacobacci "
+                "las cosas siempre se arreglaron así y que lo que pasó esa "
+                "noche fue apenas un exceso de una costumbre vieja, no un "
+                "crimen — la misma lógica que usa hace años para cobrar "
+                "'protección' sin sentir que roba."
             ),
             coartada=(
                 "Dice que esa noche estuvo de recorrida por el pueblo, como "
@@ -172,16 +199,17 @@ directo con él.""",
                         "del pueblo, sin que nadie se anime a denunciarlo."
                     ),
                     instruccion_actor=(
-                        "Solo si te muestran que ya hablaste con varios "
-                        "comerciantes del pueblo Y te preguntan directamente por "
-                        "'protección' o pagos irregulares: admitís, amenazante, "
-                        "que 'acá las cosas se arreglan así hace años', sin "
-                        "llamarlo delito."
+                        "Si te preguntan cómo se manejan los negocios en el "
+                        "pueblo, o directamente por 'protección' o pagos "
+                        "irregulares: admitís, amenazante, que 'acá las cosas se "
+                        "arreglan así hace años', sin llamarlo delito."
                     ),
                     criterio_revelacion=(
                         "Admite cobrar 'protección' a comerciantes del pueblo "
                         "desde hace años."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="camioneta_posada",
@@ -199,17 +227,26 @@ directo con él.""",
                         "Admite que su camioneta estuvo cerca de la posada esa "
                         "noche."
                     ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Si por algún motivo no lo acusan a él, el comisario Frutos "
+                "sigue de recorrida por el pueblo, cobrando lo de siempre "
+                "como si nada."
+            ),
         ),
         Sospechoso(
-            id="hernan",
+            id="bracamonte",
             nombre="Hernán Bracamonte",
             cargo="socio técnico del forastero",
             color="green",
             personalidad=(
                 "Ansioso, dependía del acuerdo con el forastero para su propio "
-                "futuro laboral en el proyecto de radar."
+                "futuro laboral en el proyecto de radar. Ya perdió un proyecto "
+                "parecido en otra estación, por falta de fondos, y no está "
+                "dispuesto a volver a mudarse de pueblo en pueblo detrás de un "
+                "trabajo que se le escapa cada vez que está por asentarse."
             ),
             coartada=(
                 "Dice que esa noche estaba en la Estación, terminando planos "
@@ -238,8 +275,14 @@ directo con él.""",
                         "Admite que su futuro laboral dependía del acuerdo con "
                         "el forastero."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Hernán por depender demasiado de un acuerdo que ya "
+                "no existe; el proyecto de radar se frena igual, con o sin él "
+                "preso."
+            ),
         ),
         Sospechoso(
             id="yolanda",
@@ -248,7 +291,11 @@ directo con él.""",
             color="magenta",
             personalidad=(
                 "Discreta, acostumbrada a mirar para otro lado por conveniencia "
-                "propia. No es mala persona, pero elige bien sus batallas."
+                "propia. No es mala persona, pero elige bien sus batallas: cría "
+                "sola a sus hijos con un sueldo administrativo que no le "
+                "alcanzaría si tuviera que pagar cada multa de tránsito que "
+                "Frutos le 'perdona' desde hace años, y no está dispuesta a "
+                "arriesgar eso por una verdad que no le trae nada a cambio."
             ),
             coartada=(
                 "Dice que esa noche volvió a su casa temprano, como siempre, y "
@@ -267,9 +314,9 @@ directo con él.""",
                         "reportó."
                     ),
                     instruccion_actor=(
-                        "Solo si te ganás su confianza (varias preguntas sin "
-                        "presionar) y le preguntan qué vio esa noche: confesás, "
-                        "con miedo, que viste la camioneta del comisario Frutos "
+                        "Si te preguntan qué viste esa noche cerca de la "
+                        "posada, aunque sea de forma general: confesás, con "
+                        "miedo, que viste la camioneta del comisario Frutos "
                         "cerca de la posada, y que no dijiste nada porque te "
                         "'perdona' las multas de tránsito hace años."
                     ),
@@ -277,8 +324,14 @@ directo con él.""",
                         "Admite haber visto la camioneta del comisario Frutos "
                         "cerca de la posada esa noche."
                     ),
+                    es_entrada=True,
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Yolanda por haber visto una camioneta; a la "
+                "familia, esta vez, ya no se le perdona ninguna multa."
+            ),
         ),
     ],
 )

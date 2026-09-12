@@ -162,8 +162,14 @@ al personal que tenía acceso a esa carpeta o a esos sistemas ese fin de semana.
                         "Menciona que Ricardo preguntó sobre accesos a la carpeta "
                         "del proyecto, o que tenía problemas de dinero o de juego."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Marcela vuelve a su proyecto con el nombre limpio pero la "
+                "confianza rota, mientras los planos del Centinela-3D siguen "
+                "circulando en manos que no debían tenerlos."
+            ),
         ),
         Sospechoso(
             id="diego",
@@ -237,8 +243,13 @@ al personal que tenía acceso a esa carpeta o a esos sistemas ese fin de semana.
                         "Compras y Logística entrando por la puerta de depósito esa "
                         "noche."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "A Diego lo dejan seguir en su puesto, pero con el favor que le "
+                "hizo a Ricardo pesándole como el peor error de su guardia."
+            ),
         ),
         Sospechoso(
             id="ricardo",
@@ -311,6 +322,7 @@ al personal que tenía acceso a esa carpeta o a esos sistemas ese fin de semana.
                         "Admite tener deudas de juego (apuestas, carreras, casino) "
                         "o problemas financieros serios."
                     ),
+                    es_entrada=True,
                 ),
                 Secreto(
                     id="pedido_a_diego",
@@ -336,6 +348,11 @@ al personal que tenía acceso a esa carpeta o a esos sistemas ese fin de semana.
                     ),
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Sueltan a Ricardo sin cargos y sigue negociando contratos como "
+                "si nada, mientras las especificaciones del Centinela-3D siguen "
+                "en manos de quien se las llevó."
+            ),
         ),
     ],
 )

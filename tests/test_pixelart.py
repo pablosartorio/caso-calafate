@@ -8,6 +8,7 @@ en plena partida. El validador ya corre al importar; estos tests lo dejan
 por escrito.
 """
 
+from caso_calafate.casos import CASOS
 from caso_calafate.casos.calafate import CASO_CALAFATE
 from caso_calafate.pixelart import (
     ALTO,
@@ -19,11 +20,31 @@ from caso_calafate.pixelart import (
     exportar_retratos,
 )
 
+# Los casos que YA tienen arte pixel propio (los demás siguen con el
+# fallback SVG de ``retratos.js`` — no rompen nada, solo no tienen pixel art
+# todavía). Un caso nuevo se suma a esta lista cuando se le agrega su
+# ``pixelart/<caso>.py``.
+CASOS_CON_PIXEL_ART = [
+    "calafate", "mascardi", "roca", "llaollao", "arrayanes", "jacobacci",
+    "moreno", "frias", "tronador", "epuyen", "pichileufu",
+]
 
-def test_cada_sospechoso_del_caso_tiene_retrato():
+
+def test_cada_sospechoso_del_caso_calafate_tiene_retrato():
     """La clave del retrato ES el id del sospechoso: la convención que evita
     mantener un mapeo aparte, vigilada acá."""
-    assert set(RETRATOS) == {s.id for s in CASO_CALAFATE.sospechosos}
+    assert set(RETRATOS) >= {s.id for s in CASO_CALAFATE.sospechosos}
+
+
+def test_cada_sospechoso_de_los_casos_con_pixel_art_tiene_retrato():
+    """Ronda de arte de 10 casos nuevos: por cada uno, sus cinco sospechosos
+    tienen que estar en RETRATOS. (``RETRATOS`` es global por id — ver el
+    comentario en ``pixelart/__init__.py`` sobre qué hacer si un caso nuevo
+    reintroduce una colisión de ids entre casos distintos.)"""
+    for caso_id in CASOS_CON_PIXEL_ART:
+        ids_sospechosos = {s.id for s in CASOS[caso_id].sospechosos}
+        faltantes = ids_sospechosos - set(RETRATOS)
+        assert not faltantes, f"{caso_id}: sin retrato para {faltantes}"
 
 
 def test_las_bases_son_opacas_y_del_tamano_de_la_camara():

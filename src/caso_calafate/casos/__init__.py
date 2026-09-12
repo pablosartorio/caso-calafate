@@ -73,3 +73,27 @@ def _armar_registro(casos: list[Caso]) -> dict[str, Caso]:
 
 
 CASOS: dict[str, Caso] = _armar_registro(_TODOS)
+
+# Los 10 casos con homenaje literario real, profundizados a fondo (personajes,
+# secretos encadenados, veracidad revisada contra la obra que homenajean) y
+# con pixel art propio — son los únicos que el selector de casos (CLI y web)
+# le ofrece al jugador. Los otros 12 (el Calafate original y los casos de la
+# primera tanda) NO se borraron ni se sacaron del registro: siguen en `CASOS`
+# completo, jugables por id si alguien los pide a mano, y quedan disponibles
+# para una futura ronda de profundización. Un caso nuevo se suma a este
+# selector agregando su id acá, no editando `_TODOS`.
+CASOS_VISIBLES: dict[str, Caso] = {
+    id_: CASOS[id_]
+    for id_ in (
+        "mascardi",
+        "roca",
+        "llaollao",
+        "arrayanes",
+        "jacobacci",
+        "moreno",
+        "frias",
+        "tronador",
+        "epuyen",
+        "pichileufu",
+    )
+}

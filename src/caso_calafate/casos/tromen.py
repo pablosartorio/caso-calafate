@@ -162,8 +162,14 @@ acceso al predio esa noche.""",
                         "y que el puesto se lo dieron a Valeria, mostrando "
                         "resentimiento por el ascenso."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Sueltan a Ovidio sin cargos y vuelve a su antena de siempre, "
+                "mientras el motor de acimut sigue esperando semanas de "
+                "reparación y nadie explica quién aflojó ese tornillo."
+            ),
         ),
         Sospechoso(
             id="valeria",
@@ -255,8 +261,13 @@ acceso al predio esa noche.""",
                         "complicar», vinculado a su resentimiento por no haber "
                         "sido ascendido."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Valeria queda liberada, pero con su relación quedando expuesta "
+                "de todos modos y la demo igual de arruinada que antes."
+            ),
         ),
         Sospechoso(
             id="walter",
@@ -320,8 +331,13 @@ acceso al predio esa noche.""",
                         "estacionada junto a la tranquera de servicio cerca de la "
                         "01:10."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "A Walter lo dejan seguir en su puesto, aunque la ronda que se "
+                "saltó esa noche le va a pesar en la planta por un buen tiempo."
+            ),
         ),
     ],
 )

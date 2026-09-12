@@ -146,19 +146,22 @@ tres.""",
                         "directo, venía tensa por las presiones de cronograma."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por tu relación con Hernán o por si "
-                        "pensaste en irte del área: contás, sin vueltas, que "
-                        "pediste el traslado hace unas semanas porque la "
-                        "presión constante de plazos te tenía harta, y que la "
-                        "relación con Hernán venía tensa. Aclarás que eso no "
-                        "tiene nada que ver con lo que encontraste en la "
-                        "auditoría."
+                        "Salís con esto ante cualquier pregunta abierta y "
+                        "razonable: por tu relación con Hernán, si pensaste en "
+                        "irte del área, o directamente cómo venís con el clima "
+                        "laboral. Contás, sin vueltas, que pediste el traslado "
+                        "hace unas semanas porque la presión constante de "
+                        "plazos te tenía harta, y que la relación con Hernán "
+                        "venía tensa. Aclarás que eso no tiene nada que ver con "
+                        "lo que encontraste en la auditoría."
                     ),
                     criterio_revelacion=(
                         "Cuenta que pidió un traslado a otra planta o que su "
                         "relación laboral con Hernán estaba tensa por las "
                         "presiones de cronograma."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
                 Secreto(
                     id="hernan_nervioso",
@@ -182,8 +185,14 @@ tres.""",
                         "que revisar de nuevo el informe del Lote EC-114, o que "
                         "actuó con apuro o nerviosismo inusual esa semana."
                     ),
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "A Rocío la liberan enseguida, pero el pedido de traslado que "
+                "hizo hace semanas queda, esta vez, con muchas más ganas de "
+                "concretarse. El Lote EC-114 sigue con su informe sin explicar."
+            ),
         ),
         Sospechoso(
             id="facundo",
@@ -217,8 +226,10 @@ tres.""",
                         "laboratorio."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan qué hiciste apenas viste la lectura "
-                        "anómala, o si avisaste a alguien esa noche: contás que "
+                        "Salís con esto ante cualquier pregunta abierta y "
+                        "razonable: qué hiciste apenas viste la lectura "
+                        "anómala, si avisaste a alguien esa noche, o "
+                        "directamente cómo terminó tu turno. Contás que "
                         "llamaste a Hernán, tu jefe, para avisarle del "
                         "resultado antes de irte, porque el procedimiento dice "
                         "que las observaciones críticas hay que reportarlas de "
@@ -230,6 +241,8 @@ tres.""",
                         "teléfono esa misma noche sobre los elementos "
                         "rechazados, antes de retirarse."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="no_volvio_a_ver_datos",
@@ -254,6 +267,7 @@ tres.""",
                         "modificarlos y que se enteró del cambio en el informe "
                         "final recién después, por el auditor."
                     ),
+                    certeza="ambiguo",
                 ),
                 Secreto(
                     id="salida_tardia",
@@ -280,6 +294,11 @@ tres.""",
                     ),
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Facundo queda liberado, aliviado pero angustiado por haber "
+                "quedado bajo sospecha por hacer justo lo que el procedimiento "
+                "le pedía: avisar a tiempo y confiar en su jefe."
+            ),
         ),
         Sospechoso(
             id="hernan",
@@ -330,6 +349,7 @@ tres.""",
                         "viernes muy temprano en la mañana, antes de que "
                         "llegara el resto del personal."
                     ),
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="presion_cliente",
@@ -340,19 +360,22 @@ tres.""",
                         "correspondencia."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por plazos, por el cliente o por la "
-                        "presión de cronograma: contás, con algo de "
-                        "indignación defensiva, que la Central Huemul "
-                        "amenazaba con una multa contractual muy fuerte si el "
-                        "lote se atrasaba, que vos eras quien recibía esos "
-                        "mails, y que «nadie entiende la presión que es "
-                        "sostener un cronograma así»."
+                        "Salís con esto ante casi cualquier pregunta abierta y "
+                        "razonable: por plazos, por el cliente, por la "
+                        "presión de cronograma, o directamente cómo viene el "
+                        "lote. Contás, con algo de indignación defensiva, que "
+                        "la Central Huemul amenazaba con una multa contractual "
+                        "muy fuerte si el lote se atrasaba, que vos eras quien "
+                        "recibía esos mails, y que «nadie entiende la presión "
+                        "que es sostener un cronograma así»."
                     ),
                     criterio_revelacion=(
                         "Menciona la amenaza de multa o penalidad del cliente "
                         "(Central Huemul) por atraso en la entrega del lote, y "
                         "que él manejaba esa presión directamente."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
                 Secreto(
                     id="reensayo_evitado",
@@ -377,8 +400,14 @@ tres.""",
                         "del informe para evitar un reensayo que iba a demorar "
                         "semanas, con la intención de corregirlo después."
                     ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Si por algún error lo sueltan, Hernán vuelve a firmar informes "
+                "como si nada, mientras el Lote EC-114 sigue circulando con "
+                "tres elementos que nunca pasaron el ensayo real."
+            ),
         ),
     ],
 )

@@ -114,17 +114,20 @@ al informe y a los datos crudos esa noche.""",
                         "no los 60,8 km que figuran en el informe final."
                     ),
                     instruccion_actor=(
-                        "Solo si te preguntan directamente por el resultado real del "
-                        "ensayo o por los datos crudos: confirmás, con seguridad "
-                        "técnica, que el alcance medido esa noche fue 54,3 km, bien "
-                        "por debajo del mínimo contractual de 60 km. Sos categórico: "
-                        "los logs no mienten."
+                        "Salís con esto ante cualquier pregunta abierta y razonable "
+                        "sobre el ensayo o su resultado —no hace falta que pregunten "
+                        "por «datos crudos» con esa palabra exacta—: confirmás, con "
+                        "seguridad técnica, que el alcance medido esa noche fue 54,3 "
+                        "km, bien por debajo del mínimo contractual de 60 km. Sos "
+                        "categórico: los logs no mienten."
                     ),
                     criterio_revelacion=(
                         "Confirma que el resultado real del ensayo fue 54,3 km (o un "
                         "número claramente por debajo de 60 km), no lo que figura en "
                         "el informe final entregado al cliente."
                     ),
+                    es_entrada=True,
+                    certeza="confirmado",
                 ),
                 Secreto(
                     id="aviso_a_nora",
@@ -144,6 +147,7 @@ al informe y a los datos crudos esa noche.""",
                         "Cuenta que le reportó el resultado real del ensayo a Nora "
                         "Bulacio esa misma noche, antes de retirarse."
                     ),
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="salida_temprana",
@@ -167,6 +171,11 @@ al informe y a los datos crudos esa noche.""",
                     ),
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "A Tomás lo dejan volver al banco de ensayos, algo humillado por "
+                "haber quedado bajo sospecha por avisar a tiempo. El número real "
+                "de 54,3 km sigue sin explicar quién lo tapó en el informe final."
+            ),
         ),
         Sospechoso(
             id="nora",
@@ -199,17 +208,21 @@ al informe y a los datos crudos esa noche.""",
                         "Hito 3 no se certificaba a tiempo."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por la situación de tu área, el presupuesto, "
-                        "o si sentís presión por los tiempos del contrato: contás, con "
-                        "cierta amargura contenida, que Dirección amenazó con recortar "
-                        "un 30% de tu equipo de Administración de Contratos si el "
-                        "Hito 3 no se cobraba a tiempo. Lo presentás como una "
-                        "injusticia hacia tu gente, nunca como excusa para nada."
+                        "Salís con esto ante casi cualquier pregunta abierta y "
+                        "razonable: por la situación de tu área, el presupuesto, si "
+                        "sentís presión por los tiempos del contrato, o directamente "
+                        "cómo venís llevando el proyecto. Contás, con cierta amargura "
+                        "contenida, que Dirección amenazó con recortar un 30% de tu "
+                        "equipo de Administración de Contratos si el Hito 3 no se "
+                        "cobraba a tiempo. Lo presentás como una injusticia hacia tu "
+                        "gente, nunca como excusa para nada."
                     ),
                     criterio_revelacion=(
                         "Revela que su área enfrentaba un recorte presupuestario o de "
                         "personal si el pago del Hito 3 no se certificaba a tiempo."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
                 Secreto(
                     id="edicion_0340",
@@ -231,6 +244,7 @@ al informe y a los datos crudos esa noche.""",
                         "ella guardó o modificó el archivo del informe a esa hora de "
                         "la madrugada."
                     ),
+                    certeza="confirmado",
                 ),
                 Secreto(
                     id="acceso_exclusivo",
@@ -252,8 +266,14 @@ al informe y a los datos crudos esa noche.""",
                         "Confirma que ella es la única con permisos de edición sobre "
                         "la versión final del informe antes del envío al cliente."
                     ),
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Sueltan a Nora con el pase asegurado para su área, y ella vuelve "
+                "a defender a «su gente» como si nada, mientras el informe con el "
+                "número maquillado sigue circulando en el portal del cliente."
+            ),
         ),
         Sospechoso(
             id="marcelo",
@@ -295,6 +315,7 @@ al informe y a los datos crudos esa noche.""",
                         "personalmente los datos crudos, confiando en el resumen de "
                         "Nora."
                     ),
+                    certeza="ambiguo",
                 ),
                 Secreto(
                     id="senial_de_alarma",
@@ -304,17 +325,20 @@ al informe y a los datos crudos esa noche.""",
                         "la tabla de resultados, pero no le dio importancia."
                     ),
                     instruccion_actor=(
-                        "Solo si te preguntan si notaste algo raro en el informe "
-                        "después de firmarlo, o si volviste a mirarlo: contás, con "
-                        "algo de culpa, que unos días después te pareció que el "
-                        "gráfico de la página 12 no cerraba del todo con el número de "
-                        "la tabla, pero lo atribuiste a un problema de escala del eje "
-                        "y no volviste a mirarlo. No lo mencionás espontáneamente."
+                        "Salís con esto ante cualquier pregunta abierta y razonable "
+                        "sobre si notaste algo raro en el informe después de "
+                        "firmarlo, o si volviste a mirarlo: contás, con algo de "
+                        "culpa, que unos días después te pareció que el gráfico de "
+                        "la página 12 no cerraba del todo con el número de la tabla, "
+                        "pero lo atribuiste a un problema de escala del eje y no "
+                        "volviste a mirarlo. No lo mencionás espontáneamente."
                     ),
                     criterio_revelacion=(
                         "Cuenta que notó una inconsistencia entre el gráfico y la "
                         "tabla del informe después de firmarlo, pero no la investigó."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="salida_temprana_hija",
@@ -337,6 +361,11 @@ al informe y a los datos crudos esa noche.""",
                     ),
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Marcelo queda libre, pero con la culpa de haber firmado sin mirar "
+                "bien encima: el gráfico de la página 12 seguía ahí, mostrando la "
+                "curva real, y nadie lo cruzó a tiempo."
+            ),
         ),
     ],
 )

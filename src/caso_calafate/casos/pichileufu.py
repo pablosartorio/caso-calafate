@@ -1,5 +1,4 @@
-"""EL CASO PICHILEUFÚ — homenaje a Rodolfo Walsh (Variaciones en rojo /
-Operación Masacre).
+"""EL CASO PICHILEUFÚ — homenaje a Rodolfo Walsh (Operación Masacre).
 
 El registro técnico dice "avería". Alguien murió. El tono acá es de denuncia
 periodística, no de enigma: la pregunta no es solo quién encubrió, sino cómo
@@ -79,7 +78,12 @@ tuvieron acceso al informe antes de que desapareciera.""",
             color="yellow",
             personalidad=(
                 "Cansado, atrapado entre la lealtad institucional y una culpa "
-                "que no sabe bien dónde poner. Elige mucho las palabras."
+                "que no sabe bien dónde poner. Elige mucho las palabras. "
+                "Lleva veinte años en la Central y le quedan pocos para "
+                "jubilarse con la antigüedad completa; firmar ese parte "
+                "apurado le costó dormir bien desde entonces, pero teme que "
+                "negarse a firmarlo, esa noche, lo hubiera dejado a él sin "
+                "trabajo y al operario muerto de todos modos."
             ),
             coartada=(
                 "Dice que redactó el parte oficial esa misma noche, 'con la "
@@ -100,15 +104,17 @@ tuvieron acceso al informe antes de que desapareciera.""",
                         "esa gravedad."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por qué el parte se firmó tan rápido: "
-                        "admitís, incómodo, que fue inusualmente apurado para un "
-                        "incidente así, pero decís que 'órdenes de arriba' te "
-                        "apuraron."
+                        "Con cualquier pregunta abierta sobre el parte oficial "
+                        "o cómo se redactó esa noche: admitís, incómodo, que "
+                        "fue inusualmente apurado para un incidente así, pero "
+                        "decís que 'órdenes de arriba' te apuraron."
                     ),
                     criterio_revelacion=(
                         "Admite que el parte oficial se firmó de forma inusualmente "
                         "apurada, por presión de instancias superiores."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="presion_palavecino",
@@ -125,8 +131,14 @@ tuvieron acceso al informe antes de que desapareciera.""",
                         "Nombra al interventor Palavecino como quien lo presionó "
                         "para firmar el parte."
                     ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«Yo firmé lo que me ordenaron firmar, detective. Si buscan "
+                "a quien de verdad decidió qué decía ese parte, no lo van a "
+                "encontrar en mi escritorio.»"
+            ),
         ),
         Sospechoso(
             id="renata",
@@ -136,7 +148,12 @@ tuvieron acceso al informe antes de que desapareciera.""",
             personalidad=(
                 "Metódica, guardó silencio por miedo pero nunca dejó de pensar "
                 "en el operario muerto. Responde con precisión técnica cuando "
-                "puede evitar mirar el costado humano."
+                "puede evitar mirar el costado humano. Es de las pocas físicas "
+                "mujeres de su generación en la Central y sabe que un error "
+                "ajeno atribuido a ella la sacaría del oficio para siempre; "
+                "guardó la copia por costumbre de archivo, pero tardó una "
+                "semana en decidir si mostrarla era coraje o solo otra forma "
+                "de protegerse a sí misma."
             ),
             coartada=(
                 "Dice que redactó el informe técnico esa misma noche, con todos "
@@ -155,17 +172,24 @@ tuvieron acceso al informe antes de que desapareciera.""",
                         "antes de que se borrara del sistema institucional."
                     ),
                     instruccion_actor=(
-                        "Solo si te ganás su confianza (varias preguntas "
-                        "amables, sin presionar) y te preguntan si guardó algo "
-                        "del informe: admite, en voz baja, que tiene una copia "
+                        "Con cualquier pregunta abierta y con algo de calma "
+                        "sobre el informe técnico o qué pasó con tus "
+                        "registros: admite, en voz baja, que tiene una copia "
                         "personal en un disco propio."
                     ),
                     criterio_revelacion=(
                         "Admite tener una copia personal del informe técnico "
                         "original."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«Yo documenté lo que pasó, detective, con todos los "
+                "detalles. Que alguien después decidiera borrarlo no fue "
+                "cosa mía.»"
+            ),
         ),
         Sospechoso(
             id="numa",
@@ -174,7 +198,12 @@ tuvieron acceso al informe antes de que desapareciera.""",
             color="red",
             personalidad=(
                 "Firme, acostumbrado a pelear cada reclamo laboral. Desconfía "
-                "profundamente de cualquier explicación oficial."
+                "profundamente de cualquier explicación oficial. Enterró a un "
+                "compañero de gremio hace años por un accidente que la "
+                "empresa también minimizó, y desde entonces no le perdona a "
+                "ninguna gestión que le pida paciencia a un trabajador "
+                "muerto; teme, sobre todo, envejecer peleando las mismas "
+                "batallas sin haber cambiado nada de fondo."
             ),
             coartada=(
                 "Dice que se enteró del accidente recién al día siguiente, como "
@@ -193,26 +222,37 @@ tuvieron acceso al informe antes de que desapareciera.""",
                         "públicas."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por la familia del operario o por una "
-                        "indemnización: contás, indignado, que recibieron plata "
-                        "rápido a cambio de firmar que no iban a declarar "
-                        "públicamente."
+                        "Con cualquier pregunta abierta sobre la familia del "
+                        "operario o sobre cómo reaccionó la empresa: contás, "
+                        "indignado, que recibieron plata rápido a cambio de "
+                        "firmar que no iban a declarar públicamente."
                     ),
                     criterio_revelacion=(
                         "Cuenta que la familia del operario recibió una "
                         "indemnización condicionada a no hacer declaraciones."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«A mí me van a tener que probar algo con papeles, no con "
+                "bronca, detective. Y los papeles que faltan no los tengo "
+                "yo.»"
+            ),
         ),
         Sospechoso(
-            id="ceferino",
+            id="aguer",
             nombre="Ceferino Aguer",
             cargo="periodista freelance",
             color="green",
             personalidad=(
                 "Insistente, acostumbrado a que le cierren puertas y a "
-                "conseguir igual lo que busca. Anota todo en una libreta propia."
+                "conseguir igual lo que busca. Anota todo en una libreta "
+                "propia. Vive de notas freelance que cada vez pagan menos, y "
+                "esta historia es la primera en años que podría sostenerlo "
+                "un tiempo si la escribe bien; le importa la verdad, pero "
+                "también, y no se lo confiesa fácil, necesita la nota."
             ),
             coartada=(
                 "Dice que esa noche estaba afuera de la Central, esperando "
@@ -230,17 +270,25 @@ tuvieron acceso al informe antes de que desapareciera.""",
                         "confirmó, extraoficialmente, que hubo una muerte."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan cómo supiste del accidente antes que "
-                        "nadie: contás, protegiendo el nombre, que tenés una "
-                        "fuente dentro de la Central que te confirmó "
-                        "extraoficialmente que hubo una muerte."
+                        "Con cualquier pregunta abierta sobre cómo llegaste a "
+                        "esta historia o qué sabés del accidente: contás, "
+                        "protegiendo el nombre, que tenés una fuente dentro de "
+                        "la Central que te confirmó extraoficialmente que "
+                        "hubo una muerte."
                     ),
                     criterio_revelacion=(
                         "Cuenta que tiene una fuente interna que le confirmó la "
                         "muerte del operario."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«Yo solo hago preguntas que otros no quieren hacer, "
+                "detective. Van a tener que seguir buscando quién de verdad "
+                "escondió los papeles.»"
+            ),
         ),
         Sospechoso(
             id="palavecino",
@@ -250,7 +298,12 @@ tuvieron acceso al informe antes de que desapareciera.""",
             es_culpable=True,
             personalidad=(
                 "Frío, corporativo, habla en términos de 'gestión' y "
-                "'auditoría' incluso cuando se le pregunta por una muerte."
+                "'auditoría' incluso cuando se le pregunta por una muerte. Se "
+                "convenció de que ocultar el informe no fue encubrir una "
+                "muerte sino evitar que un solo expediente hundiera el "
+                "financiamiento de toda la Central y, con él, cientos de "
+                "puestos de trabajo; para él, 'gestionar bien' la tragedia "
+                "era la única forma responsable de no multiplicarla."
             ),
             coartada=(
                 "Dice que esa noche estaba redactando el informe de gestión "
@@ -271,15 +324,18 @@ tuvieron acceso al informe antes de que desapareciera.""",
                         "perdía el financiamiento que sostenía su gestión."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por la auditoría internacional: "
-                        "admitís, con lenguaje corporativo, que la Central "
-                        "necesitaba pasarla sin incidentes documentados o se "
-                        "perdía financiamiento clave."
+                        "Con cualquier pregunta abierta sobre tu gestión o "
+                        "sobre la auditoría internacional: admitís, con "
+                        "lenguaje corporativo, que la Central necesitaba "
+                        "pasarla sin incidentes documentados o se perdía "
+                        "financiamiento clave."
                     ),
                     criterio_revelacion=(
                         "Admite que la auditoría internacional necesitaba que no "
                         "hubiera incidentes documentados."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="orden_borrado",
@@ -298,8 +354,16 @@ tuvieron acceso al informe antes de que desapareciera.""",
                         "Admite haber ordenado retirar el informe técnico del "
                         "sistema."
                     ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Si por algún motivo no lo acusan a él, el interventor "
+                "Palavecino cierra su informe de gestión a tiempo para la "
+                "auditoría internacional, y la Central de Pichileufú pasa a "
+                "la siguiente revisión como si esa semana no hubiera pasado "
+                "nada."
+            ),
         ),
     ],
 )

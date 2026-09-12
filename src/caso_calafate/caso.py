@@ -17,6 +17,7 @@ medio de una partida — y porque es la misma librería que LangChain usa para
 import random
 import unicodedata
 from collections.abc import Iterable
+from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -44,6 +45,17 @@ class Secreto(BaseModel):
     pista: str = Field(description="Texto que ve el jugador en /pistas")
     instruccion_actor: str = Field(description="Regla de actuación para el LLM sospechoso")
     criterio_revelacion: str = Field(description="Criterio que evalúa el LLM analista")
+    es_entrada: bool = Field(
+        default=False,
+        description="Marca la pista 'de entrada', barata y laxa de soltar de este "
+        "sospechoso. El contenido lo puebla el equipo de casos/prompts; acá solo "
+        "vive el campo.",
+    )
+    certeza: Literal["confirmado", "parcial", "ambiguo"] | None = Field(
+        default=None,
+        description="Qué tan firme es esta pista, sin validación estricta — la "
+        "usa (o no) cada caso a su criterio.",
+    )
 
 
 class Sospechoso(BaseModel):
@@ -58,6 +70,11 @@ class Sospechoso(BaseModel):
     es_culpable: bool = False
     secretos: list[Secreto] = Field(default_factory=list)
     color: str = Field(default="white", description="Color de rich para el CLI")
+    reaccion_acusacion_fallida: str | None = Field(
+        default=None,
+        description="Texto propio a mostrar si se acusa a ESTE sospechoso y resulta "
+        "inocente. Cuando está presente, reemplaza el mensaje genérico de derrota.",
+    )
 
 
 class Caso(BaseModel):
@@ -131,6 +148,20 @@ class Caso(BaseModel):
 
     def total_secretos(self) -> int:
         return sum(len(s.secretos) for s in self.sospechosos)
+
+    def secretos_no_revelados(self, descubiertos: list[str]) -> list[Secreto]:
+        """Los secretos de todos los sospechosos cuyo id NO esté en ``descubiertos``.
+
+        Simétrico a ``total_secretos()``: recorre todos los sospechosos, no uno
+        solo. ``descubiertos`` es la misma lista de ids que guarda el estado del
+        juego en ``pistas_descubiertas``.
+        """
+        return [
+            secreto
+            for s in self.sospechosos
+            for secreto in s.secretos
+            if secreto.id not in descubiertos
+        ]
 
     def culpable(self) -> Sospechoso:
         return next(s for s in self.sospechosos if s.es_culpable)

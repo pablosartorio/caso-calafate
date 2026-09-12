@@ -38,6 +38,9 @@ CASO_FRIAS = Caso(
         " • Cada uno coincidió con el turno de una persona distinta.\n"
         " • Alguien, adentro, conoce el patrón tan bien como para haberlo\n"
         "   trazado él mismo.\n"
+        " • El patrón no parece pensado solo para señalar un lugar: parece\n"
+        "   pensado para asegurarse de que alguien viniera a investigar\n"
+        "   justo esta noche, a ese cuarto punto.\n"
         " • Cinco personas tienen acceso a los tres puntos marcados. Son tus\n"
         "   sospechosos.\n\n"
         "Interrogá, anotá, y cuando estés seguro: acusá. Tenés una sola oportunidad."
@@ -56,13 +59,16 @@ personas con acceso a los tres puntos marcados.""",
         "desarrollado juntos años atrás, y que la Estación solo reconocía a "
         "Kreiman. No tenía pruebas que alguien fuera a creerle si las "
         "presentaba directamente — así que decidió construir una prueba que "
-        "nadie pudiera ignorar: un patrón geométrico tan preciso que forzara "
-        "una investigación real. Provocó él mismo los tres incidentes "
-        "menores, cronometrados para dibujar el triángulo, sabiendo que "
-        "cualquier investigador serio terminaría marcando el cuarto punto — "
-        "la sala de control — y que ahí, esa noche, pensaba dejar pruebas "
-        "reales del plagio de Kreiman a la vista, disfrazadas de 'hallazgo' "
-        "del cuarto incidente.\n\n"
+        "nadie pudiera ignorar: un patrón geométrico tan preciso que "
+        "obligara a que un detective apareciera. Provocó él mismo los tres "
+        "incidentes menores, cronometrados con precisión para dibujar el "
+        "triángulo, calculando el día exacto en que un investigador serio "
+        "terminaría marcando el cuarto punto — la sala de control — y se "
+        "presentaría ahí esa noche en particular. No le bastaba con que el "
+        "patrón señalara un lugar: necesitaba atraer al detective hasta ese "
+        "lugar, como testigo obligado, para dejarle ahí mismo, a la vista, "
+        "las pruebas reales del plagio de Kreiman, disfrazadas de "
+        "'hallazgo' del cuarto incidente.\n\n"
         "El cabo Ezcurra, que creyó en el patrón desde el primer día, no "
         "estaba tan equivocado: el patrón era real. Solo se equivocó en "
         "pensar que apuntaba a la próxima víctima, y no a su autor."
@@ -78,7 +84,12 @@ personas con acceso a los tres puntos marcados.""",
             personalidad=(
                 "Frío, preciso, incapaz de dejar pasar un error de cálculo ajeno "
                 "sin corregirlo en voz alta. Habla de números como quien habla de "
-                "justicia."
+                "justicia. Se convenció de que un cálculo bien hecho es una forma "
+                "superior de verdad, y que armar el patrón no fue sabotear nada: "
+                "fue, para él, la única demostración que Kreiman no podría "
+                "desacreditar con un cargo o un apellido. No se piensa como "
+                "alguien que dañó la Estación, sino como el único ahí adentro "
+                "dispuesto a pagar el precio de que se supiera la verdad."
             ),
             coartada=(
                 "Dice que pasó cada una de las tres noches trabajando solo en su "
@@ -98,8 +109,8 @@ personas con acceso a los tres puntos marcados.""",
                         "atrás."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por tu relación con Kreiman o por algún "
-                        "conflicto profesional viejo: contás, con amargura "
+                        "Con cualquier pregunta abierta sobre Kreiman o sobre "
+                        "tu trabajo en la Estación: contás, con amargura "
                         "contenida, que Kreiman se atribuyó un método que "
                         "desarrollaron juntos, y que la Estación solo lo reconoce "
                         "a él."
@@ -108,6 +119,8 @@ personas con acceso a los tres puntos marcados.""",
                         "Cuenta que cree que Martín Kreiman se atribuyó un "
                         "método que desarrollaron juntos."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="patron_propio",
@@ -126,8 +139,13 @@ personas con acceso a los tres puntos marcados.""",
                         "Admite haber calculado o trazado él mismo el patrón "
                         "geométrico de los incidentes."
                     ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«La geometría no miente. Ustedes, en cambio, acaban de "
+                "demostrar que sí se equivocan.»"
+            ),
         ),
         Sospechoso(
             id="dahlia",
@@ -136,7 +154,12 @@ personas con acceso a los tres puntos marcados.""",
             color="yellow",
             personalidad=(
                 "Escéptica por oficio, desconfía de las explicaciones demasiado "
-                "elegantes. Prefiere la evidencia aburrida a la teoría vistosa."
+                "elegantes. Prefiere la evidencia aburrida a la teoría vistosa. "
+                "Hace años, en otro destino, avaló una hipótesis vistosa que "
+                "resultó falsa y le costó un ascenso; desde entonces no vuelve a "
+                "confiar en ninguna teoría hasta que no la desarma con sus "
+                "propias manos, y teme, en el fondo, que esta vez el patrón sea "
+                "real y ella no lo vea a tiempo otra vez."
             ),
             coartada=(
                 "Dice que estuvo de guardia normal las tres noches, sin ver nada "
@@ -156,17 +179,24 @@ personas con acceso a los tres puntos marcados.""",
                         "simple."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan tu opinión sobre el patrón geométrico: "
-                        "decís, con escepticismo profesional, que puede ser una "
-                        "coincidencia forzada por alguien que quiere hacer "
-                        "parecer esto más complicado de lo que es."
+                        "Con cualquier pregunta abierta sobre el caso o sobre "
+                        "el patrón geométrico: decís, con escepticismo "
+                        "profesional, que puede ser una coincidencia forzada "
+                        "por alguien que quiere hacer parecer esto más "
+                        "complicado de lo que es."
                     ),
                     criterio_revelacion=(
                         "Expresa que sospecha que el patrón es artificial, hecho "
                         "a propósito para distraer."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«Se los dije: la teoría más vistosa casi nunca es la "
+                "correcta. Deberían haber escuchado a la aburrida.»"
+            ),
         ),
         Sospechoso(
             id="ezcurra",
@@ -175,7 +205,12 @@ personas con acceso a los tres puntos marcados.""",
             color="green",
             personalidad=(
                 "Crédulo, entusiasta, el primero en creer en la teoría del "
-                "patrón geométrico. Se toma la investigación como algo personal."
+                "patrón geométrico. Se toma la investigación como algo personal. "
+                "Es el más joven de guardia y los veteranos lo tratan como un "
+                "pibe que todavía no se ganó el respeto del uniforme; sueña con "
+                "ser el que resuelve el caso él solo, aunque eso signifique "
+                "creer un poco demasiado rápido en la primera teoría elegante "
+                "que aparece."
             ),
             coartada=(
                 "Dice que estuvo en su puesto las tres noches y que fue él quien "
@@ -195,17 +230,23 @@ personas con acceso a los tres puntos marcados.""",
                         "principal."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan quién calculó el cuarto punto del "
-                        "patrón: contás, con orgullo, que fuiste vos mismo, "
-                        "extendiendo las líneas del triángulo sobre el mapa del "
-                        "predio."
+                        "Con cualquier pregunta abierta sobre el patrón o "
+                        "sobre cómo diste con el cuarto punto: contás, con "
+                        "orgullo, que fuiste vos mismo, extendiendo las líneas "
+                        "del triángulo sobre el mapa del predio."
                     ),
                     criterio_revelacion=(
                         "Cuenta que él mismo calculó que el cuarto punto del "
                         "patrón caía en la sala de control."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«¡Yo tenía razón con el patrón! Lo del cuarto punto no falló. "
+                "Ustedes sí, con el nombre.»"
+            ),
         ),
         Sospechoso(
             id="martin",
@@ -214,7 +255,11 @@ personas con acceso a los tres puntos marcados.""",
             color="red",
             personalidad=(
                 "Seguro de sí, algo distante, acostumbrado a que le reconozcan "
-                "logros ajenos sin que nadie se lo cuestione."
+                "logros ajenos sin que nadie se lo cuestione. Bajo esa "
+                "seguridad hay temor genuino de no dar la talla: la dirección "
+                "espera de él resultados que, sospecha en privado, en parte le "
+                "debe al trabajo de Yago — y prefiere no examinarlo demasiado "
+                "de cerca antes que confirmar sus propias dudas."
             ),
             coartada=(
                 "Dice que estuvo de viaje en Buenos Aires durante los primeros "
@@ -233,26 +278,38 @@ personas con acceso a los tres puntos marcados.""",
                         "haberse atribuido un método que desarrollaron juntos."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por tu relación con Yago: admitís, "
-                        "incómodo, que sabés que te acusa en privado de "
-                        "atribuirte un método que hicieron juntos, pero decís "
-                        "que 'la autoría se decide con papeles, no con quejas'."
+                        "Con cualquier pregunta abierta sobre Yago o sobre el "
+                        "método de rastreo: admitís, incómodo, que sabés que "
+                        "te acusa en privado de atribuirte un método que "
+                        "hicieron juntos, pero decís que 'la autoría se decide "
+                        "con papeles, no con quejas'."
                     ),
                     criterio_revelacion=(
                         "Admite conocer la acusación de Yago Scharrer sobre la "
                         "autoría del método."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«La autoría se decide con papeles, dije. Y los papeles, "
+                "visto lo visto, tampoco eran míos para acusar a nadie.»"
+            ),
         ),
         Sospechoso(
-            id="perla",
+            id="anzoategui",
             nombre="Perla Anzoátegui",
             cargo="archivista de la Estación",
             color="magenta",
             personalidad=(
                 "Metódica, guarda cada mapa y cada plano del predio como un "
-                "tesoro personal. Le cuesta admitir cuando algo se le escapó."
+                "tesoro personal. Le cuesta admitir cuando algo se le escapó. "
+                "Lleva más de veinte años catalogando a mano cada rincón de la "
+                "Estación, orgullosa de ser la única que conoce el predio real "
+                "y no el que figura en los planos oficiales; le pesa no "
+                "haberse preguntado, en su momento, por qué alguien quería "
+                "justamente ese mapa con tanto detalle."
             ),
             coartada=(
                 "Dice que estuvo en el archivo las tres noches, catalogando "
@@ -281,8 +338,15 @@ personas con acceso a los tres puntos marcados.""",
                         "Cuenta que Yago Scharrer le pidió una copia detallada "
                         "del mapa del predio hace un mes."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«Yo archivo lo que me piden, detective. Si alguien usó un "
+                "mapa mío para algo turbio, la culpa es de quien lo usó, no "
+                "de quien lo guardó.»"
+            ),
         ),
     ],
 )

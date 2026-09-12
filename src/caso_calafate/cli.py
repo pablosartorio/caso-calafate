@@ -27,7 +27,7 @@ from rich.table import Table
 from rich.text import Text
 
 from caso_calafate.caso import Caso, Sospechoso, buscar_caso
-from caso_calafate.casos import CASOS
+from caso_calafate.casos import CASOS_VISIBLES
 from caso_calafate.grafo import construir_grafo
 from caso_calafate.llm import MOTORES, crear_motores, motor_sugerido, relevar_motores, texto_de
 from caso_calafate.pixelart import ALTO, ANCHO, PALETA, RETRATOS, TRANSPARENTE
@@ -150,7 +150,7 @@ def _elegir_caso() -> Caso | None:
     Reintenta hasta que el jugador elija algo válido; devuelve None si se
     arrepiente y corta con Ctrl-C.
     """
-    catalogo = list(CASOS.values())
+    catalogo = list(CASOS_VISIBLES.values())
     tabla = Table(title="Archivo de expedientes", show_lines=True)
     tabla.add_column("#", justify="right")
     tabla.add_column("Caso", style="bold")
@@ -343,6 +343,20 @@ def _turno_acusacion(grafo, config: dict, caso: Caso, sospechoso: Sospechoso) ->
             estado["resultado"], encontradas, caso.total_secretos(), caso.culpable_alias
         )
     )
+    _mostrar_pistas_no_reveladas(estado)
+
+
+def _mostrar_pistas_no_reveladas(estado: dict) -> None:
+    """"Lo que no viste": las pistas que quedaron sin descubrir al cerrar la
+    partida. Solo el texto de la pista — nada de a quién pertenece ni de su
+    lógica interna — como arma ``nodo_acusar``."""
+    faltantes: list[str] = estado.get("pistas_no_reveladas", [])
+    if not faltantes:
+        return
+    lineas = "\n".join(f"• {pista}" for pista in faltantes)
+    console.print(
+        Panel(lineas, title="🕳️  Lo que no viste", border_style="dim")
+    )
 
 
 def _calificacion(resultado: str, encontradas: int, total: int, alias: str) -> str:
@@ -443,10 +457,7 @@ def _mostrar_error_de_motor(error: Exception) -> None:
             "modelo\n"
             "     con [cyan]ollama pull qwen2.5:7b[/cyan] (mirá los tuyos con "
             "[cyan]ollama list[/cyan]).\n"
-            "  2. [bold]Gemini[/bold]: copiá .env.example a .env y completá tu "
-            "[cyan]GOOGLE_API_KEY[/cyan].\n"
-            "  3. [bold]Groq[/bold]: lo mismo con [cyan]GROQ_API_KEY[/cyan].\n"
-            "  4. [bold]Sin nada[/bold]: elegí [cyan]Sin LLM (modo fake)[/cyan] en la tabla para "
+            "  2. [bold]Sin nada[/bold]: elegí [cyan]Sin LLM (modo fake)[/cyan] en la tabla para "
             "probar\n"
             "     la mecánica sin ningún LLM.",
             title="⚠️  Motor no disponible",

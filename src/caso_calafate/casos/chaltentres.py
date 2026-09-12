@@ -143,6 +143,7 @@ tres.""",
                         "sanción formal por un error de código encontrado en "
                         "revisión."
                     ),
+                    es_entrada=True,
                 ),
                 Secreto(
                     id="acceso_remoto_nocturno",
@@ -170,6 +171,11 @@ tres.""",
                     ),
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Rocío vuelve a su equipo con la autoridad algo golpeada por "
+                "una acusación que no era, mientras el commit sin ticket del "
+                "martes a la noche sigue sin que nadie explique quién lo cargó."
+            ),
         ),
         Sospechoso(
             id="tomas",
@@ -215,6 +221,7 @@ tres.""",
                         "verificar completamente los checksums de una entrega "
                         "anterior."
                     ),
+                    es_entrada=True,
                 ),
                 Secreto(
                     id="nahuel_solo_de_noche",
@@ -240,6 +247,11 @@ tres.""",
                     ),
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Tomás queda liberado, aliviado, aunque la auditoría apurada "
+                "de dos semanas atrás le queda pesando más que antes en la "
+                "conciencia."
+            ),
         ),
         Sospechoso(
             id="nahuel",
@@ -341,8 +353,14 @@ tres.""",
                         "de decepcionar a su jefa, y que por eso decidió intentar "
                         "resolver el problema en silencio en vez de reportarlo."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Si por algún error lo sueltan, Nahuel vuelve a su escritorio "
+                "todavía más asustado que antes, mientras el CHALTÉN-III sigue "
+                "cargado con datos de configuración que nadie aprobó."
+            ),
         ),
     ],
 )

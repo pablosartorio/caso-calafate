@@ -72,18 +72,28 @@ def nodo_analizar(estado: EstadoJuego, *, caso: Caso, analista: Runnable) -> dic
     if sospechoso is None or not sospechoso.secretos:
         return {"pistas_nuevas": []}
 
-    # Dos mensajes y no un string suelto, y no es cosmético: medido contra
-    # qwen2.5:7b sobre una respuesta que cumplía el criterio al pie de la
-    # letra, pasarlo como texto plano detectaba la pista 2 de 8 veces; como
-    # SystemMessage con las instrucciones + HumanMessage con el pedido, 4 de
-    # 4, sin inventar pistas que no estaban. El modelo trata las reglas como
-    # instrucciones en vez de como una parrafada más para resumir.
-    veredicto: SecretosRevelados = analista.invoke(
-        [
-            SystemMessage(prompt_analista(sospechoso, estado.get("respuesta", ""))),
-            HumanMessage("¿Qué secretos se revelaron en esa respuesta?"),
-        ]
-    )
+    try:
+        # Dos mensajes y no un string suelto, y no es cosmético: medido contra
+        # qwen2.5:7b sobre una respuesta que cumplía el criterio al pie de la
+        # letra, pasarlo como texto plano detectaba la pista 2 de 8 veces; como
+        # SystemMessage con las instrucciones + HumanMessage con el pedido, 4
+        # de 4, sin inventar pistas que no estaban. El modelo trata las reglas
+        # como instrucciones en vez de como una parrafada más para resumir.
+        veredicto: SecretosRevelados = analista.invoke(
+            [
+                SystemMessage(prompt_analista(sospechoso, estado.get("respuesta", ""))),
+                HumanMessage("¿Qué secretos se revelaron en esa respuesta?"),
+            ]
+        )
+    except Exception as error:  # LLM analista caído, timeout, lo que sea
+        # El turno YA le hizo la pregunta al sospechoso (ver nodo_interrogar):
+        # que el análisis falle no puede dejar sin contar la pregunta, o
+        # reintentar sería "preguntar gratis". nodo_cerrar_turno corre después
+        # de este nodo sin condición — con tal de no dejar escapar la
+        # excepción, el peor caso pasa a ser "no se detectó ninguna pista este
+        # turno", no "el turno no cuenta".
+        print(f"[nodo_analizar] el analista falló, el turno cuenta igual: {error}")
+        return {"pistas_nuevas": []}
 
     validos = {s.id for s in sospechoso.secretos}
     ya_descubiertas = set(estado.get("pistas_descubiertas", []))
@@ -110,10 +120,19 @@ def nodo_acusar(estado: EstadoJuego, *, caso: Caso) -> dict:
     Pura lógica de juego: comparar al acusado con el culpable del caso. El
     texto del veredicto nombra el hecho con las palabras del caso
     (``delito``, ``culpable_alias``): el motor no sabe qué se investiga.
+
+    Además arma "lo que no viste": el texto de los secretos que quedaron sin
+    descubrir (``Caso.secretos_no_revelados``), para el resumen post-partida.
+    Solo viaja la ``pista`` de cada uno — nunca ``instruccion_actor`` ni a
+    qué sospechoso pertenece — porque eso es lo único pensado para mostrarse
+    al jugador.
     """
     acusado = caso.sospechoso(estado["sospechoso_actual"])
     if acusado is None:
         raise ValueError(f"no existe el sospechoso {estado['sospechoso_actual']!r}")
+
+    descubiertas = estado.get("pistas_descubiertas", [])
+    pistas_no_reveladas = [s.pista for s in caso.secretos_no_revelados(descubiertas)]
 
     if acusado.es_culpable:
         resultado = "victoria"
@@ -121,6 +140,11 @@ def nodo_acusar(estado: EstadoJuego, *, caso: Caso) -> dict:
             f"Acusás a {acusado.nombre}, {acusado.cargo}. La evidencia encaja: "
             f"tras un largo silencio, {acusado.nombre} confiesa {caso.delito}. Caso cerrado."
         )
+    elif acusado.reaccion_acusacion_fallida is not None:
+        # Texto propio del sospechoso, si el caso lo definió: reemplaza al
+        # mensaje genérico de más abajo.
+        resultado = "derrota"
+        veredicto = acusado.reaccion_acusacion_fallida
     else:
         resultado = "derrota"
         veredicto = (
@@ -128,4 +152,9 @@ def nodo_acusar(estado: EstadoJuego, *, caso: Caso) -> dict:
             f"en minutos: {acusado.nombre} era inocente. "
             f"El verdadero {caso.culpable_alias} queda libre."
         )
-    return {"resultado": resultado, "respuesta": veredicto, "pistas_nuevas": []}
+    return {
+        "resultado": resultado,
+        "respuesta": veredicto,
+        "pistas_nuevas": [],
+        "pistas_no_reveladas": pistas_no_reveladas,
+    }

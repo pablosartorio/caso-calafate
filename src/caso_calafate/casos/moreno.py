@@ -51,7 +51,11 @@ Calafate), notó que las facturas de mantenimiento de los últimos dos años son
 mucho más altas de lo que justifica el estado real de los equipos. Anoche
 alguien entró a su cuarto, sin forzarlo, y arrancó páginas de su cuaderno de
 notas. Un detective interroga a las cinco personas con acceso a su cuarto o a
-los contratos de mantenimiento.""",
+los contratos de mantenimiento. La base queda a horas de cualquier ciudad,
+rodeada de hielo y sin más compañía que el viento: para la prensa que la
+visita es una postal de prestigio científico, puertas adentro esa misma
+distancia es la que le permitió a alguien vaciar las cuentas de mantenimiento
+durante dos años sin que nadie de afuera preguntara.""",
     epilogo=(
         "Franco Islas infló las facturas de mantenimiento durante dos años.\n\n"
         "Contratista privado a cargo del mantenimiento de los equipos de la "
@@ -78,7 +82,11 @@ los contratos de mantenimiento.""",
             color="cyan",
             personalidad=(
                 "Curiosa hasta la obsesión, no suelta un dato raro aunque nadie "
-                "más le preste atención. Acostumbrada a que la subestimen."
+                "más le preste atención. Acostumbrada a que la subestimen. "
+                "Lleva años cubriendo notas de color que nadie recuerda al día "
+                "siguiente y quiere, por una vez, una nota que importe; le "
+                "aterra volver a Buenos Aires con la misma libreta vacía de "
+                "siempre."
             ),
             coartada=(
                 "No es sospechosa en el sentido clásico: es quien destapó el "
@@ -97,7 +105,8 @@ los contratos de mantenimiento.""",
                         "equipos justifica."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan qué encontraste en las facturas: "
+                        "Con cualquier pregunta abierta sobre qué encontraste, "
+                        "por qué te llamaron o en qué estabas trabajando: "
                         "explicás, con entusiasmo periodístico, que las "
                         "facturas de mantenimiento de dos años son muchísimo "
                         "más altas de lo que el estado real de los equipos "
@@ -107,8 +116,14 @@ los contratos de mantenimiento.""",
                         "Explica que las facturas de mantenimiento están "
                         "infladas respecto al estado real de los equipos."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«¿Yo? Yo solo hago preguntas, detective. Parece que a alguien "
+                "más le van a tener que hacer unas cuantas más.»"
+            ),
         ),
         Sospechoso(
             id="anselmo",
@@ -117,7 +132,11 @@ los contratos de mantenimiento.""",
             color="yellow",
             personalidad=(
                 "Pragmático, agotado por la logística de mantener una base "
-                "aislada funcionando. Elige sus batallas con cuidado."
+                "aislada funcionando. Elige sus batallas con cuidado. Lleva "
+                "quince años lejos de su familia por esta base y le queda "
+                "poco antes del retiro; teme que un escándalo de fraude bajo "
+                "su gestión le arruine la salida, así que prioriza que todo "
+                "siga funcionando por sobre hacer las preguntas incómodas."
             ),
             coartada=(
                 "Dice que esa noche estaba en su oficina, revisando turnos "
@@ -136,17 +155,25 @@ los contratos de mantenimiento.""",
                         "mantenimiento no cerraban del todo, pero no investigó."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan si notaste algo raro en las cuentas "
-                        "antes de esto: admitís, incómodo, que sospechabas algo "
-                        "hace meses pero no investigaste, porque Franco era el "
-                        "único contratista dispuesto a venir hasta acá."
+                        "Con cualquier pregunta abierta sobre las cuentas de "
+                        "la base o sobre si notaste algo raro antes de esto: "
+                        "admitís, incómodo, que sospechabas algo hace meses "
+                        "pero no investigaste, porque Franco era el único "
+                        "contratista dispuesto a venir hasta acá y te quedaban "
+                        "pocos años para el retiro como para abrir ese frente."
                     ),
                     criterio_revelacion=(
                         "Admite haber sospechado antes de irregularidades en las "
                         "cuentas de mantenimiento."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«Yo cargué esta base quince años sin que se me cayera nada "
+                "encima. No pienso cargar también con esto, detective.»"
+            ),
         ),
         Sospechoso(
             id="franco",
@@ -157,7 +184,12 @@ los contratos de mantenimiento.""",
             personalidad=(
                 "Simpático y servicial en apariencia, el único dispuesto a "
                 "trabajar en un lugar tan aislado. Conoce cada rincón de la "
-                "base."
+                "base. Se convenció, con el tiempo, de que nadie más soportaría "
+                "el frío, la distancia y los meses sin ver a su familia por lo "
+                "que le pagan, y que 'inflar un poco' las facturas era apenas "
+                "cobrarse el verdadero costo de estar acá — nunca lo piensa "
+                "como robarle a nadie en particular, sino como cobrarse algo "
+                "que la base de todos modos le debía."
             ),
             coartada=(
                 "Dice que esa noche estaba revisando un generador en el otro "
@@ -176,14 +208,17 @@ los contratos de mantenimiento.""",
                         "mantenimiento."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan si tenés acceso a los dormitorios: "
-                        "admitís, sin darle mayor importancia, que tenés copia "
-                        "de todas las llaves de la base por tu trabajo."
+                        "Con cualquier pregunta abierta sobre tu acceso a la "
+                        "base o a los dormitorios: admitís, sin darle mayor "
+                        "importancia, que tenés copia de todas las llaves de "
+                        "la base por tu trabajo."
                     ),
                     criterio_revelacion=(
                         "Admite tener copia de todas las llaves de la base, "
                         "incluidos los dormitorios."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="cobros_inexistentes",
@@ -201,8 +236,13 @@ los contratos de mantenimiento.""",
                         "Admite haber facturado repuestos u horas de trabajo "
                         "inexistentes."
                     ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«¿Yo? Con lo que me pagan por venir hasta acá, ya bastante "
+                "hago con no cobrarles el doble, detective.»"
+            ),
         ),
         Sospechoso(
             id="cielo",
@@ -212,7 +252,11 @@ los contratos de mantenimiento.""",
             personalidad=(
                 "Observadora, ajena a los conflictos administrativos, más "
                 "interesada en el hielo que en las cuentas. Honesta casi hasta "
-                "la ingenuidad."
+                "la ingenuidad. Perdió su beca de investigación en la "
+                "universidad hace dos años y esta base es su única chance de "
+                "seguir estudiando el glaciar antes de que el retroceso lo "
+                "cambie para siempre; le preocupa más eso que cualquier "
+                "chisme administrativo."
             ),
             coartada=(
                 "Dice que esa noche estaba en el laboratorio, procesando "
@@ -231,17 +275,23 @@ los contratos de mantenimiento.""",
                         "rutina de trabajo."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan si viste a alguien fuera de lugar esa "
-                        "noche: contás, sin darle mucha importancia en el "
-                        "momento, que viste a Franco merodeando cerca de los "
-                        "dormitorios."
+                        "Con cualquier pregunta abierta sobre esa noche o "
+                        "sobre si viste a alguien fuera de lugar: contás, sin "
+                        "darle mucha importancia en el momento, que viste a "
+                        "Franco merodeando cerca de los dormitorios."
                     ),
                     criterio_revelacion=(
                         "Menciona haber visto a Franco Islas merodeando cerca "
                         "de los dormitorios esa noche."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«Yo solo cuento lo que veo. Si se equivocaron de persona, "
+                "no fue por algo que yo dije.»"
+            ),
         ),
         Sospechoso(
             id="rulo",
@@ -250,7 +300,10 @@ los contratos de mantenimiento.""",
             color="magenta",
             personalidad=(
                 "Relajado, el que más tiempo lleva en la base, conoce todas las "
-                "rutinas y horarios de todos."
+                "rutinas y horarios de todos. Manda casi todo lo que gana a su "
+                "familia en el norte, endeudada desde hace años; volar es lo "
+                "único que sabe hacer y le aterra más perder la licencia por "
+                "algún quilombo ajeno que cualquier otra cosa."
             ),
             coartada=(
                 "Dice que esa noche estaba haciendo mantenimiento de rutina al "
@@ -270,17 +323,23 @@ los contratos de mantenimiento.""",
                         "de la base."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan quién más tiene acceso a todos los "
-                        "sectores de la base: contás, con seguridad, que solo "
-                        "Franco Islas tiene copia de todas las llaves, por su "
-                        "trabajo de mantenimiento."
+                        "Con cualquier pregunta abierta sobre quién tiene "
+                        "acceso a los distintos sectores de la base: contás, "
+                        "con seguridad, que solo Franco Islas tiene copia de "
+                        "todas las llaves, por su trabajo de mantenimiento."
                     ),
                     criterio_revelacion=(
                         "Cuenta que Franco Islas es el único con copia de "
                         "todas las llaves de la base."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«Yo vuelo el helicóptero, no las cuentas de la base. Se "
+                "olvidaron de preguntarle a quien las maneja de verdad.»"
+            ),
         ),
     ],
 )

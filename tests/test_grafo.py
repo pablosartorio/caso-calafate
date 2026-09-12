@@ -68,6 +68,23 @@ def test_partidas_con_distinto_thread_id_no_se_mezclan(caso_asado, actor_loro, a
     assert "michi" not in estado_b["conversaciones"]
 
 
+def test_el_turno_cuenta_aunque_el_analista_explote(caso_asado, actor_loro):
+    """Si nodo_analizar explota (LLM analista caído), el grafo entero no se
+    puede colgar a mitad de turno: preguntas_usadas tiene que incrementarse
+    igual, o un jugador podría "preguntar gratis" reintentando."""
+    from langchain_core.runnables import RunnableLambda
+
+    def _analista_roto(_mensajes):
+        raise RuntimeError("timeout de ollama")
+
+    grafo = construir_grafo(caso_asado, actor_loro, RunnableLambda(_analista_roto))
+
+    estado = grafo.invoke(_jugada_interrogar("michi", "¿Qué viste?"), _config())
+
+    assert estado["preguntas_usadas"] == 1
+    assert estado["pistas_nuevas"] == []
+
+
 def test_las_pistas_se_acumulan_sin_duplicarse(caso_asado, actor_loro, analista_fijo):
     """El analista insiste con la misma pista dos turnos seguidos: el estado
     la guarda una sola vez, y el segundo turno no la anuncia como nueva."""

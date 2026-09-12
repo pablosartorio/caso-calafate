@@ -122,6 +122,7 @@ con acceso al banco. Un detective está interrogando a cada una.""",
                         "Admite que hizo un cambio de sensor o una recalibración incompleta "
                         "o apurada del lazo de control térmico meses atrás."
                     ),
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="bitacora_alterada",
@@ -143,6 +144,7 @@ con acceso al banco. Un detective está interrogando a cada una.""",
                         "Admite haber modificado, corregido o reescrito la bitácora o el "
                         "registro del turno después del incidente, a solas."
                     ),
+                    certeza="confirmado",
                 ),
                 Secreto(
                     id="jubilacion_cercana",
@@ -151,18 +153,27 @@ con acceso al banco. Un detective está interrogando a cada una.""",
                         "incidentes registrados en el banco de ensayos."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por qué te importaría tanto ocultar un error, por "
-                        "tus planes a futuro, o por qué no reportaste la falla apenas la "
-                        "notaste: contás, con algo de orgullo herido, que te jubilás en "
-                        "pocos meses y que después de veinte años sin un solo incidente "
-                        "grave, querías cerrar tu carrera con la hoja limpia."
+                        "Salís con esto ante casi cualquier pregunta abierta y razonable: "
+                        "por qué te importaría tanto ocultar un error, tus planes a "
+                        "futuro, por qué no reportaste la falla apenas la notaste, o "
+                        "directamente cómo estás llevando todo esto. Contás, con algo de "
+                        "orgullo herido, que te jubilás en pocos meses y que después de "
+                        "veinte años sin un solo incidente grave, querías cerrar tu "
+                        "carrera con la hoja limpia."
                     ),
                     criterio_revelacion=(
                         "Menciona que está por jubilarse pronto y que quería cerrar su "
                         "carrera sin incidentes registrados en su historial."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Sueltan a Hernán con una disculpa formal del directorio; termina el "
+                "turno con su legajo de veinte años todavía impecable, mientras el "
+                "verdadero origen de la falla del lazo de frío sigue sin explicación."
+            ),
         ),
         Sospechoso(
             id="claudia",
@@ -222,6 +233,7 @@ con acceso al banco. Un detective está interrogando a cada una.""",
                         "Cuenta que Hernán Vidal pidió quedarse a solas con la laptop o el "
                         "registro de diagnóstico después del incidente, sin acompañamiento."
                     ),
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="tension_con_hernan",
@@ -231,18 +243,26 @@ con acceso al banco. Un detective está interrogando a cada una.""",
                         "metiera, que eso era tema de mantenimiento."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por tu relación con Hernán, o si alguna vez tuviste "
-                        "un problema con él por el mantenimiento del banco: contás, con "
-                        "cierto fastidio, que meses atrás le comentaste que la recalibración "
-                        "del sensor de frío te había parecido apurada, y que él te dijo que "
-                        "no te metieras, que eso era tema de mantenimiento."
+                        "Salís con esto ante cualquier pregunta abierta y razonable sobre "
+                        "tu relación con Hernán, o si alguna vez tuviste un problema con él "
+                        "por el mantenimiento del banco: contás, con cierto fastidio, que "
+                        "meses atrás le comentaste que la recalibración del sensor de frío "
+                        "te había parecido apurada, y que él te dijo que no te metieras, "
+                        "que eso era tema de mantenimiento."
                     ),
                     criterio_revelacion=(
                         "Cuenta que le señaló a Hernán una recalibración apurada del sensor "
                         "de frío meses atrás y que él la descartó o la mandó a no meterse."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Claudia queda liberada enseguida, aliviada de que su nombre no "
+                "quede pegado al escándalo, aunque le sigue dando vueltas la "
+                "imagen de Hernán pidiendo quedarse solo con la laptop."
+            ),
         ),
         Sospechoso(
             id="tomas",
@@ -282,6 +302,7 @@ con acceso al banco. Un detective está interrogando a cada una.""",
                         "Admite haber presionado para acortar o adelantar una ventana de "
                         "mantenimiento preventivo del banco por motivos de cronograma."
                     ),
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="llamada_cliente",
@@ -311,19 +332,27 @@ con acceso al banco. Un detective está interrogando a cada una.""",
                         "de mantenimiento del banco de ensayos; se la rechazaron por costos."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan si alguna vez dudaste de los procedimientos de "
-                        "mantenimiento del banco, o si pediste algún tipo de auditoría o "
-                        "revisión externa: contás que sí, que meses atrás pediste una "
-                        "auditoría externa por las dudas, que te la rechazaron por "
-                        "presupuesto, y que no quisiste insistir para no generar mal clima "
-                        "con el área de instalaciones."
+                        "Salís con esto ante cualquier pregunta abierta y razonable: si "
+                        "alguna vez dudaste de los procedimientos de mantenimiento del "
+                        "banco, si pediste algún tipo de auditoría o revisión externa, o "
+                        "directamente qué opinás del estado del banco de ensayos. Contás "
+                        "que sí, que meses atrás pediste una auditoría externa por las "
+                        "dudas, que te la rechazaron por presupuesto, y que no quisiste "
+                        "insistir para no generar mal clima con el área de instalaciones."
                     ),
                     criterio_revelacion=(
                         "Cuenta que pidió una auditoría externa de los procedimientos del "
                         "banco de ensayos que fue rechazada por costos."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "A Tomás lo dejan ir sin cargos, pero el cronograma que tanto "
+                "defendía queda igual de atrasado, y todavía nadie explicó por "
+                "qué el lazo de frío se descontroló esa noche."
+            ),
         ),
     ],
 )

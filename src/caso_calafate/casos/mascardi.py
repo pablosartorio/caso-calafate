@@ -72,7 +72,10 @@ personas que estaban en la zona esa noche.""",
             color="green",
             personalidad=(
                 "Relajado, de pocas palabras, acostumbrado a que la gente de la "
-                "estación lo trate como parte del paisaje, no como testigo."
+                "estación lo trate como parte del paisaje, no como testigo. Lo que "
+                "más lo desvela no es la deuda en sí, sino que alguien de Neuquén "
+                "se aparezca por el lago a cobrársela delante de los técnicos que "
+                "sí lo tratan con respeto."
             ),
             coartada=(
                 "Dice que esa noche cerró su galpón de pesca temprano por el "
@@ -91,15 +94,24 @@ personas que estaban en la zona esa noche.""",
                         "misma plaza donde Ezequiel Farías tiene un socio."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por tus deudas o por gente de Neuquén: "
-                        "admitís, incómodo, que debés plata de juego a gente de "
-                        "Neuquén, pero jurás que no tiene nada que ver con esto."
+                        "Si te preguntan por tus deudas, por gente de Neuquén, o en "
+                        "general si tenés problemas de plata: admitís, incómodo, "
+                        "que debés dinero de juego a gente de Neuquén, pero jurás "
+                        "que no tiene nada que ver con esto."
                     ),
                     criterio_revelacion=(
                         "Admite tener deudas de juego vinculadas a gente de Neuquén."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "La crónica de Bariloche titula «Detienen a guía de pesca por "
+                "error»: sueltan a Baltasar dos días después, sin una disculpa "
+                "formal, y sigue debiéndole la misma plata a la misma gente de "
+                "Neuquén."
+            ),
         ),
         Sospechoso(
             id="melina",
@@ -108,7 +120,10 @@ personas que estaban en la zona esa noche.""",
             color="cyan",
             personalidad=(
                 "Meticulosa, todavía dolida por una separación reciente. Contesta "
-                "con precisión técnica hasta que la pregunta se pone personal."
+                "con precisión técnica hasta que la pregunta se pone personal. Lo "
+                "que la frena no es lealtad a Ezequiel — eso ya se terminó — sino "
+                "el miedo a que el rencor le esté nublando el juicio y esté "
+                "acusando a alguien solo por despecho."
             ),
             coartada=(
                 "Dice que se quedó trabajando hasta tarde en el laboratorio y se "
@@ -126,18 +141,50 @@ personas que estaban en la zona esa noche.""",
                         "con la única ventana en que el depósito quedó sin vigilancia."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por el corte de cámaras o por cómo alguien "
-                        "pudo entrar sin ser visto: explicás, con precisión técnica, "
-                        "que el corte duró justo nueve minutos y coincidió exacto "
-                        "con la única ventana sin vigilancia — 'como si alguien "
-                        "supiera el horario exacto'."
+                        "Si te preguntan por el corte de cámaras, por cómo alguien "
+                        "pudo entrar sin ser visto, o en general qué pasó esa noche "
+                        "en el depósito: explicás, con precisión técnica, que el "
+                        "corte duró justo nueve minutos y coincidió exacto con la "
+                        "única ventana sin vigilancia — 'como si alguien supiera el "
+                        "horario exacto'."
                     ),
                     criterio_revelacion=(
                         "Explica que el corte de cámaras coincidió exactamente con "
                         "la ventana sin vigilancia del depósito."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
+                ),
+                Secreto(
+                    id="sospecha_ezequiel",
+                    pista=(
+                        "Melina sospechó de entrada que fue Ezequiel — el único "
+                        "con acceso real para cortar las cámaras sin que saltara "
+                        "una alarma — pero calló, insegura de si el rencor le "
+                        "nublaba el juicio."
+                    ),
+                    instruccion_actor=(
+                        "Solo si ya contaste lo del corte de cámaras Y te "
+                        "preguntan por qué no sospechaste antes de alguien en "
+                        "particular: admitís, incómoda, que pensaste enseguida en "
+                        "Ezequiel — el único con acceso real para cortarlas sin "
+                        "que saltara una alarma — pero no dijiste nada, insegura "
+                        "de si el rencor por la separación te estaba nublando el "
+                        "juicio."
+                    ),
+                    criterio_revelacion=(
+                        "Admite haber sospechado específicamente de Ezequiel "
+                        "Farías por su acceso a las cámaras, y que calló por "
+                        "dudas personales."
+                    ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Melina un fin de semana entero mientras el prototipo "
+                "sigue del otro lado del lago; cuando la largan, pide que la "
+                "saquen de la causa y no vuelve a hablar del tema."
+            ),
         ),
         Sospechoso(
             id="andrada",
@@ -146,7 +193,11 @@ personas que estaban en la zona esa noche.""",
             color="red",
             personalidad=(
                 "Bromista, popular entre los técnicos, de esos que hacen un favor "
-                "sin preguntar demasiado. Se pone serio solo cuando lo acusan."
+                "sin preguntar demasiado. Se pone serio solo cuando lo acusan. Ser "
+                "'el que resuelve' es lo único que tiene en la estación, y sabe "
+                "que haber prestado la lancha sin preguntar lo puede dejar del "
+                "lado equivocado la primera vez que alguien necesite pruebas y no "
+                "favores."
             ),
             coartada=(
                 "Dice que esa noche amarró bien las lanchas por el temporal y se "
@@ -165,17 +216,25 @@ personas que estaban en la zona esa noche.""",
                         "de la otra orilla enredadas en el motor — se usó esa noche."
                     ),
                     instruccion_actor=(
-                        "Solo si te muestran el dato del combustible o las ramas en "
-                        "el motor: admitís, nervioso, que una lancha se usó esa "
-                        "noche, pero decís que vos no fuiste — que Ezequiel te pidió "
-                        "las llaves 'para revisar algo' y no volviste a preguntar."
+                        "Si te preguntan por las lanchas esa noche, o te muestran "
+                        "el dato del combustible gastado o las ramas en el motor: "
+                        "admitís, nervioso, que una lancha se usó esa noche, pero "
+                        "decís que vos no fuiste — que Ezequiel te pidió las "
+                        "llaves 'para revisar algo' y no volviste a preguntar."
                     ),
                     criterio_revelacion=(
                         "Admite que se usó una lancha esa noche y que Ezequiel "
                         "Farías le pidió las llaves."
                     ),
+                    es_entrada=True,
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "El 'Colorado' pasa una noche en la comisaría por prestar una "
+                "lancha; lo sueltan sin cargos, pero deja de hacerle favores a "
+                "cualquiera sin preguntar primero."
+            ),
         ),
         Sospechoso(
             id="perla",
@@ -184,7 +243,10 @@ personas que estaban en la zona esa noche.""",
             color="yellow",
             personalidad=(
                 "Charlatana, orgullosa de conocer a todos sus huéspedes por nombre. "
-                "Le encanta opinar de la vida ajena, sin mala intención."
+                "Le encanta opinar de la vida ajena, sin mala intención. La posada "
+                "es lo único que le quedó después de quedarse viuda joven, y "
+                "llenarla de historia ajena es, en el fondo, su manera de no "
+                "quedarse sola con las propias."
             ),
             coartada=(
                 "Dice que esa noche la posada estaba llena por el temporal y no "
@@ -202,7 +264,8 @@ personas que estaban en la zona esa noche.""",
                         "un socio de Neuquén 'presionándolo feo' por plata."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan si notaste algo raro en Ezequiel: contás, "
+                        "Si te preguntan si notaste algo raro en Ezequiel, o "
+                        "directamente qué se comenta de él por la posada: contás, "
                         "como quien no quiere la cosa, que hace poco te comentó que "
                         "tenía un socio de Neuquén presionándolo feo por plata."
                     ),
@@ -210,8 +273,15 @@ personas que estaban en la zona esa noche.""",
                         "Cuenta que Ezequiel Farías tenía problemas de plata con un "
                         "socio de Neuquén."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Detienen a Perla mientras la posada se vacía de huéspedes "
+                "asustados; jura, dolida, que ella solo repite lo que escucha, "
+                "nunca lo que hace."
+            ),
         ),
         Sospechoso(
             id="ezequiel",
@@ -221,7 +291,12 @@ personas que estaban en la zona esa noche.""",
             es_culpable=True,
             personalidad=(
                 "Eficiente, siempre el primero en dar la alarma y ofrecerse a "
-                "ayudar. Controla la conversación con tono de mando."
+                "ayudar. Controla la conversación con tono de mando. Se convence "
+                "de que no le está robando a nadie de la estación, solo "
+                "resolviendo un problema que la estación jamás lo hubiera "
+                "ayudado a resolver — y que gritar más fuerte que nadie a la "
+                "mañana no es actuar, es simplemente hacer bien el trabajo que "
+                "ya venía haciendo."
             ),
             coartada=(
                 "Dice que hizo su ronda nocturna normal y que fue él mismo quien "
@@ -240,15 +315,17 @@ personas que estaban en la zona esa noche.""",
                         "que ya le había puesto un plazo límite para pagar."
                     ),
                     instruccion_actor=(
-                        "Solo si ya te mencionaron a tu socio de Neuquén y te "
-                        "preguntan directamente: admitís, tenso, que le debés "
-                        "plata y que te puso un plazo. Negás que tenga que ver con "
-                        "el robo."
+                        "Con cualquier pregunta abierta sobre esa noche o sobre "
+                        "vos: admitís, tenso, que le debés plata a un socio de "
+                        "Neuquén y que te puso un plazo. Negás que tenga que ver "
+                        "con el robo."
                     ),
                     criterio_revelacion=(
                         "Admite tener una deuda con un socio de Neuquén y un plazo "
                         "de pago."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="llaves_lancha",
@@ -266,8 +343,14 @@ personas que estaban en la zona esa noche.""",
                         "Admite haberle pedido las llaves de una lancha a Andrada "
                         "esa misma noche."
                     ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Si por algún error no lo acusan, Ezequiel sigue de jefe de "
+                "seguridad, dando notas a la prensa como el hombre que más se "
+                "indignó con el robo."
+            ),
         ),
     ],
 )

@@ -27,7 +27,14 @@ CASO_EPUYEN = Caso(
         "«Detective, un paciente murió acá hace dos semanas por una dosis mal "
         "calculada. El Centro lo llamó 'complicación imprevista'. Nadie en "
         "el pueblo quiere hablar del tema.»\n\n"
-        "Un paciente de radioterapia murió por una dosis mal calculada del "
+        "El Centro de Radioterapia de Epuyén no es un hospital de pueblo "
+        "cualquiera: es la única sede de un programa piloto provincial que "
+        "trajo equipamiento de radioterapia a la cordillera para que los "
+        "pacientes de la zona no tuvieran que viajar cientos de kilómetros a "
+        "una ciudad grande. Un experimento institucional excepcional, "
+        "sostenido con muy poco personal, en un pueblo donde todos se "
+        "conocen.\n\n"
+        "Un paciente de ese programa murió por una dosis mal calculada del "
         "equipo. El informe interno original, que documentaba el error real, "
         "fue reemplazado por uno que hablaba de una 'complicación clínica "
         "imprevista'.\n\n"
@@ -43,13 +50,17 @@ CASO_EPUYEN = Caso(
         "Interrogá, anotá, y cuando estés seguro: acusá. Tenés una sola oportunidad."
     ),
     contexto_actores="""\
-Hace dos semanas, un paciente del Centro de Radioterapia Epuyén murió por una
-dosis mal calculada del equipo. El informe interno original fue reemplazado
-por uno que habla de una "complicación clínica imprevista". La familia del
-paciente no reclamó: recibió atención médica gratuita de por vida para otro
-familiar enfermo. En un pueblo chico, casi todos saben algo pero nadie lo dijo
-primero. Un detective interroga a las cinco personas del pueblo y del Centro
-con alguna pieza del silencio.""",
+El Centro de Radioterapia Epuyén es la única sede de un programa piloto
+provincial pensado para acercar la radioterapia a la cordillera sin que los
+pacientes de la zona tuvieran que viajar cientos de kilómetros; funciona con
+muy poco personal, en un pueblo donde casi todos se conocen. Hace dos semanas,
+un paciente de ese programa murió por una dosis mal calculada del equipo. El
+informe interno original fue reemplazado por uno que habla de una
+"complicación clínica imprevista". La familia del paciente no reclamó: recibió
+atención médica gratuita de por vida para otro familiar enfermo. En un pueblo
+chico, casi todos saben algo pero nadie lo dijo primero. Un detective
+interroga a las cinco personas del pueblo y del Centro con alguna pieza del
+silencio.""",
     epilogo=(
         "La Dra. Ainhoa Pallares encubrió su propio error de cálculo.\n\n"
         "Directora del Centro, fue ella misma quien calculó mal la dosis del "
@@ -78,7 +89,11 @@ con alguna pieza del silencio.""",
             personalidad=(
                 "Pragmático, preocupado por la imagen del pueblo más que por "
                 "cualquier otra cosa. Fuera de temporada, cualquier escándalo "
-                "le parece una amenaza existencial."
+                "le parece una amenaza existencial. Sabe que el Centro le dio "
+                "a Epuyén un prestigio y unos pocos empleos que el pueblo no "
+                "puede permitirse perder; teme, más que la vergüenza pública, "
+                "terminar gobernando un pueblo que además de turistas se "
+                "queda también sin su único centro de salud de punta."
             ),
             coartada=(
                 "Dice que se enteró del error recién por rumores, como todo el "
@@ -97,8 +112,9 @@ con alguna pieza del silencio.""",
                         "temporada turística del pueblo del año próximo."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por qué el pueblo no habla del tema: "
-                        "admitís, con preocupación política, que temés que un "
+                        "Con cualquier pregunta abierta sobre el pueblo, el "
+                        "silencio general o cómo te cae todo esto: admitís, "
+                        "con preocupación política, que temés que un "
                         "escándalo así hunda la temporada turística del año "
                         "que viene."
                     ),
@@ -106,8 +122,15 @@ con alguna pieza del silencio.""",
                         "Admite temer que un escándalo médico afecte el turismo "
                         "del pueblo."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«Yo lo único que hice fue cuidar el nombre de este pueblo, "
+                "detective. Si buscaban un culpable político, se equivocaron "
+                "de intendente.»"
+            ),
         ),
         Sospechoso(
             id="ainhoa",
@@ -118,7 +141,12 @@ con alguna pieza del silencio.""",
             personalidad=(
                 "Querida en el pueblo, agotada, cargando una culpa que no "
                 "termina de procesar. Responde con calidez profesional que se "
-                "quiebra un poco cada vez que el tema se acerca demasiado."
+                "quiebra un poco cada vez que el tema se acerca demasiado. Se "
+                "convenció, noche tras noche, de que mentir en el informe no "
+                "fue para salvarse a sí misma sino para no dejar a medio "
+                "pueblo sin la única médica que los atiende; la culpa por el "
+                "paciente muerto y la culpa por haber mentido compiten, cada "
+                "noche, por cuál pesa más."
             ),
             coartada=(
                 "Dice que el día del incidente hizo su trabajo normal, y que el "
@@ -137,15 +165,17 @@ con alguna pieza del silencio.""",
                         "esa tarde, distraída por un problema personal."
                     ),
                     instruccion_actor=(
-                        "Solo si te preguntan directamente quién calculó la "
-                        "dosis ese día: admitís, con la voz quebrada, que "
-                        "fuiste vos misma, distraída por un problema personal "
-                        "que preferís no detallar."
+                        "Con cualquier pregunta abierta sobre el día del "
+                        "incidente o sobre quién calculó la dosis: admitís, "
+                        "con la voz quebrada, que fuiste vos misma, distraída "
+                        "por un problema personal que preferís no detallar."
                     ),
                     criterio_revelacion=(
                         "Admite haber calculado ella misma la dosis que causó "
                         "la muerte del paciente."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="informe_reemplazado",
@@ -165,18 +195,30 @@ con alguna pieza del silencio.""",
                         "Admite haber redactado ella misma el informe "
                         "alternativo que encubrió el error real."
                     ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Si por algún motivo no la acusan a ella, la Dra. Pallares "
+                "sigue atendiendo cada turno del Centro al día siguiente, "
+                "porque en Epuyén no hay nadie más que pueda reemplazarla — y "
+                "esa misma razón fue, para media ciudad, motivo suficiente "
+                "para no señalarla nunca."
+            ),
         ),
         Sospechoso(
-            id="braian",
+            id="melivilu",
             nombre="Braian Melivilu",
             cargo="familiar del paciente fallecido",
             color="yellow",
             personalidad=(
                 "Dolido, desconfiado del silencio del pueblo, pero atrapado "
                 "por la ayuda médica que su familia todavía necesita del "
-                "Centro."
+                "Centro. No está dispuesto a fingir que hizo las paces con la "
+                "muerte de su familiar; lo que más lo desvela no es la "
+                "mentira del informe, sino haber aceptado la atención "
+                "gratuita y no saber, todavía, si eso lo convierte en "
+                "cómplice de algo."
             ),
             coartada=(
                 "No es sospechoso en el sentido clásico: es quien más quiere "
@@ -196,18 +238,25 @@ con alguna pieza del silencio.""",
                         "de la muerte."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por qué tu familia no reclamó "
-                        "legalmente: contás, con dolor y algo de vergüenza, que "
-                        "el Centro les ofreció atención médica gratuita de por "
-                        "vida para otro familiar enfermo, y que no supieron "
-                        "decir que no."
+                        "Con cualquier pregunta abierta sobre tu familia o "
+                        "por qué no reclamaron legalmente: contás, con dolor "
+                        "y algo de vergüenza, que el Centro les ofreció "
+                        "atención médica gratuita de por vida para otro "
+                        "familiar enfermo, y que no supieron decir que no."
                     ),
                     criterio_revelacion=(
                         "Cuenta que su familia recibió atención médica gratuita "
                         "de por vida a cambio de no reclamar."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«Yo lo único que quería era la verdad, detective. Si "
+                "terminan castigando al que la pidió, este pueblo no "
+                "aprendió nada.»"
+            ),
         ),
         Sospechoso(
             id="ceferino",
@@ -217,7 +266,11 @@ con alguna pieza del silencio.""",
             personalidad=(
                 "Reservado por naturaleza y por oficio, escucha mucho más de "
                 "lo que alguna vez repite. Cree en la reparación privada antes "
-                "que en el escándalo público."
+                "que en el escándalo público. Lleva treinta años enterrando y "
+                "casando a la misma docena de apellidos y sabe que un pueblo "
+                "tan chico no sobrevive sin perdonarse cosas todo el tiempo; "
+                "teme más romper esa costumbre de silencio compartido que "
+                "cualquier pecado individual."
             ),
             coartada=(
                 "No estuvo presente en ningún hecho concreto: su rol es haber "
@@ -236,17 +289,25 @@ con alguna pieza del silencio.""",
                         "Dra. Pallares y la familia del paciente."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan si sabías del acuerdo entre el "
-                        "Centro y la familia: admitís, con cuidado, que "
-                        "ayudaste a mediarlo, porque creíste que era mejor "
-                        "para la familia que un juicio largo."
+                        "Con cualquier pregunta abierta sobre el acuerdo "
+                        "entre el Centro y la familia, o sobre tu rol en todo "
+                        "esto: admitís, con cuidado, que ayudaste a mediarlo, "
+                        "porque creíste que era mejor para la familia que un "
+                        "juicio largo."
                     ),
                     criterio_revelacion=(
                         "Admite haber mediado el acuerdo entre la Dra. "
                         "Pallares y la familia del paciente."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«Yo medié un acuerdo, detective, no encubrí un crimen. Dios "
+                "y este pueblo saben la diferencia, aunque a veces cueste "
+                "explicarla.»"
+            ),
         ),
         Sospechoso(
             id="xime",
@@ -256,7 +317,10 @@ con alguna pieza del silencio.""",
             personalidad=(
                 "Joven, todavía no curtida en los silencios del pueblo. Sabe "
                 "más de lo que le corresponde por estar siempre en el "
-                "mostrador."
+                "mostrador. Es de las primeras de su familia en tener un "
+                "trabajo formal en el pueblo y le aterra perderlo por hablar "
+                "de más; a la vez, no soporta la idea de terminar como el "
+                "resto, aprendiendo a mirar para otro lado tan pronto."
             ),
             coartada=(
                 "Dice que ese día trabajó su turno normal, sin ver nada fuera "
@@ -275,18 +339,25 @@ con alguna pieza del silencio.""",
                         "antes de que la Dra. Pallares lo reemplazara."
                     ),
                     instruccion_actor=(
-                        "Solo si te ganás su confianza (varias preguntas con "
-                        "paciencia) y le preguntan si vio algún informe: "
-                        "confesás, nerviosa, que alcanzaste a ver el informe "
-                        "original un instante antes de que la Dra. Pallares lo "
-                        "reemplazara."
+                        "Con cualquier pregunta abierta y con algo de "
+                        "paciencia sobre el informe, los papeles del Centro o "
+                        "qué viste ese día: confesás, nerviosa, que "
+                        "alcanzaste a ver el informe original un instante "
+                        "antes de que la Dra. Pallares lo reemplazara."
                     ),
                     criterio_revelacion=(
                         "Admite haber visto el informe original antes de que "
                         "fuera reemplazado."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "«Yo solo atiendo el mostrador, detective. Si buscaban a "
+                "quien de verdad decidió algo acá, se equivocaron de "
+                "escritorio.»"
+            ),
         ),
     ],
 )

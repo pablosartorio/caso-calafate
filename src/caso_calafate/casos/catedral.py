@@ -101,6 +101,7 @@ interrogando a las cinco personas que estaban despiertas esa noche.""",
                         "Admite que compite con Antonella por la única pasantía "
                         "fija del Centro."
                     ),
+                    es_entrada=True,
                 ),
                 Secreto(
                     id="sabana_containers",
@@ -120,6 +121,10 @@ interrogando a las cinco personas que estaban despiertas esa noche.""",
                     ),
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "A Facu lo sueltan entre risas nerviosas del campamento entero: "
+                "la beca sigue en juego, y el fantasma del cerro, libre."
+            ),
         ),
         Sospechoso(
             id="antonella",
@@ -155,8 +160,13 @@ interrogando a las cinco personas que estaban despiertas esa noche.""",
                         "Admite que llevaba semanas atrasada con la bitácora del "
                         "telescopio."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Antonella queda liberada, aunque la directora le sigue diciendo "
+                "que ponerse al día con la bitácora no es opcional."
+            ),
         ),
         Sospechoso(
             id="colo",
@@ -193,8 +203,13 @@ interrogando a las cinco personas que estaban despiertas esa noche.""",
                         "Reconoce que la leyenda del fantasma se parece a una que "
                         "él mismo cuenta hace años."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Al Colo lo sueltan entre carcajadas propias: se toma la "
+                "acusación como el mejor material nuevo para sus excursiones."
+            ),
         ),
         Sospechoso(
             id="marisol",
@@ -229,8 +244,13 @@ interrogando a las cinco personas que estaban despiertas esa noche.""",
                         "Menciona haber visto a Facu Roldán salir de su carpa "
                         "después de medianoche."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Marisol queda liberada, aliviada de que por una vez la duda no "
+                "haya recaído del todo en ella."
+            ),
         ),
         Sospechoso(
             id="tobias",
@@ -258,18 +278,24 @@ interrogando a las cinco personas que estaban despiertas esa noche.""",
                         "para alargar la anécdota."
                     ),
                     instruccion_actor=(
-                        "Solo si te preguntan específicamente cómo eran las "
-                        "marcas que encontraste, con mucho detalle: confesás, "
-                        "avergonzado, que las hiciste vos mismo con un palo para "
-                        "que la historia durara más, sin pensar que complicaría "
-                        "la investigación real."
+                        "Si te preguntan por las marcas o 'pruebas' del fantasma "
+                        "que mostraste a la mañana, o cualquier pregunta abierta "
+                        "que te dé pie a contar la anécdota con detalle (te "
+                        "encanta): confesás, avergonzado, que las hiciste vos "
+                        "mismo con un palo para que la historia durara más, sin "
+                        "pensar que complicaría la investigación real."
                     ),
                     criterio_revelacion=(
                         "Admite haber fabricado él mismo las marcas o pruebas del "
                         "fantasma."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "A Tobías lo sueltan sin cargos, aunque ahora la anécdota del "
+                "verano incluye, para su deleite, haber sido sospechoso."
+            ),
         ),
     ],
 )

@@ -202,6 +202,12 @@ def test_acusar_cierra_la_partida_y_recien_ahi_viaja_el_epilogo(cliente, caso_as
         assert veredicto["acusado"] == "moro"
         assert veredicto["epilogo"] == caso_asado.epilogo
         assert "instinto" in veredicto["calificacion"]  # ganó sin ninguna pista
+        # "Lo que no viste": nadie interrogó a nadie, así que las dos pistas
+        # del caso quedan sin descubrir — y solo viaja su texto (la pista).
+        assert set(veredicto["pistas_no_reveladas"]) == {
+            "Hay huellas de pata sobre la mesa del patio.",
+            "Michi vio a Moro rondando la mesa antes de la siesta.",
+        }
 
         # Con el caso cerrado, no se puede seguir interrogando.
         ws.send_json({"tipo": "interrogar", "sospechoso": "michi", "pregunta": "¿y ahora?"})
@@ -324,14 +330,15 @@ def test_el_tablero_malformado_se_rechaza(cliente):
 
 
 def test_los_retratos_pixel_viajan_por_rest(cliente):
-    """El arte es fijo del juego (los tres de Calafate): aunque esta app corra
-    el caso del asado, el endpoint sirve el mismo paquete — para sospechosos
-    sin retrato pixel el frontend cae al SVG, así que no rompe nada."""
+    """El arte es fijo del juego (los de Calafate y los de la ronda de 10
+    casos nuevos): aunque esta app corra el caso del asado, el endpoint sirve
+    el mismo paquete — para sospechosos sin retrato pixel el frontend cae al
+    SVG, así que no rompe nada."""
     respuesta = cliente.get("/api/retratos")
     assert respuesta.status_code == 200
     datos = respuesta.json()
     assert set(datos) == {"paleta", "transparente", "ancho", "alto", "retratos"}
-    assert set(datos["retratos"]) == {"marta", "julian", "silvia"}
+    assert {"marta", "julian", "silvia"} <= set(datos["retratos"])
 
 
 # ── El vocabulario del caso viaja al frontend ────────────────────────────────
@@ -627,6 +634,34 @@ def test_si_el_llm_explota_el_socket_avisa_y_sigue_vivo(caso_asado, analista_fij
             assert "429" in m["mensaje"]
 
             # El socket sigue abierto: una jugada mal formada se contesta igual.
+            ws.send_json({"tipo": "bailar"})
+            assert ws.receive_json()["tipo"] == "error"
+
+
+def test_si_el_grafo_explota_al_acusar_el_socket_avisa_y_sigue_vivo(
+    monkeypatch, caso_asado, motores_fake
+):
+    """Gemelo de ``test_si_el_llm_explota_el_socket_avisa_y_sigue_vivo`` pero
+    para la rama de la acusación: ``_jugada_acusar`` invoca el grafo con
+    ``ainvoke`` y antes no tenía ningún try/except propio, así que cualquier
+    excepción tumbaba la conexión entera en vez de avisar por el socket.
+    """
+    import caso_calafate.grafo as grafo_mod
+
+    def _nodo_acusar_roto(estado, *, caso):
+        raise RuntimeError("el checkpointer se cayó")
+
+    monkeypatch.setattr(grafo_mod, "nodo_acusar", _nodo_acusar_roto)
+
+    with TestClient(crear_app({caso_asado.id: caso_asado}, motores_fake())) as cliente:
+        id_ = _nueva_partida(cliente)
+        with cliente.websocket_connect(f"/ws/partidas/{id_}") as ws:
+            ws.send_json({"tipo": "acusar", "sospechoso": "moro"})
+            mensaje = ws.receive_json()
+            assert mensaje["tipo"] == "error"
+            assert "acusación" in mensaje["mensaje"]
+
+            # El socket sigue abierto y la partida se puede seguir jugando.
             ws.send_json({"tipo": "bailar"})
             assert ws.receive_json()["tipo"] == "error"
 
