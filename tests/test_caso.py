@@ -212,13 +212,17 @@ def test_sospechoso_tiene_default_de_reaccion_acusacion_fallida():
 
 @pytest.mark.parametrize("caso", CASOS.values(), ids=CASOS.keys())
 def test_los_22_casos_reales_siguen_validando_con_los_campos_nuevos(caso: Caso):
-    """Los campos nuevos son opcionales: ningún caso existente los completa
-    todavía, así que todos tienen que seguir en sus defaults."""
+    """Los campos nuevos son opcionales: un caso puede completarlos o no (la
+    pasada de balance los fue poblando caso por caso) y de todos modos tiene
+    que seguir validando con tipos sanos."""
+    certezas_validas = {None, "confirmado", "parcial", "ambiguo"}
     for sospechoso in caso.sospechosos:
-        assert sospechoso.reaccion_acusacion_fallida is None
+        assert sospechoso.reaccion_acusacion_fallida is None or isinstance(
+            sospechoso.reaccion_acusacion_fallida, str
+        )
         for secreto in sospechoso.secretos:
-            assert secreto.es_entrada is False
-            assert secreto.certeza is None
+            assert isinstance(secreto.es_entrada, bool)
+            assert secreto.certeza in certezas_validas
 
 
 # ── Caso.secretos_no_revelados ───────────────────────────────────────────────

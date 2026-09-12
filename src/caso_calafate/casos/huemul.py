@@ -144,6 +144,7 @@ que tuvo acceso al sistema de control y registro esa madrugada.""",
                         "circuito secundario fuera de la secuencia del "
                         "procedimiento, sin esperar la verificación automática."
                     ),
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="bitacora_editada",
@@ -170,6 +171,7 @@ que tuvo acceso al sistema de control y registro esa madrugada.""",
                         "digital de turno esa madrugada, específicamente el "
                         "valor de apertura de la válvula."
                     ),
+                    certeza="confirmado",
                 ),
                 Secreto(
                     id="miedo_habilitacion",
@@ -181,9 +183,11 @@ que tuvo acceso al sistema de control y registro esa madrugada.""",
                         "habilitación de operador senior."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por qué alguien haría algo así, por "
-                        "tu situación laboral, por tu jubilación, o "
-                        "directamente por qué editarías un registro: bajás la "
+                        "Salís con esto ante casi cualquier pregunta abierta y "
+                        "razonable sobre vos: por qué alguien haría algo así, "
+                        "por tu situación laboral, tu jubilación, cómo la "
+                        "estás llevando, o directamente por qué editarías un "
+                        "registro. No hace falta una frase exacta: bajás la "
                         "guardia y confesás, con la voz quebrada, el miedo a "
                         "perder tu habilitación después de 22 años de legajo "
                         "limpio, a dos años de retirarte."
@@ -193,8 +197,16 @@ que tuvo acceso al sistema de control y registro esa madrugada.""",
                         "operador senior, o a arruinar su carrera justo antes "
                         "de jubilarse."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Sueltan a Ricardo con una disculpa formal del directorio; "
+                "vuelve a la sala de control con el legajo intacto, pero el "
+                "verdadero falsificador de los registros de esa madrugada "
+                "sigue ahí, con las manos libres para la próxima parada."
+            ),
         ),
         Sospechoso(
             id="nadia",
@@ -242,6 +254,7 @@ que tuvo acceso al sistema de control y registro esa madrugada.""",
                         "del disparo y no haberlo alertado por no querer "
                         "confrontar a Ricardo."
                     ),
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="salio_de_sala",
@@ -273,19 +286,27 @@ que tuvo acceso al sistema de control y registro esa madrugada.""",
                         "reporte quedó informal y sin consecuencias."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por tu relación con Ricardo, o si "
-                        "alguna vez viste algo irregular de su parte antes de "
-                        "esta noche: contás, incómoda, que meses atrás ya le "
-                        "habías marcado que se saltaba pasos del checklist en "
-                        "otro ensayo, y que nadie le dio seguimiento formal al "
-                        "reporte."
+                        "Salís con esto ante cualquier pregunta abierta y "
+                        "razonable: por tu relación con Ricardo, cómo es "
+                        "trabajar con él, o si alguna vez viste algo "
+                        "irregular de su parte antes de esta noche. Contás, "
+                        "incómoda, que meses atrás ya le habías marcado que se "
+                        "saltaba pasos del checklist en otro ensayo, y que "
+                        "nadie le dio seguimiento formal al reporte."
                     ),
                     criterio_revelacion=(
                         "Cuenta que había reportado antes que Ricardo se "
                         "saltaba procedimientos y que no hubo consecuencias."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "A Nadia la dejan libre a las pocas horas, con el legajo "
+                "manchado por una acusación que no era. Vuelve a la consola "
+                "más callada que antes, sin que nadie le pida disculpas."
+            ),
         ),
         Sospechoso(
             id="gustavo",
@@ -355,6 +376,7 @@ que tuvo acceso al sistema de control y registro esa madrugada.""",
                         "Revela que el sensor señalado como fallado fue "
                         "probado o calibrado y no presenta ninguna falla."
                     ),
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="historial_ediciones",
@@ -365,21 +387,30 @@ que tuvo acceso al sistema de control y registro esa madrugada.""",
                         "pero fuera de norma."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan, con insistencia o sospecha, por qué "
-                        "te pone tan nervioso el tema de \"editar registros\" "
-                        "en general, o si alguna vez modificaste una fecha en "
-                        "el sistema: confesás, incómodo, que a veces cargás "
-                        "calibraciones con fecha retroactiva cuando se te "
-                        "pasa el momento, una mala costumbre que no tiene "
-                        "nada que ver con lo de esa noche."
+                        "Salís con esto ante cualquier pregunta abierta y "
+                        "razonable sobre tus costumbres de trabajo, tus "
+                        "rutinas de carga de datos, o directamente si alguna "
+                        "vez modificaste una fecha en el sistema: confesás, "
+                        "incómodo, que a veces cargás calibraciones con fecha "
+                        "retroactiva cuando se te pasa el momento, una mala "
+                        "costumbre que no tiene nada que ver con lo de esa "
+                        "noche."
                     ),
                     criterio_revelacion=(
                         "Admite haber alterado fechas o registros de "
                         "calibración en otras ocasiones, como una práctica "
                         "menor no relacionada con el incidente de esa noche."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Gustavo pasa un par de días incómodos hasta que lo largan: "
+                "le queda la manía de las fechas retroactivas como una "
+                "anécdota rara, nada más, mientras el registro real de esa "
+                "madrugada sigue sin explicación."
+            ),
         ),
     ],
 )

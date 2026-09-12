@@ -154,8 +154,14 @@ las tres personas que tuvieron acceso al certificado.""",
                         "proveedor pese a las dudas, o que eso la volvió menos "
                         "exigente con los tiempos de trabajo del técnico."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Marisa vuelve a su laboratorio con el nombre manchado por una "
+                "acusación que no era, mientras el patrón que certificó Braian "
+                "sigue sin que nadie explique la desviación real."
+            ),
         ),
         Sospechoso(
             id="nahuel",
@@ -222,8 +228,14 @@ las tres personas que tuvieron acceso al certificado.""",
                         "personal (por ejemplo, una notebook) y que hay tensión "
                         "entre ellos por eso."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Nahuel queda liberado enseguida, con la vergüenza de haber "
+                "demorado su propio reporte todavía pesándole más que la "
+                "sospecha que cayó sobre él."
+            ),
         ),
         Sospechoso(
             id="braian",
@@ -290,6 +302,7 @@ las tres personas que tuvieron acceso al certificado.""",
                         "Admite que tenía otro cliente o compromiso urgente que "
                         "lo apuraba esa tarde."
                     ),
+                    es_entrada=True,
                 ),
                 Secreto(
                     id="braian_certificado_alterado",
@@ -318,6 +331,11 @@ las tres personas que tuvieron acceso al certificado.""",
                     ),
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Sueltan a Braian sin cargos y sigue haciendo rondas de service "
+                "por toda la Patagonia, mientras el patrón secundario del "
+                "Centro Esquel sigue sin una explicación real de su desviación."
+            ),
         ),
     ],
 )

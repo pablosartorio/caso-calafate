@@ -121,9 +121,10 @@ registro. Un detective está interrogando a los tres.""",
                         "lo negó por presupuesto."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por el protocolo de doble chequeo, por "
-                        "la carga de trabajo del físico, o por pedidos de "
-                        "personal que hayas hecho: contás, con amargura "
+                        "Salís con esto ante casi cualquier pregunta abierta y "
+                        "razonable: por el protocolo de doble chequeo, la "
+                        "carga de trabajo del servicio, o cualquier pedido de "
+                        "personal que hayas hecho. Contás, con amargura "
                         "contenida, que hace meses pediste por escrito un "
                         "segundo físico médico para que la calibración semanal "
                         "se hiciera siempre con el doble chequeo que marca el "
@@ -135,6 +136,8 @@ registro. Un detective está interrogando a los tres.""",
                         "calibración, y que fue rechazado por presupuesto o "
                         "gerencia."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
                 Secreto(
                     id="licencia_no_fue_congreso",
@@ -183,8 +186,15 @@ registro. Un detective está interrogando a los tres.""",
                         "físico médico por calibrar equipos sin el doble "
                         "chequeo, sin haber hecho un reporte formal."
                     ),
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Marisa vuelve a su servicio con una disculpa incómoda de "
+                "Dirección, pero el clima ya quedó raro: el verdadero "
+                "responsable del registro alterado sigue firmando "
+                "calibraciones como si nada."
+            ),
         ),
         Sospechoso(
             id="cesar",
@@ -233,6 +243,7 @@ registro. Un detective está interrogando a los tres.""",
                         "control, con el sistema de gestión de calidad abierto, "
                         "fuera del horario habitual, esa misma semana."
                     ),
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="checklist_incompleto",
@@ -265,8 +276,9 @@ registro. Un detective está interrogando a los tres.""",
                         "entienden de física'. Quedó tensión entre los dos."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por tu relación con el físico Ariel, o "
-                        "si hay mal clima en el equipo de trabajo: contás, un "
+                        "Salís con esto ante cualquier pregunta abierta y "
+                        "razonable sobre tu relación con el físico Ariel, o "
+                        "sobre el clima del equipo de trabajo: contás, un "
                         "poco resentido, que Ariel te cargó feo delante de "
                         "otros compañeros diciendo que 'los técnicos no "
                         "entienden de física', después de que le preguntaste "
@@ -278,8 +290,15 @@ registro. Un detective está interrogando a los tres.""",
                         "despectivo del físico médico que generó tensión entre "
                         "ambos."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "César sale del interrogatorio sacudido, jurando que él nunca "
+                "tocó el sistema de calidad, mientras el turno tarde sigue "
+                "esperando que alguien explique la calibración real."
+            ),
         ),
         Sospechoso(
             id="ariel",
@@ -317,9 +336,10 @@ registro. Un detective está interrogando a los tres.""",
                         "centro. Ariel no lo mencionó."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por respaldos, copias, o si existe "
-                        "algún otro lugar donde quede registrada la "
-                        "calibración además del sistema local: cometés tu único "
+                        "Salís con esto ante cualquier pregunta abierta y "
+                        "razonable sobre el equipo, sus sistemas o cómo se "
+                        "guardan sus datos —no hace falta que pregunten por "
+                        "'respaldos' con esa palabra exacta—: cometés tu único "
                         "desliz, explicando con demasiado detalle técnico que "
                         "el equipo manda telemetría en forma automática a un "
                         "servidor del fabricante... y recién ahí notás que "
@@ -332,6 +352,8 @@ registro. Un detective está interrogando a los tres.""",
                         "fabricante que conserva los datos originales de "
                         "calibración, independiente del sistema local."
                     ),
+                    es_entrada=True,
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="calibro_solo_sin_doble_chequeo",
@@ -354,6 +376,7 @@ registro. Un detective está interrogando a los tres.""",
                         "Admite que hizo la calibración de esa semana sin el "
                         "doble chequeo del protocolo, estando solo."
                     ),
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="alteracion_registro",
@@ -380,8 +403,14 @@ registro. Un detective está interrogando a los tres.""",
                         "Confiesa haber alterado o reemplazado el registro de "
                         "calibración de esa semana para ocultar el error real."
                     ),
+                    certeza="confirmado",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Si por algún error lo sueltan, Ariel vuelve a su banco de "
+                "calibración con la misma calma de siempre, mientras el "
+                "verdadero encubridor del registro sigue sin identificar."
+            ),
         ),
     ],
 )

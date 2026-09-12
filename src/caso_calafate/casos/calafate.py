@@ -136,8 +136,14 @@ está interrogando al personal que tenía acceso esa noche.""",
                         "Cuenta que Silvia reportó una falla que fue desestimada, o que "
                         "la sacaron del comité de lanzamiento y quedó resentida."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Marta vuelve a integración con la reputación algo golpeada por "
+                "haber quedado bajo sospecha, mientras el CALAFATE-1 sigue con "
+                "el mazo de cables cortado y sin culpable."
+            ),
         ),
         Sospechoso(
             id="julian",
@@ -197,8 +203,14 @@ está interrogando al personal que tenía acceso esa noche.""",
                         "Menciona haber visto a alguien con un buzo o ropa del área de "
                         "Calidad cerca de la sala limpia esa madrugada."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "A Julián lo dejan seguir en su puesto, aunque con la siesta de "
+                "esa noche pesándole más de lo que nadie le va a perdonar del "
+                "todo."
+            ),
         ),
         Sospechoso(
             id="silvia",
@@ -264,8 +276,14 @@ está interrogando al personal que tenía acceso esa noche.""",
                         "fue desestimada, o muestra resentimiento por haber sido "
                         "apartada del comité de lanzamiento."
                     ),
+                    es_entrada=True,
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Si por algún error la sueltan, Silvia vuelve a Calidad y "
+                "Seguridad con la misma calma de siempre, mientras el mazo de "
+                "cables cortado del CALAFATE-1 sigue sin culpable oficial."
+            ),
         ),
     ],
 )

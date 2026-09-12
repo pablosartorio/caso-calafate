@@ -60,7 +60,7 @@ de ingeniería y gerencia de proyecto con acceso a esa documentación.""",
         "hito de «prueba en frío» tenía una cláusula de penalidad económica dura, y "
         "Bracamonte no estaba dispuesto a explicarle al directorio un atraso por una "
         "tarjeta electrónica. Encontró un módulo de otro fabricante que, en el "
-        "papel, cumplía la misma función, y le dijo a Tomás Lizarraga que lo "
+        "papel, cumplía la misma función, y le dijo a Tomás Lizárraga que lo "
         "instalara: que él se encargaba del trámite de ingeniería después, que no "
         "perdieran el hito por un formulario. Nunca lo llevó al Comité de Control de "
         "Cambios. Ni la calificación sísmica del módulo nuevo ni el análisis de "
@@ -117,19 +117,23 @@ de ingeniería y gerencia de proyecto con acceso a esa documentación.""",
                         "tenía muy presente."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por el cronograma, por el hito de prueba "
-                        "en frío o por presiones comerciales del proyecto: admitís, "
-                        "sin darle mucha importancia al principio, que había una "
-                        "cláusula de penalidad importante en el contrato y que "
-                        "estabas muy encima de esa fecha. Enseguida minimizás "
-                        "diciendo que «eso es gerencia de proyecto normal, no "
-                        "cambia nada de lo técnico»."
+                        "Salís con esto ante casi cualquier pregunta abierta y "
+                        "razonable: por el cronograma, el hito de prueba en frío, "
+                        "presiones comerciales del proyecto o directamente cómo "
+                        "viene el proyecto en general. Admitís, sin darle mucha "
+                        "importancia al principio, que había una cláusula de "
+                        "penalidad importante en el contrato y que estabas muy "
+                        "encima de esa fecha. Enseguida minimizás diciendo que "
+                        "«eso es gerencia de proyecto normal, no cambia nada de "
+                        "lo técnico»."
                     ),
                     criterio_revelacion=(
                         "Menciona la cláusula de penalidad contractual por atraso "
                         "del hito de puesta en marcha, o reconoce que estaba bajo "
                         "fuerte presión de cronograma."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
                 Secreto(
                     id="detalle_tecnico_de_mas",
@@ -154,6 +158,7 @@ de ingeniería y gerencia de proyecto con acceso a esa documentación.""",
                         "que exceden lo que un gerente de proyecto sabría de "
                         "memoria sin haber participado de la decisión técnica."
                     ),
+                    certeza="parcial",
                 ),
                 Secreto(
                     id="acceso_al_expediente",
@@ -177,12 +182,19 @@ de ingeniería y gerencia de proyecto con acceso a esa documentación.""",
                         "expediente, o admite haber entrado al sistema documental "
                         "esos días sin recordar bien por qué."
                     ),
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Sueltan a Hernán con una disculpa institucional y él vuelve a "
+                "manejar el proyecto como si nada, mientras el módulo sin "
+                "certificar sigue instalado y nadie firma quién lo autorizó de "
+                "verdad."
+            ),
         ),
         Sospechoso(
             id="tomas",
-            nombre="Tomás Lizarraga",
+            nombre="Tomás Lizárraga",
             cargo="ingeniero de control y protecciones, diseño de la lógica de disparo",
             color="bright_yellow",
             personalidad=(
@@ -225,6 +237,7 @@ de ingeniería y gerencia de proyecto con acceso a esa documentación.""",
                         "ordenó instalar el módulo de reemplazo antes de tener la "
                         "aprobación formal de ingeniería."
                     ),
+                    certeza="confirmado",
                 ),
                 Secreto(
                     id="objecion_ignorada",
@@ -235,18 +248,23 @@ de ingeniería y gerencia de proyecto con acceso a esa documentación.""",
                         "Cambios."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan si vos tenías dudas sobre el módulo, o si "
-                        "alguna vez objetaste el reemplazo: admitís, con bronca "
-                        "contenida, que mandaste un mail interno señalando que "
-                        "faltaba la calificación sísmica del módulo nuevo, pero "
-                        "que nunca tuvo respuesta formal y que no insististe "
-                        "porque no querías quedar pegado con el gerente."
+                        "Salís con esto ante cualquier pregunta abierta y "
+                        "razonable: si vos tenías dudas sobre el módulo, si "
+                        "alguna vez objetaste el reemplazo, o directamente cómo "
+                        "viviste todo el proceso de instalación. Admitís, con "
+                        "bronca contenida, que mandaste un mail interno señalando "
+                        "que faltaba la calificación sísmica del módulo nuevo, "
+                        "pero que nunca tuvo respuesta formal y que no "
+                        "insististe porque no querías quedar pegado con el "
+                        "gerente."
                     ),
                     criterio_revelacion=(
                         "Cuenta que había advertido, por mail o formalmente, sobre "
                         "la falta de calificación sísmica del módulo de reemplazo, "
                         "y que esa advertencia nunca se procesó."
                     ),
+                    es_entrada=True,
+                    certeza="ambiguo",
                 ),
                 Secreto(
                     id="checklist_apurado",
@@ -270,8 +288,14 @@ de ingeniería y gerencia de proyecto con acceso a esa documentación.""",
                         "instalación sin completar alguna prueba requerida (por "
                         "ejemplo la de aislación), por presión de tiempo."
                     ),
+                    certeza="parcial",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Tomás sale del interrogatorio con el estómago revuelto: lo "
+                "sueltan sin cargos, pero sigue siendo él quien instaló, con "
+                "sus propias manos, un módulo que nunca debió pasar el Comité."
+            ),
         ),
         Sospechoso(
             id="andrea",
@@ -305,17 +329,21 @@ de ingeniería y gerencia de proyecto con acceso a esa documentación.""",
                         "conocerse la anomalía en la prueba."
                     ),
                     instruccion_actor=(
-                        "Sos la más dispuesta a hablar de esto: si te preguntan "
-                        "por el expediente, por quién lo editó o por el log de "
-                        "auditoría, mostrás sin reparos que el sistema registra "
-                        "que se accedió y editó con el usuario de Hernán "
-                        "Bracamonte el día después de la prueba fallida."
+                        "Sos la más dispuesta a hablar de esto: salís con esto "
+                        "ante cualquier pregunta abierta y razonable sobre el "
+                        "expediente, quién lo editó, el log de auditoría, o "
+                        "directamente qué encontró la auditoría. Mostrás sin "
+                        "reparos que el sistema registra que se accedió y editó "
+                        "con el usuario de Hernán Bracamonte el día después de la "
+                        "prueba fallida."
                     ),
                     criterio_revelacion=(
                         "Dice que el log de auditoría muestra que el expediente "
                         "fue editado con el usuario del gerente de proyecto "
                         "(Bracamonte)."
                     ),
+                    es_entrada=True,
+                    certeza="confirmado",
                 ),
                 Secreto(
                     id="tardanza_en_reportar",
@@ -357,8 +385,15 @@ de ingeniería y gerencia de proyecto con acceso a esa documentación.""",
                         "proyecto por otra observación de auditoría que él "
                         "minimizó o desestimó."
                     ),
+                    certeza="ambiguo",
                 ),
             ],
+            reaccion_acusacion_fallida=(
+                "Andrea vuelve a su escritorio de siempre, algo incómoda por "
+                "haber señalado a alguien tan arriba en la jerarquía sin que "
+                "sirviera de nada: el expediente sigue con un módulo sin "
+                "certificar y nadie asumió el cambio."
+            ),
         ),
     ],
 )
