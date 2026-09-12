@@ -78,6 +78,22 @@ def test_analizar_con_analista_mudo_no_revela_nada(caso_asado, analista_fijo):
     assert actualizacion == {"pistas_nuevas": [], "pistas_descubiertas": []}
 
 
+def test_analizar_no_deja_escapar_la_excepcion_si_el_analista_explota(caso_asado):
+    """Si el LLM analista se cuelga o tira cualquier excepción, el nodo no
+    puede propagarla: el turno ya le preguntó al sospechoso y tiene que
+    contar igual (ver nodo_cerrar_turno, que corre después sin condición)."""
+
+    def _analista_roto(_mensajes):
+        raise RuntimeError("timeout de ollama")
+
+    actualizacion = nodo_analizar(
+        {"sospechoso_actual": "michi", "respuesta": "Vi al perro llevarse el asado."},
+        caso=caso_asado,
+        analista=RunnableLambda(_analista_roto),
+    )
+    assert actualizacion == {"pistas_nuevas": []}
+
+
 # ── nodo_acusar ──────────────────────────────────────────────────────────────
 
 
@@ -91,6 +107,18 @@ def test_acusar_a_un_inocente_es_derrota(caso_asado):
     actualizacion = nodo_acusar({"sospechoso_actual": "michi"}, caso=caso_asado)
     assert actualizacion["resultado"] == "derrota"
     assert "inocente" in actualizacion["respuesta"]
+
+
+def test_acusar_a_un_inocente_con_reaccion_propia_usa_ese_texto(caso_asado):
+    """``reaccion_acusacion_fallida`` reemplaza el mensaje genérico de derrota
+    cuando el caso la definió para ese sospechoso."""
+    caso_con_reaccion = caso_asado.model_copy(deep=True)
+    michi = caso_con_reaccion.sospechoso("michi")
+    michi.reaccion_acusacion_fallida = "Michi bosteza y se va, sin dignarse a responder."
+
+    actualizacion = nodo_acusar({"sospechoso_actual": "michi"}, caso=caso_con_reaccion)
+    assert actualizacion["resultado"] == "derrota"
+    assert actualizacion["respuesta"] == "Michi bosteza y se va, sin dignarse a responder."
 
 
 def test_acusar_a_alguien_inexistente_explota(caso_asado):

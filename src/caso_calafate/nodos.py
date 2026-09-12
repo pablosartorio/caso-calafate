@@ -72,18 +72,28 @@ def nodo_analizar(estado: EstadoJuego, *, caso: Caso, analista: Runnable) -> dic
     if sospechoso is None or not sospechoso.secretos:
         return {"pistas_nuevas": []}
 
-    # Dos mensajes y no un string suelto, y no es cosmético: medido contra
-    # qwen2.5:7b sobre una respuesta que cumplía el criterio al pie de la
-    # letra, pasarlo como texto plano detectaba la pista 2 de 8 veces; como
-    # SystemMessage con las instrucciones + HumanMessage con el pedido, 4 de
-    # 4, sin inventar pistas que no estaban. El modelo trata las reglas como
-    # instrucciones en vez de como una parrafada más para resumir.
-    veredicto: SecretosRevelados = analista.invoke(
-        [
-            SystemMessage(prompt_analista(sospechoso, estado.get("respuesta", ""))),
-            HumanMessage("¿Qué secretos se revelaron en esa respuesta?"),
-        ]
-    )
+    try:
+        # Dos mensajes y no un string suelto, y no es cosmético: medido contra
+        # qwen2.5:7b sobre una respuesta que cumplía el criterio al pie de la
+        # letra, pasarlo como texto plano detectaba la pista 2 de 8 veces; como
+        # SystemMessage con las instrucciones + HumanMessage con el pedido, 4
+        # de 4, sin inventar pistas que no estaban. El modelo trata las reglas
+        # como instrucciones en vez de como una parrafada más para resumir.
+        veredicto: SecretosRevelados = analista.invoke(
+            [
+                SystemMessage(prompt_analista(sospechoso, estado.get("respuesta", ""))),
+                HumanMessage("¿Qué secretos se revelaron en esa respuesta?"),
+            ]
+        )
+    except Exception as error:  # LLM analista caído, timeout, lo que sea
+        # El turno YA le hizo la pregunta al sospechoso (ver nodo_interrogar):
+        # que el análisis falle no puede dejar sin contar la pregunta, o
+        # reintentar sería "preguntar gratis". nodo_cerrar_turno corre después
+        # de este nodo sin condición — con tal de no dejar escapar la
+        # excepción, el peor caso pasa a ser "no se detectó ninguna pista este
+        # turno", no "el turno no cuenta".
+        print(f"[nodo_analizar] el analista falló, el turno cuenta igual: {error}")
+        return {"pistas_nuevas": []}
 
     validos = {s.id for s in sospechoso.secretos}
     ya_descubiertas = set(estado.get("pistas_descubiertas", []))
@@ -121,6 +131,11 @@ def nodo_acusar(estado: EstadoJuego, *, caso: Caso) -> dict:
             f"Acusás a {acusado.nombre}, {acusado.cargo}. La evidencia encaja: "
             f"tras un largo silencio, {acusado.nombre} confiesa {caso.delito}. Caso cerrado."
         )
+    elif acusado.reaccion_acusacion_fallida is not None:
+        # Texto propio del sospechoso, si el caso lo definió: reemplaza al
+        # mensaje genérico de más abajo.
+        resultado = "derrota"
+        veredicto = acusado.reaccion_acusacion_fallida
     else:
         resultado = "derrota"
         veredicto = (
