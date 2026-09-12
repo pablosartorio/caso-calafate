@@ -343,6 +343,20 @@ def _turno_acusacion(grafo, config: dict, caso: Caso, sospechoso: Sospechoso) ->
             estado["resultado"], encontradas, caso.total_secretos(), caso.culpable_alias
         )
     )
+    _mostrar_pistas_no_reveladas(estado)
+
+
+def _mostrar_pistas_no_reveladas(estado: dict) -> None:
+    """"Lo que no viste": las pistas que quedaron sin descubrir al cerrar la
+    partida. Solo el texto de la pista — nada de a quién pertenece ni de su
+    lógica interna — como arma ``nodo_acusar``."""
+    faltantes: list[str] = estado.get("pistas_no_reveladas", [])
+    if not faltantes:
+        return
+    lineas = "\n".join(f"• {pista}" for pista in faltantes)
+    console.print(
+        Panel(lineas, title="🕳️  Lo que no viste", border_style="dim")
+    )
 
 
 def _calificacion(resultado: str, encontradas: int, total: int, alias: str) -> str:

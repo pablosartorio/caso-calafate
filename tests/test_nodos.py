@@ -121,6 +121,37 @@ def test_acusar_a_un_inocente_con_reaccion_propia_usa_ese_texto(caso_asado):
     assert actualizacion["respuesta"] == "Michi bosteza y se va, sin dignarse a responder."
 
 
+def test_acusar_arma_las_pistas_no_reveladas(caso_asado):
+    """Al cerrar la partida, ``nodo_acusar`` suma el texto de los secretos que
+    quedaron sin descubrir — ni ids ni de quién son, solo la ``pista``."""
+    actualizacion = nodo_acusar(
+        {"sospechoso_actual": "moro", "pistas_descubiertas": ["vio_al_perro"]},
+        caso=caso_asado,
+    )
+    assert actualizacion["pistas_no_reveladas"] == [
+        "Hay huellas de pata sobre la mesa del patio."
+    ]
+
+
+def test_acusar_sin_pistas_descubiertas_lista_todos_los_secretos(caso_asado):
+    actualizacion = nodo_acusar({"sospechoso_actual": "moro"}, caso=caso_asado)
+    assert set(actualizacion["pistas_no_reveladas"]) == {
+        "Hay huellas de pata sobre la mesa del patio.",
+        "Michi vio a Moro rondando la mesa antes de la siesta.",
+    }
+
+
+def test_acusar_con_todo_descubierto_no_deja_pistas_no_reveladas(caso_asado):
+    actualizacion = nodo_acusar(
+        {
+            "sospechoso_actual": "moro",
+            "pistas_descubiertas": ["vio_al_perro", "huellas_patio"],
+        },
+        caso=caso_asado,
+    )
+    assert actualizacion["pistas_no_reveladas"] == []
+
+
 def test_acusar_a_alguien_inexistente_explota(caso_asado):
     with pytest.raises(ValueError, match="no existe"):
         nodo_acusar({"sospechoso_actual": "fantasma"}, caso=caso_asado)

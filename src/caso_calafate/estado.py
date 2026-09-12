@@ -57,3 +57,7 @@ class EstadoJuego(TypedDict, total=False):
     # ── Salida del turno (para que el CLI la muestre) ────────────────────────
     respuesta: str  # lo que dijo el sospechoso, o el texto del veredicto
     pistas_nuevas: list[str]  # ids revelados en ESTE turno (para el cartel 🔎)
+    # Solo la puebla nodo_acusar, al cerrar la partida: el texto (``pista``,
+    # nunca el id ni nada más) de los secretos que quedaron sin descubrir —
+    # "lo que no viste" del resumen post-partida.
+    pistas_no_reveladas: list[str]

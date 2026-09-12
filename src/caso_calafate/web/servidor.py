@@ -663,6 +663,11 @@ def crear_app(
             "pistas_descubiertas": encontradas,
             "total_secretos": caso.total_secretos(),
             "preguntas_usadas": estado.get("preguntas_usadas", 0),
+            # "Lo que no viste": el texto de las pistas que quedaron sin
+            # descubrir. Lo arma nodo_acusar (ver EstadoJuego.pistas_no_reveladas);
+            # acá solo viaja porque el veredicto YA es post-cierre — mismo
+            # momento en que se libera el epílogo, sin riesgo de spoiler.
+            "pistas_no_reveladas": estado.get("pistas_no_reveladas", []),
         }
 
     # El frontend: archivos estáticos servidos por el mismo proceso. Montado

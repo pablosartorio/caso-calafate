@@ -120,10 +120,19 @@ def nodo_acusar(estado: EstadoJuego, *, caso: Caso) -> dict:
     Pura lógica de juego: comparar al acusado con el culpable del caso. El
     texto del veredicto nombra el hecho con las palabras del caso
     (``delito``, ``culpable_alias``): el motor no sabe qué se investiga.
+
+    Además arma "lo que no viste": el texto de los secretos que quedaron sin
+    descubrir (``Caso.secretos_no_revelados``), para el resumen post-partida.
+    Solo viaja la ``pista`` de cada uno — nunca ``instruccion_actor`` ni a
+    qué sospechoso pertenece — porque eso es lo único pensado para mostrarse
+    al jugador.
     """
     acusado = caso.sospechoso(estado["sospechoso_actual"])
     if acusado is None:
         raise ValueError(f"no existe el sospechoso {estado['sospechoso_actual']!r}")
+
+    descubiertas = estado.get("pistas_descubiertas", [])
+    pistas_no_reveladas = [s.pista for s in caso.secretos_no_revelados(descubiertas)]
 
     if acusado.es_culpable:
         resultado = "victoria"
@@ -143,4 +152,9 @@ def nodo_acusar(estado: EstadoJuego, *, caso: Caso) -> dict:
             f"en minutos: {acusado.nombre} era inocente. "
             f"El verdadero {caso.culpable_alias} queda libre."
         )
-    return {"resultado": resultado, "respuesta": veredicto, "pistas_nuevas": []}
+    return {
+        "resultado": resultado,
+        "respuesta": veredicto,
+        "pistas_nuevas": [],
+        "pistas_no_reveladas": pistas_no_reveladas,
+    }
