@@ -315,10 +315,10 @@ personas que estaban en la zona esa noche.""",
                         "que ya le había puesto un plazo límite para pagar."
                     ),
                     instruccion_actor=(
-                        "Si te preguntan por tu situación económica o si tenés "
-                        "algún socio en Neuquén: admitís, tenso, que le debés "
-                        "plata y que te puso un plazo. Negás que tenga que ver con "
-                        "el robo."
+                        "Con cualquier pregunta abierta sobre esa noche o sobre "
+                        "vos: admitís, tenso, que le debés plata a un socio de "
+                        "Neuquén y que te puso un plazo. Negás que tenga que ver "
+                        "con el robo."
                     ),
                     criterio_revelacion=(
                         "Admite tener una deuda con un socio de Neuquén y un plazo "
