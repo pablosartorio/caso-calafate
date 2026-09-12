@@ -88,6 +88,24 @@ MOTORES: dict[str, Motor] = {
 
 MOTOR_POR_DEFECTO = "ollama:qwen2.5:7b"
 
+# El analista SIEMPRE prefiere este motor, sea cual sea el que el jugador
+# eligió para el actor (ver ``_motor_analista``). Coincide hoy con
+# ``MOTOR_POR_DEFECTO`` mas son conceptos distintos: uno es la sugerencia del
+# selector, el otro es "qué LLM confío para decidir si se reveló un secreto".
+MOTOR_ANALISTA_PREFERIDO = "ollama:qwen2.5:7b"
+
+# Timeout de cada llamada a Ollama, en segundos. Sin esto, un servidor caído o
+# colgado (proceso zombie, modelo trabado) deja el turno esperando para
+# siempre: con esto, se corta con una excepción capturable en el mismo lugar
+# donde HOY ya se atrapa ``Exception`` (ver ``servidor.py::_jugada_interrogar``
+# y ``cli.py::_turno_interrogatorio``).
+TIMEOUT_OLLAMA_SEGUNDOS = 75
+
+# Timeout corto para el chequeo best-effort de "¿está bajado este modelo?"
+# (ver ``_modelo_ollama_disponible``): es una sola llamada liviana a
+# ``/api/tags``, no una generación — no necesita el timeout largo de arriba.
+TIMEOUT_CHEQUEO_SEGUNDOS = 3
+
 
 def motor_sugerido() -> str:
     """El motor que viene preseleccionado en el selector.
@@ -127,6 +145,21 @@ def _motivo_de_indisponibilidad(motor: Motor, modelos_locales: set[str] | None) 
     return None
 
 
+def _nombres_de(respuesta) -> set[str]:
+    """Normaliza la respuesta de ``ollama.Client().list()``/``AsyncClient().list()``.
+
+    Ollama devuelve "qwen2.5:7b" pero también acepta "qwen2.5" a secas cuando
+    el tag es "latest" — de ahí que cada nombre completo aporte dos formas.
+    """
+    nombres = set()
+    for modelo in respuesta.models:
+        nombre = modelo.model or ""
+        nombres.add(nombre)
+        if nombre.endswith(":latest"):
+            nombres.add(nombre.removesuffix(":latest"))
+    return nombres
+
+
 async def _modelos_de_ollama() -> set[str] | None:
     """Los modelos bajados en el Ollama local, o None si el servidor no está.
 
@@ -140,16 +173,26 @@ async def _modelos_de_ollama() -> set[str] | None:
         respuesta = await ollama.AsyncClient().list()
     except Exception:  # servidor apagado, timeout, versión rara del cliente
         return None
+    return _nombres_de(respuesta)
 
-    nombres = set()
-    for modelo in respuesta.models:
-        nombre = modelo.model or ""
-        nombres.add(nombre)
-        # Ollama devuelve "qwen2.5:7b" pero también acepta "qwen2.5" a secas
-        # cuando el tag es "latest".
-        if nombre.endswith(":latest"):
-            nombres.add(nombre.removesuffix(":latest"))
-    return nombres
+
+def _modelo_ollama_disponible(modelo: str) -> bool:
+    """Chequeo sincrónico y best-effort: ¿está ``modelo`` bajado en Ollama?
+
+    Se usa solo para decidir el motor del analista (ver ``_motor_analista``),
+    desde un punto sync (``crear_motores``) donde conviene evitar mezclar
+    asyncio con el lifespan async del servidor o el ``main()`` sync del CLI.
+    Cualquier falla (ollama apagado, timeout, versión rara del cliente) cuenta
+    como "no está": el peor caso es no mejorar el analista, nunca romper el
+    arranque de una partida.
+    """
+    try:
+        import ollama
+
+        respuesta = ollama.Client(timeout=TIMEOUT_CHEQUEO_SEGUNDOS).list()
+    except Exception:
+        return False
+    return modelo in _nombres_de(respuesta)
 
 
 def crear_motores(nombre: str | None = None) -> tuple[BaseChatModel, Runnable, str]:
@@ -157,9 +200,11 @@ def crear_motores(nombre: str | None = None) -> tuple[BaseChatModel, Runnable, s
 
     Devuelve ``(actor, analista, id_del_motor)``:
 
-    - ``actor``: el chat model que interpreta a los sospechosos.
-    - ``analista``: el mismo modelo envuelto con ``with_structured_output``,
-      así que su ``invoke()`` devuelve un ``SecretosRevelados`` validado.
+    - ``actor``: el chat model que interpreta a los sospechosos. Es siempre el
+      motor que eligió el jugador (``nombre``).
+    - ``analista``: un chat model envuelto con ``with_structured_output``, así
+      que su ``invoke()`` devuelve un ``SecretosRevelados`` validado. NO es
+      necesariamente el mismo motor que el actor — ver ``_motor_analista``.
 
     Nota: no fijamos ``temperature`` a propósito. Los defaults de cada
     proveedor andan bien para este juego, y algunos modelos directamente
@@ -170,13 +215,41 @@ def crear_motores(nombre: str | None = None) -> tuple[BaseChatModel, Runnable, s
         actor, analista = _motores_fake()
         return actor, analista, nombre
 
-    motor = MOTORES.get(nombre)
-    modelo = init_chat_model(nombre)
+    actor = _instanciar_ollama(nombre)
+
+    nombre_analista = _motor_analista(nombre)
+    modelo_analista = actor if nombre_analista == nombre else _instanciar_ollama(nombre_analista)
+    motor_analista = MOTORES.get(nombre_analista)
     extras = {}
-    if motor is not None and motor.metodo_estructurado:
-        extras["method"] = motor.metodo_estructurado
-    analista = modelo.with_structured_output(SecretosRevelados, **extras)
-    return modelo, analista, nombre
+    if motor_analista is not None and motor_analista.metodo_estructurado:
+        extras["method"] = motor_analista.metodo_estructurado
+    analista = modelo_analista.with_structured_output(SecretosRevelados, **extras)
+    return actor, analista, nombre
+
+
+def _instanciar_ollama(nombre: str) -> BaseChatModel:
+    """Instancia un motor Ollama con timeout, para no colgarse si el server no
+    contesta (apagado, modelo trabado, proceso zombie). Sin esto, una llamada
+    del actor o del analista podía quedarse esperando para siempre."""
+    return init_chat_model(nombre, client_kwargs={"timeout": TIMEOUT_OLLAMA_SEGUNDOS})
+
+
+def _motor_analista(nombre_actor: str) -> str:
+    """Qué motor usa el analista de esta partida.
+
+    El analista SIEMPRE prefiere ``MOTOR_ANALISTA_PREFERIDO`` (qwen2.5:7b),
+    sin importar qué motor haya elegido el jugador para el actor: medido con
+    ``llama3.2:1b`` como analista, una confesión textual explícita no se
+    detectaba (0 pistas), mientras que con ``qwen2.5:7b`` sí. Si ese motor no
+    está bajado, cae al motor del actor: mejor un analista de calidad pareja
+    que ninguna partida.
+    """
+    if nombre_actor == MOTOR_ANALISTA_PREFERIDO:
+        return nombre_actor  # ya es el preferido, no hace falta chequear nada
+    modelo_preferido = MOTORES[MOTOR_ANALISTA_PREFERIDO].modelo
+    if _modelo_ollama_disponible(modelo_preferido):
+        return MOTOR_ANALISTA_PREFERIDO
+    return nombre_actor
 
 
 def _motores_fake() -> tuple[BaseChatModel, Runnable]:
