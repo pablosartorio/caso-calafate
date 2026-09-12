@@ -193,6 +193,13 @@ def crear_app(
         # La conexión se abre acá (contexto async) y no en import-time: el
         # lifespan de FastAPI es el lugar para recursos con apertura y cierre.
         conexion = await aiosqlite.connect(ruta_db)
+        # WAL: varias corrutinas (el registro de partidas y el checkpointer)
+        # comparten esta misma conexión/archivo, y sin esto un lector y un
+        # escritor concurrentes se pisan con "database is locked". busy_timeout
+        # hace que SQLite reintente unos segundos antes de tirar ese error, en
+        # vez de fallar apenas hay contención.
+        await conexion.execute("PRAGMA journal_mode=WAL")
+        await conexion.execute("PRAGMA busy_timeout=5000")
         app.state.registro = RegistroPartidas(conexion)
         await app.state.registro.preparar()
         checkpointer = AsyncSqliteSaver(conexion)
@@ -572,10 +579,15 @@ def crear_app(
 
         # La acusación no streamea (es la rama corta y determinista del
         # grafo), así que alcanza con un ainvoke.
-        estado = await grafo.ainvoke(
-            {"accion": "acusar", "sospechoso_actual": sospechoso.id},
-            _config(partida_id),
-        )
+        try:
+            estado = await grafo.ainvoke(
+                {"accion": "acusar", "sospechoso_actual": sospechoso.id},
+                _config(partida_id),
+            )
+        except WebSocketDisconnect:
+            raise
+        except Exception as error:  # mismo criterio que _jugada_interrogar
+            return await _error(websocket, f"la acusación se cortó: {error}")
         await websocket.send_json({"tipo": "veredicto", **_veredicto(estado, caso)})
 
     async def _error(websocket: WebSocket, mensaje: str) -> None:

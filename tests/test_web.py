@@ -631,6 +631,34 @@ def test_si_el_llm_explota_el_socket_avisa_y_sigue_vivo(caso_asado, analista_fij
             assert ws.receive_json()["tipo"] == "error"
 
 
+def test_si_el_grafo_explota_al_acusar_el_socket_avisa_y_sigue_vivo(
+    monkeypatch, caso_asado, motores_fake
+):
+    """Gemelo de ``test_si_el_llm_explota_el_socket_avisa_y_sigue_vivo`` pero
+    para la rama de la acusación: ``_jugada_acusar`` invoca el grafo con
+    ``ainvoke`` y antes no tenía ningún try/except propio, así que cualquier
+    excepción tumbaba la conexión entera en vez de avisar por el socket.
+    """
+    import caso_calafate.grafo as grafo_mod
+
+    def _nodo_acusar_roto(estado, *, caso):
+        raise RuntimeError("el checkpointer se cayó")
+
+    monkeypatch.setattr(grafo_mod, "nodo_acusar", _nodo_acusar_roto)
+
+    with TestClient(crear_app({caso_asado.id: caso_asado}, motores_fake())) as cliente:
+        id_ = _nueva_partida(cliente)
+        with cliente.websocket_connect(f"/ws/partidas/{id_}") as ws:
+            ws.send_json({"tipo": "acusar", "sospechoso": "moro"})
+            mensaje = ws.receive_json()
+            assert mensaje["tipo"] == "error"
+            assert "acusación" in mensaje["mensaje"]
+
+            # El socket sigue abierto y la partida se puede seguir jugando.
+            ws.send_json({"tipo": "bailar"})
+            assert ws.receive_json()["tipo"] == "error"
+
+
 def test_el_orden_de_los_sospechosos_es_estable_dentro_de_la_partida(cliente):
     """Se baraja por partida, no por request.
 
