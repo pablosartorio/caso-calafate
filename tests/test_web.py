@@ -202,6 +202,12 @@ def test_acusar_cierra_la_partida_y_recien_ahi_viaja_el_epilogo(cliente, caso_as
         assert veredicto["acusado"] == "moro"
         assert veredicto["epilogo"] == caso_asado.epilogo
         assert "instinto" in veredicto["calificacion"]  # ganó sin ninguna pista
+        # "Lo que no viste": nadie interrogó a nadie, así que las dos pistas
+        # del caso quedan sin descubrir — y solo viaja su texto (la pista).
+        assert set(veredicto["pistas_no_reveladas"]) == {
+            "Hay huellas de pata sobre la mesa del patio.",
+            "Michi vio a Moro rondando la mesa antes de la siesta.",
+        }
 
         # Con el caso cerrado, no se puede seguir interrogando.
         ws.send_json({"tipo": "interrogar", "sospechoso": "michi", "pregunta": "¿y ahora?"})
@@ -324,14 +330,15 @@ def test_el_tablero_malformado_se_rechaza(cliente):
 
 
 def test_los_retratos_pixel_viajan_por_rest(cliente):
-    """El arte es fijo del juego (los tres de Calafate): aunque esta app corra
-    el caso del asado, el endpoint sirve el mismo paquete — para sospechosos
-    sin retrato pixel el frontend cae al SVG, así que no rompe nada."""
+    """El arte es fijo del juego (los de Calafate y los de la ronda de 10
+    casos nuevos): aunque esta app corra el caso del asado, el endpoint sirve
+    el mismo paquete — para sospechosos sin retrato pixel el frontend cae al
+    SVG, así que no rompe nada."""
     respuesta = cliente.get("/api/retratos")
     assert respuesta.status_code == 200
     datos = respuesta.json()
     assert set(datos) == {"paleta", "transparente", "ancho", "alto", "retratos"}
-    assert set(datos["retratos"]) == {"marta", "julian", "silvia"}
+    assert {"marta", "julian", "silvia"} <= set(datos["retratos"])
 
 
 # ── El vocabulario del caso viaja al frontend ────────────────────────────────

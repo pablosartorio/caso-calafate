@@ -32,14 +32,43 @@ from caso_calafate.pixelart._nucleo import (
 )
 from caso_calafate.pixelart._nucleo import exportar_retratos as _exportar_retratos
 from caso_calafate.pixelart._nucleo import validar_retratos as _validar_retratos
+from caso_calafate.pixelart.arrayanes import RETRATOS_ARRAYANES
 from caso_calafate.pixelart.calafate import RETRATOS_CALAFATE
+from caso_calafate.pixelart.epuyen import RETRATOS_EPUYEN
+from caso_calafate.pixelart.frias import RETRATOS_FRIAS
+from caso_calafate.pixelart.jacobacci import RETRATOS_JACOBACCI
+from caso_calafate.pixelart.llaollao import RETRATOS_LLAOLLAO
+from caso_calafate.pixelart.mascardi import RETRATOS_MASCARDI
+from caso_calafate.pixelart.moreno import RETRATOS_MORENO
+from caso_calafate.pixelart.pichileufu import RETRATOS_PICHILEUFU
+from caso_calafate.pixelart.roca import RETRATOS_ROCA
+from caso_calafate.pixelart.tronador import RETRATOS_TRONADOR
 
 # ── Los retratos combinados ──────────────────────────────────────────────────
 # Cada módulo de caso aporta su dict; acá se mergean en el único RETRATOS que
 # consumen cli.py y web/servidor.py. Un caso nuevo se suma con una línea más.
+#
+# ⚠️ OJO — este dict es GLOBAL por id de sospechoso, no por caso: si dos casos
+# reutilizan el mismo id (hoy pasa con "perla" en mascardi/frías y "ceferino"
+# en epuyen/pichileufu), el segundo dict pisa al primero acá abajo y uno de
+# los dos sospechosos queda con el retrato del OTRO personaje. No es un bug
+# de este archivo: viene de que ``casos/*.py`` no garantiza ids únicos entre
+# casos (el fallback SVG de ``retratos.js`` tiene el mismo problema de
+# fondo, aunque hoy no se note porque sus ids no chocan). Arreglarlo de raíz
+# implica tocar los ids en ``casos/*.py``, fuera del alcance de este paquete.
 
 RETRATOS: dict[str, dict] = {
     **RETRATOS_CALAFATE,
+    **RETRATOS_MASCARDI,
+    **RETRATOS_ROCA,
+    **RETRATOS_LLAOLLAO,
+    **RETRATOS_ARRAYANES,
+    **RETRATOS_JACOBACCI,
+    **RETRATOS_MORENO,
+    **RETRATOS_FRIAS,
+    **RETRATOS_TRONADOR,
+    **RETRATOS_EPUYEN,
+    **RETRATOS_PICHILEUFU,
 }
 
 _validar_retratos(RETRATOS)
